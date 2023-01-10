@@ -17,4 +17,17 @@ public final class Constants {
         public static final double PIVOT_HEIGHT = 0.3; //TODO how high the pivot is above the ground
 
     }
+
+
+    public final class DriveTrain {
+        public static final int LEFT_MASTER  = 0,
+                                LEFT_SLAVE   = 1,
+                                RIGHT_MASTER = 2,
+                                RIGHT_SLAVE  = 3;
+    }
+
+    public final class OperatorInterface {
+        public static final int DRIVER_JOYSTICK = 0;
+    }
+
 }
