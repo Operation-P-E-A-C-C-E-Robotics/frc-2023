@@ -1,4 +1,6 @@
-Authored by LA, Changes started on Jan 10 23 Committed on
+Commit 1
+https://github.com/Operation-P-E-A-C-C-E-Robotics/frc-2023/commit/2f8f5405c76dc13a778e04c955a3f60c0aa7fabf
+Authored by LA, Changes started on Jan 10 23 Committed on Jan 10 23 Awaiting Merge to Main
 
 CTRE Phoenix library installed via WPILib Manage Library tool and online install link 
     https://maven.ctr-electronics.com/release/com/ctre/phoenix/Phoenix5-frc2023-latest.json
@@ -24,3 +26,5 @@ Import DriveTrain into RobotContainer
 Import TeleoperatedDriverControl into RobotContainer
 
 Create driverJoystick as a public object of RobotContainer for ease of use
+
+Commit 2

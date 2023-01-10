@@ -19,8 +19,7 @@ public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
-  private double leftSpeed;
-  private double rightSpeed;
+
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
