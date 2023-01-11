@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -21,6 +24,7 @@ public class DriveTrain extends SubsystemBase {
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
 
+
   /** Creates a new DriveTrain. */
   public DriveTrain() {
     setNeutralMode(NeutralMode.Brake);
@@ -28,6 +32,8 @@ public class DriveTrain extends SubsystemBase {
     leftSlave.setInverted(InvertType.OpposeMaster); //TODO Confirm left bottom motor needs to oppose top master
     rightSlave.follow(rightMaster);
     rightSlave.setInverted(InvertType.FollowMaster); //TODO Confirm right bottom motor needs to follow top master
+
+
 
   }
 
@@ -68,4 +74,81 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.arcadeDrive(xForward, zRotate);
   }
 
+
+  //WPILib built in odometry methods from docs
+
+
+
+  /**
+   * Returns the current wheel speeds of the robot.
+   *
+   * @return The current wheel speeds.
+   */
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorPosition(), rightMaster.getSelectedSensorPosition()); //TODO confirm this returns correct data
+  }
+
+  /**
+   * Resets the odometry to the specified pose.
+   *
+   * @param pose The pose to which to set the odometry.
+   */
+  public String resetOdometry(Pose2d pose) {
+    String incomplete = new String("This function is not implimented");
+   return incomplete; //remember to reset it to void when we write this
+  }
+
+
+
+
+
+  /** Resets the drive encoders to currently read a position of 0. */
+  public void resetEncoders() {
+    leftMaster.setSelectedSensorPosition(0);
+    rightMaster.setSelectedSensorPosition(0);
+  }
+
+  /**
+   * Gets the average distance of the two encoders.
+   *
+   * @return the average of the two encoder readings
+   */
+  public double getAverageEncoderDistance() {
+    // return (leftMaster.get + m_rightEncoder.getDistance()) / 2.0;
+   DriverStation.reportError("method ''getAverageEncoderDistance'' not implimented, garbage value returned", false); //TODO write this
+    return 0;
+  }
+
+
+
+  /**
+   * Gets the left drive encoder.
+   *
+   * @return the left drive encoder
+   */
+  public double getLeftEncoder() {
+    return leftMaster.getSelectedSensorPosition();
+  }
+
+  /**
+   * Gets the right drive encoder.
+   *
+   * @return the right drive encoder
+   */
+  public double getRightEncoder() {
+    return leftMaster.getSelectedSensorPosition();
+  }
+
+  /**
+   * Sets the max output of the drive. Useful for scaling the drive to drive more slowly.
+   *
+   * @param maxOutput the maximum output to which the drive will be constrained
+   */
+  public void setMaxOutput(double maxOutput) {
+    differentialDrive.setMaxOutput(maxOutput);
+  }
+
 }
+
+
+
