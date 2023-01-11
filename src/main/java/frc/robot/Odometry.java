@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import frc.lib.sensors.Pigeon;
-import frc.robot.Constants.DriveTrain;
+import frc.robot.subsystems.DriveTrain;
 
 class Odometry{
     private DriveTrain driveTrain;
@@ -18,15 +18,16 @@ class Odometry{
     private DifferentialDrivePoseEstimator estimator;
     private RobotContainer robot;
 
-    public Odometry(RobotContainer robot) {
+    public Odometry(RobotContainer robot, DriveTrain driveTrain) {
         this.robot = robot;
+        this.driveTrain = driveTrain;
         imu = new Pigeon(new PigeonIMU(0)); //TODO PORT NO.
         kinematics = new DifferentialDriveKinematics(0); //TODO TRACK WIDTH
         estimator = new DifferentialDrivePoseEstimator(
             kinematics,
             imu.getRotation(),
-            0, //TODO need drivetrain functions
-            0,
+            driveTrain.getLeftEncoder(),
+            driveTrain.getRightEncoder(),
             robot.getStartingPose(),
             new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), //todo figure out whtf these are
             new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
@@ -37,7 +38,7 @@ class Odometry{
         if(hasNewVisionMeasurement()){
             estimator.addVisionMeasurement(getVisionPose(), getVisionTimestamp());
         }
-        estimator.update(imu.getRotation(), 0,0); //todo need drivetrain functions
+        estimator.update(imu.getRotation(), driveTrain.getLeftEncoder(),driveTrain.getRightEncoder());
     }
 
     public Pose2d getPose() {
