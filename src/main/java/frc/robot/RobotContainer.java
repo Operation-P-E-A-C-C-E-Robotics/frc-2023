@@ -25,7 +25,7 @@ public class RobotContainer {
   private final DriveTrain driveTrain = new DriveTrain();
 
   //commands
-  private final TeleoperatedDriverControl teleoperatedDriverControl = new TeleoperatedDriverControl(this.driveTrain, RobotContainer.driverJoystick);
+  private final ArcadeDrive teleoperatedDriverControl = new ArcadeDrive(this.driveTrain, RobotContainer.driverJoystick);
 
   //OI
   public static Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); //left this public for easy accesability, we can make it private if you think we should
