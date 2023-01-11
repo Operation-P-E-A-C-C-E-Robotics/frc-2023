@@ -30,4 +30,8 @@ public final class Constants {
         public static final int DRIVER_JOYSTICK = 0;
     }
 
+    public final class Odometry {
+        public static final int PIGEON_IMU  = 0,
+                                TRACK_WIDTH = 0; //TODO Configure
+    }
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import frc.lib.sensors.Pigeon;
 import frc.robot.Constants.DriveTrain;
+import static frc.robot.Constants.Odometry.*;
 
 class Odometry{
     private DriveTrain driveTrain;
@@ -20,15 +21,15 @@ class Odometry{
 
     public Odometry(RobotContainer robot) {
         this.robot = robot;
-        imu = new Pigeon(new PigeonIMU(0)); //TODO PORT NO.
-        kinematics = new DifferentialDriveKinematics(0); //TODO TRACK WIDTH
+        imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
+        kinematics = new DifferentialDriveKinematics(TRACK_WIDTH); 
         estimator = new DifferentialDrivePoseEstimator(
             kinematics,
             imu.getRotation(),
             0, //TODO need drivetrain functions
             0,
             robot.getStartingPose(),
-            new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), //todo figure out whtf these are
+            new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), //todo figure out wtf these are
             new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
     }
