@@ -2,7 +2,6 @@ package frc.lib.math;
 
 import java.util.Arrays;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib.util.Util;
 
 public class PointTracker {
