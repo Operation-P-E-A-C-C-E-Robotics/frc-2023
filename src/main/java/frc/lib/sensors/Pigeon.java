@@ -10,8 +10,6 @@ package frc.lib.sensors;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.Timer;
-import frc.lib.math.Point2d;
 
 /**
  * Add your docs here.

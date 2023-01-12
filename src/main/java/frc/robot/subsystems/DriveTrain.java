@@ -4,9 +4,7 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -62,6 +60,7 @@ public class DriveTrain extends SubsystemBase {
   public void tankDrive(double leftSpeed, double rightSpeed) {
     leftMaster.set(leftSpeed);
     rightMaster.set(rightSpeed);
+    differentialDrive.feed();
   }
 
   /**
@@ -72,6 +71,7 @@ public class DriveTrain extends SubsystemBase {
    */
   public void arcadeDrive(double xForward, double zRotate) {
     differentialDrive.arcadeDrive(xForward, zRotate);
+    differentialDrive.feed();
   }
 
 
@@ -88,15 +88,7 @@ public class DriveTrain extends SubsystemBase {
     return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorPosition(), rightMaster.getSelectedSensorPosition()); //TODO confirm this returns correct data
   }
 
-  /**
-   * Resets the odometry to the specified pose.
-   *
-   * @param pose The pose to which to set the odometry.
-   */
-  public String resetOdometry(Pose2d pose) {
-    String incomplete = new String("This function is not implimented");
-   return incomplete; //remember to reset it to void when we write this
-  }
+
 
 
 
@@ -114,9 +106,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the average of the two encoder readings
    */
   public double getAverageEncoderDistance() {
-    // return (leftMaster.get + m_rightEncoder.getDistance()) / 2.0;
-   DriverStation.reportError("method ''getAverageEncoderDistance'' not implimented, garbage value returned", false); //TODO write this
-    return 0;
+    return (getLeftEncoder() + getRightEncoder() / 2.0);  
   }
 
 
