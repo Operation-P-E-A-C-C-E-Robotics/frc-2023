@@ -2,9 +2,10 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import static frc.robot.Constants.Kinematics.*;
 
 public class Kinematics {
-    public static final double PIVOT_HEIGHT = 0.3; //TODO how high the pivot is above the ground
+    
 
     /**
      * Convert from an x/y/z position of the manipulator to the position of
