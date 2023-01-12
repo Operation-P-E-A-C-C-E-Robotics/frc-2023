@@ -1,8 +1,5 @@
 package frc.lib.math;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import frc.lib.util.Util;
 
 public class Sequencer {

@@ -2,7 +2,6 @@ package frc.lib.sensors;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import frc.lib.math.PointTracker;
 
 /*
  *Simple class for interfacing with the limelight camera.
