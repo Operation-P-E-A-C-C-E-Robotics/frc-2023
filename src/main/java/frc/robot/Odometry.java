@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
+import static frc.robot.Constants.Odometry.*;
 
 class Odometry{
     private DriveTrain driveTrain;
