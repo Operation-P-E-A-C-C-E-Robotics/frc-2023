@@ -7,21 +7,9 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-  public static intakeState intakeState = frc.robot.subsystems.Intake.intakeState.OPEN; 
+  public static IntakeState intakeState = frc.robot.subsystems.Intake.intakeState.OPEN;
   /** Creates a new Intake. */
   public Intake() {
-    switch(intakeState) {
-      case OPEN:
-        eject(); 
-       break;
-      case HOLD_CONE:
-        intakeCone();
-      break;
-      case HOLD_CUBE:
-        intakeCube();
-      break;
-      
-    }
   }
 
   @Override
@@ -34,41 +22,51 @@ public class Intake extends SubsystemBase {
    */
   public void setPercent(double speed) {
 
-    
+  }
+
+  /**
+   * set the state of the intake pneumatics. There are three states:
+   *  - OPEN: all the way open
+   *  - HOLD_CUBE: middle position to hold the cube
+   *  - HOLD_CONE: most closed position, to hold the cone
+   * @param state the state to set to.
+   */
+  public void setIntakeState(IntakeState state){
+
   }
 
   /**
    * helper function to intake objects ensuring the wheels are spining the right way
    */
   public void intake() {
-   
+
   }
 
   /**
    * helper function to eject objects ensuring the wheels are spinning the right way
    */
   public void eject() {
-    
+
   }
   /**
    * open the Pnumatic arms, do not confuse with intake()
    */
   public void open() {
-    
+
   }
 
   /**
    * helper function to set all settings for intaking a cube
    */
   public void intakeCube() {
-    
+
   }
 
   /**
    * helper function to set all settings for intaking a cone
-   */ 
+   */
   public void intakeCone() {
-    
+
   }
 
   /**
@@ -77,13 +75,13 @@ public class Intake extends SubsystemBase {
    * HOLD_CUBE
    * HOLD_CONE
    */
-  private enum intakeState {
+  private enum IntakeState {
     OPEN,
     HOLD_CUBE,
     HOLD_CONE
 
   }
 
-  
+
 
 }
