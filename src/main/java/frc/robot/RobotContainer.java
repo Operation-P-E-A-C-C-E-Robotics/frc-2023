@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.*;
+import frc.robot.commands.auto.paths.Paths;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -23,6 +24,8 @@ public class RobotContainer {
   //subsystems
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final DriveTrain driveTrain = new DriveTrain();
+  private final Odometry odometry = new Odometry(this, driveTrain);
+  private final Paths paths = new Paths(odometry, driveTrain);
 
   //commands
   private final ArcadeDrive teleoperatedDriverControl = new ArcadeDrive(this.driveTrain, RobotContainer.driverJoystick);
@@ -52,6 +55,10 @@ public class RobotContainer {
     return null;
   }
 
+  public Paths getPaths(){
+    return paths;
+}
+
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
@@ -59,6 +66,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return paths.testPath();
   }
 }

@@ -9,9 +9,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
-import static frc.robot.Constants.Odometry.*;
+import static frc.robot.Constants.Auto.*;
 
-class Odometry{
+public class Odometry{
     private DriveTrain driveTrain;
     private Pigeon imu;
     private DifferentialDriveKinematics kinematics;
@@ -21,7 +21,7 @@ class Odometry{
     public Odometry(RobotContainer robot, DriveTrain driveTrain) {
         this.robot = robot;
         imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
-        kinematics = new DifferentialDriveKinematics(TRACK_WIDTH); 
+        kinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
         estimator = new DifferentialDrivePoseEstimator(
             kinematics,
             imu.getRotation(),
@@ -38,6 +38,10 @@ class Odometry{
             estimator.addVisionMeasurement(getVisionPose(), getVisionTimestamp());
         }
         estimator.update(imu.getRotation(), driveTrain.getLeftEncoder(),driveTrain.getRightEncoder());
+    }
+
+    public void resetPose(Pose2d pose){
+        estimator.resetPosition(imu.getRotation(), driveTrain.getLeftEncoder(), driveTrain.getRightEncoder(), pose);
     }
 
     public Pose2d getPose() {
