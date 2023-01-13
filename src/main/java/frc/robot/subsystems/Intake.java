@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
+  public intakeState intakeState;
   /** Creates a new Intake. */
   public Intake() {}
 
@@ -56,4 +57,18 @@ public class Intake extends SubsystemBase {
   public void intakeCone() {
     throw new UnsupportedOperationException("Method not implimented");
   }
+
+  /**
+   * Enum for the intake states
+   * OPEN
+   * HOLD_CUBE
+   * HOLD_CONE
+   */
+  private enum intakeState {
+    OPEN,
+    HOLD_CUBE,
+    HOLD_CONE
+
+  }
+
 }
