@@ -27,6 +27,9 @@ public class Paths {
     DifferentialDriveVoltageConstraint constraint;
     TrajectoryConfig config;
 
+    /**
+    * class to hold all the paths the robot will follow
+    */
     public Paths(Odometry odometry, DriveTrain driveTrain){
         this.driveTrain = driveTrain;
         this.odometry = odometry;
@@ -40,6 +43,7 @@ public class Paths {
             AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED
         ).setKinematics(odometry.getKinematics()).addConstraint(constraint);
     }
+
     public Command testPath(){
         // An example trajectory to follow.  All units in meters.
         Trajectory exampleTrajectory =
@@ -54,6 +58,12 @@ public class Paths {
             config);
         return createPathCommand(exampleTrajectory);
     }
+
+    /**
+    * create a ramsete command from a trajectory
+    * @param trajectory the trajectory to follow.
+    * @return a ramsete command to follow the path
+    */
     private Command createPathCommand(Trajectory trajectory){
         RamseteCommand ramseteCommand = new RamseteCommand(
             trajectory,
@@ -67,8 +77,6 @@ public class Paths {
             driveTrain::tankDriveVolts,
             driveTrain
         );
-        return Commands.run(() -> odometry.resetPose(trajectory.getInitialPose()))
-            .andThen(ramseteCommand)
-            .andThen(() -> driveTrain.tankDrive(0,0));
+        return ramseteCommand.andThen(() -> driveTrain.tankDrive(0,0));
     }
 }
