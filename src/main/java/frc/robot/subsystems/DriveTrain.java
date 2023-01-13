@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -63,6 +63,12 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.feed();
   }
 
+    public void tankDriveVolts(double leftVolts, double rightVolts){
+        leftMaster.setVoltage(leftVolts);
+        rightMaster.setVoltage(rightVolts);
+        differentialDrive.feed();
+    }
+
   /**
    * drive the robot in Arcade mode using the built in WPILib differential drive class
    * @param xForward joystick forward backward axis
@@ -85,7 +91,7 @@ public class DriveTrain extends SubsystemBase {
    * @return The current wheel speeds.
    */
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorPosition(), rightMaster.getSelectedSensorPosition()); //TODO confirm this returns correct data
+    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorVelocity(), rightMaster.getSelectedSensorVelocity()); //TODO confirm this returns correct data
   }
 
 
