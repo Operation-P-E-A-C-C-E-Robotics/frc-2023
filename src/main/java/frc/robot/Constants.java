@@ -14,7 +14,5 @@ package frc.robot;
  */
 public final class Constants {
 
-    public static class Turret {
-        public static final int TURRET = 0; //TODO CONFLICT WITH DT CHANGE THIS!
-    }
+
 }
