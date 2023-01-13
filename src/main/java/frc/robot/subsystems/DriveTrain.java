@@ -4,15 +4,18 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import static frc.robot.Constants.DriveTrain.LEFT_MASTER;
+import static frc.robot.Constants.DriveTrain.LEFT_SLAVE;
+import static frc.robot.Constants.DriveTrain.RIGHT_MASTER;
+import static frc.robot.Constants.DriveTrain.RIGHT_SLAVE;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import static frc.robot.Constants.DriveTrain.*;
+
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
  
 public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
@@ -63,11 +66,18 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.feed();
   }
 
-    public void tankDriveVolts(double leftVolts, double rightVolts){
+  /**
+   * drive the motors at a specific voltage
+   * see {@link com.ctre.phoenix.motorcontrol.can.WPI_TalonFX#setVoltage(double)} for more details
+   * this is NOT a set and forget function!
+   * @param leftVolts voltage to send to the left side of the drive train
+   * @param rightVolts voltage to send to the right side of the drive train
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts){
         leftMaster.setVoltage(leftVolts);
         rightMaster.setVoltage(rightVolts);
         differentialDrive.feed();
-    }
+  }
 
   /**
    * drive the robot in Arcade mode using the built in WPILib differential drive class
@@ -107,7 +117,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * Gets the average distance of the two encoders.
+   * Gets the average distance of the two master encoders.
    *
    * @return the average of the two encoder readings
    */
@@ -123,7 +133,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftEncoder() {
-    return leftMaster.getSelectedSensorPosition();
+    return leftMaster.getSelectedSensorPosition(); //TODO convert to Meters
   }
 
   /**
@@ -132,7 +142,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightEncoder() {
-    return leftMaster.getSelectedSensorPosition();
+    return leftMaster.getSelectedSensorPosition(); //TODO convert to Meters
   }
 
   /**
