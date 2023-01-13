@@ -7,9 +7,22 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-  public intakeState intakeState;
+  public static intakeState intakeState = frc.robot.subsystems.Intake.intakeState.OPEN; 
   /** Creates a new Intake. */
-  public Intake() {}
+  public Intake() {
+    switch(intakeState) {
+      case OPEN:
+        eject(); 
+       break;
+      case HOLD_CONE:
+        intakeCone();
+      break;
+      case HOLD_CUBE:
+        intakeCube();
+      break;
+      
+    }
+  }
 
   @Override
   public void periodic() {
@@ -21,41 +34,41 @@ public class Intake extends SubsystemBase {
    */
   public void setPercent(double speed) {
 
-    throw new UnsupportedOperationException("Method not implimented");
+    
   }
 
   /**
    * helper function to intake objects ensuring the wheels are spining the right way
    */
   public void intake() {
-    throw new UnsupportedOperationException("Method not implimented");
+   
   }
 
   /**
    * helper function to eject objects ensuring the wheels are spinning the right way
    */
   public void eject() {
-    throw new UnsupportedOperationException("Method not implimented");
+    
   }
   /**
    * open the Pnumatic arms, do not confuse with intake()
    */
   public void open() {
-    throw new UnsupportedOperationException("Method not implimented");
+    
   }
 
   /**
    * helper function to set all settings for intaking a cube
    */
   public void intakeCube() {
-    throw new UnsupportedOperationException("Method not implimented");
+    
   }
 
   /**
    * helper function to set all settings for intaking a cone
    */ 
   public void intakeCone() {
-    throw new UnsupportedOperationException("Method not implimented");
+    
   }
 
   /**
@@ -70,5 +83,7 @@ public class Intake extends SubsystemBase {
     HOLD_CONE
 
   }
+
+  
 
 }
