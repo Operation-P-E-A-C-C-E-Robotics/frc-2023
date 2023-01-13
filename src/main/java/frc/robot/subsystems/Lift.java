@@ -29,6 +29,14 @@ public class Lift extends SubsystemBase {
         return 0; //todo
     }
 
+    /**
+     * set the lift extension in meters between
+     * the pivot and the wrist
+     */
+    public void setExtension(double meters){
+        //todo
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
