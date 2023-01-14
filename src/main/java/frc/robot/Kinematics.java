@@ -2,10 +2,44 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.subsystems.Supersystem;
+
 import static frc.robot.Constants.Kinematics.*;
 
 public class Kinematics {
+    LiftState state;
+    LiftPosition liftPosition;
+    WristPosition wristPosition;
 
+    private Supersystem supersystem;
+
+    public Kinematics(Supersystem supersystem){
+        this.supersystem = supersystem;
+    }
+
+    public void reset(){
+        liftPosition = null;
+        wristPosition = null;
+    }
+
+    public LiftState getLiftState(){
+        if (state == null) state = supersystem.getLiftState();
+        return state;
+    }
+
+    public LiftPosition getLiftPosition(){
+        if (liftPosition == null) liftPosition = inverseKinematics(getLiftState());
+        return liftPosition;
+    }
+
+    public WristPosition getWristPosition(){
+        if (wristPosition == null) wristPosition = wristInverseKinematics(
+            getLiftPosition(),
+            getLiftState().getTurretAngle(),
+            getLiftState().getWristAngle()
+        );
+        return wristPosition;
+    }
 
     /**
      * Convert from an x/y/z position of the manipulator to the position of
@@ -64,7 +98,7 @@ public class Kinematics {
      */
     public static LiftPosition inverseKinematics(LiftState state){
         double x, y, z;
-        double arm = state.getArmLength(),
+        double arm = state.getLiftExtension(),
                 pivot = state.getPivotAngle(),
                 turret = state.getTurretAngle();
 
@@ -80,22 +114,76 @@ public class Kinematics {
         return new LiftPosition(x, y, z);
     }
 
-    public static final double WRIST_LENGTH = 0; //todo move to constants
-    public static LiftPosition wristInverseKinematics(LiftState liftState, double wristAngle){
+    public static final double WRIST_LENGTH = 0.2,
+                              WRIST_MID_LENGTH = 0.1; //todo move to constants
+    public static WristPosition wristInverseKinematics(LiftState liftState){
         LiftPosition liftPosition = inverseKinematics(liftState);
-        double x_offset, y_offset, z_offset;
-        x_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.cos(liftState.turretAngle);
-        y_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.sin(liftState.turretAngle);
-        z_offset = WRIST_LENGTH * Math.cos(wristAngle);
-        return new LiftPosition(liftPosition.getX() + x_offset, liftPosition.getY() + y_offset, liftPosition.getZ() + z_offset);
+
+        double endX, endY, endZ;
+        double midX, midY, midZ;
+        double x, y, z;
+
+        x = Math.sin(liftState.wristAngle) * Math.cos(liftState.turretAngle);
+        y = Math.sin(liftState.wristAngle) * Math.sin(liftState.turretAngle);
+        z = Math.cos(liftState.wristAngle);
+
+        endX = WRIST_LENGTH * x;
+        endY = WRIST_LENGTH * y;
+        endZ = WRIST_LENGTH * z;
+
+        midX = WRIST_MID_LENGTH * x;
+        midY = WRIST_MID_LENGTH * y;
+        midZ = WRIST_MID_LENGTH * z;
+        return new WristPosition(
+            liftPosition.add(endX, endY, endZ),
+            liftPosition.add(midX, midY, midZ)
+        );
+    }
+    public static WristPosition wristInverseKinematics(LiftPosition liftPosition, double turretAngle, double wristAngle){
+        double endX, endY, endZ;
+        double midX, midY, midZ;
+        double x, y, z;
+
+        x = Math.sin(wristAngle) * Math.cos(turretAngle);
+        y = Math.sin(wristAngle) * Math.sin(turretAngle);
+        z = Math.cos(wristAngle);
+
+        endX = WRIST_LENGTH * x;
+        endY = WRIST_LENGTH * y;
+        endZ = WRIST_LENGTH * z;
+
+        midX = WRIST_MID_LENGTH * x;
+        midY = WRIST_MID_LENGTH * y;
+        midZ = WRIST_MID_LENGTH * z;
+        return new WristPosition(
+            liftPosition.add(endX, endY, endZ),
+            liftPosition.add(midX, midY, midZ)
+        );
     }
 
     //testing
     public static void main(String args[]){
         LiftPosition testPose = new LiftPosition(1, 0, 0);
         System.out.println(testPose);
-        System.out.println(Kinematics.kinematics(testPose, 91));
-        System.out.println(Kinematics.inverseKinematics(Kinematics.kinematics(testPose, 0)));
+        System.out.println(Kinematics.kinematics(testPose, 0));
+        System.out.println(Kinematics.wristInverseKinematics(Kinematics.kinematics(testPose, Rotation2d.fromDegrees(-90).getRadians())));
+    }
+
+    public static class WristPosition{
+        private LiftPosition endPosition, midPosition;
+        public WristPosition(LiftPosition endPosition, LiftPosition midPosition){
+            this.endPosition = endPosition;
+            this.midPosition = midPosition;
+        }
+        public LiftPosition getEndPosition(){
+            return endPosition;
+        }
+        public LiftPosition getMidPosition(){
+            return midPosition;
+        }
+        public String toString(){
+            return "wrist end: " + endPosition + " place point: " + midPosition;
+        }
     }
 
     public static class LiftState{
@@ -121,7 +209,7 @@ public class Kinematics {
         public double getPivotAngle(){
             return pivotAngle;
         }
-        public double getArmLength(){
+        public double getLiftExtension(){
             return armLength;
         }
         public double getWristAngle(){
@@ -159,6 +247,9 @@ public class Kinematics {
         }
         public String toString(){
             return "x: " + x + " y: " + y + " z: " + z;
+        }
+        public LiftPosition add(double x, double y, double z){
+            return new LiftPosition(this.x + x, this.y + y, this.z + z);
         }
     }
 }

@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch Kinematics",
+      "request": "launch",
+      "mainClass": "frc.robot.Kinematics",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
       "name": "Launch RedField",
       "request": "launch",
       "mainClass": "frc.lib.field.RedField",
