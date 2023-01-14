@@ -1,0 +1,7 @@
+Added libraries from last year
+
+Started odometry
+    not finished - needs Logan's stuff
+
+Started field points
+    not finished! needs actual points
