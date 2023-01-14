@@ -16,26 +16,29 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
- 
+<<<<<<<<< Temporary merge branch 1
+
 public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
   private WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
+  private Constraints constraints;
+  private RobotContainer robot;
 
 
 
   /** Creates a new DriveTrain. */
-  public DriveTrain() {
+  public DriveTrain(RobotContainer robot) {
+    this.robot = robot;
     setNeutralMode(NeutralMode.Brake);
     leftSlave.follow(leftMaster);
-    leftSlave.setInverted(InvertType.OpposeMaster); //TODO Confirm left bottom motor needs to oppose top master
     rightSlave.follow(rightMaster);
+    leftMaster.setInverted(true);
+    rightMaster.setInverted(false);
+    leftSlave.setInverted(InvertType.FollowMaster); //TODO Confirm left bottom motor needs to oppose top master
     rightSlave.setInverted(InvertType.FollowMaster); //TODO Confirm right bottom motor needs to follow top master
-
-
-
   }
 
   @Override
@@ -51,9 +54,7 @@ public class DriveTrain extends SubsystemBase {
    */
   public void setNeutralMode(NeutralMode mode) {
     leftMaster.setNeutralMode(mode);
-    leftSlave.setNeutralMode(mode);
     rightMaster.setNeutralMode(mode);
-    rightSlave.setNeutralMode(mode);
   }
   /**
    * input 2 doubles to drive the drivetrain motors seperatly
@@ -64,6 +65,10 @@ public class DriveTrain extends SubsystemBase {
     leftMaster.set(leftSpeed);
     rightMaster.set(rightSpeed);
     differentialDrive.feed();
+  }
+
+  public void tankDrive(DriveSignal signal){
+    tankDrive(signal.getLeft(), signal.getRight());
   }
 
   /**
@@ -83,10 +88,11 @@ public class DriveTrain extends SubsystemBase {
    * drive the robot in Arcade mode using the built in WPILib differential drive class
    * @param xForward joystick forward backward axis
    * @param zRotate joystick left right axis
-   * 
+   *
    */
-  public void arcadeDrive(double xForward, double zRotate) {
-    differentialDrive.arcadeDrive(xForward, zRotate);
+  public void arcadeDrive(double forward, double wheel) {
+    double forwardFiltered = robot.constrains.constrainJoystickFwdJerk(forward);
+    tankDrive(new DriveSignal(forwardFiltered + wheel, forwardFiltered - wheel));
     differentialDrive.feed();
   }
 
@@ -122,7 +128,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the average of the two encoder readings
    */
   public double getAverageEncoderDistance() {
-    return (getLeftEncoder() + getRightEncoder() / 2.0);  
+    return (getLeftEncoder() + getRightEncoder() / 2.0);
   }
 
 

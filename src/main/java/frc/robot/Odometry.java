@@ -6,7 +6,9 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
 import static frc.robot.Constants.Auto.*;
@@ -20,6 +22,7 @@ public class Odometry{
 
     public Odometry(RobotContainer robot, DriveTrain driveTrain) {
         this.robot = robot;
+        this.driveTrain = driveTrain;
         imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
         kinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
         estimator = new DifferentialDrivePoseEstimator(
@@ -28,7 +31,7 @@ public class Odometry{
             driveTrain.getLeftEncoder(),
             driveTrain.getRightEncoder(),
             robot.getStartingPose(),
-            new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.02, 0.02), //todo figure out wtf these are
+            new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //todo figure out wtf these are
             new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
     }
@@ -77,5 +80,22 @@ public class Odometry{
     }
     private boolean hasNewVisionMeasurement() {
         return false;
+    }
+
+    public Rotation2d getHeading(){
+        return imu.getRotation();
+    }
+
+    public double getYaw(){
+        return imu.getYaw();
+    }
+
+    public double getPitch(){
+        SmartDashboard.putNumber("pitch", imu.getPitch());
+        return imu.getPitch();
+    }
+
+    public double getRoll(){
+        return imu.getRoll();
     }
 }
