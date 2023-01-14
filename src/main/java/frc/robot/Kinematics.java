@@ -18,7 +18,7 @@ public class Kinematics {
      *  pivot rotation: 0: up, positive tips forward
      * if the target is straight up, the turret will be set to zero.
      * @param pose the target pose
-     * @return the handlerstate to reach the target pose.
+     * @return the LiftState to reach the target pose.
      */
     public static LiftState kinematics(LiftPosition pose, double wristAngle){
         double extension, turret, pivot,
@@ -77,17 +77,17 @@ public class Kinematics {
             z = arm * Math.cos(pivot) + PIVOT_HEIGHT;
         }
 
-        return new HandlerPosition(x, y, z);
+        return new LiftPosition(x, y, z);
     }
 
     public static final double WRIST_LENGTH = 0; //todo move to constants
-    public static HandlerPosition wristInverseKinematics(HandlerState liftState, double wristAngle){
-        HandlerPosition liftPosition = inverseKinematics(liftState);
+    public static LiftPosition wristInverseKinematics(LiftState liftState, double wristAngle){
+        LiftPosition liftPosition = inverseKinematics(liftState);
         double x_offset, y_offset, z_offset;
         x_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.cos(liftState.turretAngle);
         y_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.sin(liftState.turretAngle);
         z_offset = WRIST_LENGTH * Math.cos(wristAngle);
-        return new HandlerPosition(liftPosition.getX() + x_offset, liftPosition.getY() + y_offset, liftPosition.getZ() + z_offset);
+        return new LiftPosition(liftPosition.getX() + x_offset, liftPosition.getY() + y_offset, liftPosition.getZ() + z_offset);
     }
 
     //testing
