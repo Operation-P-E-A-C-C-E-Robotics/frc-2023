@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import static frc.robot.Constants.Kinematics.*;
 
 public class Kinematics {
-    
+
 
     /**
      * Convert from an x/y/z position of the manipulator to the position of
@@ -77,6 +77,16 @@ public class Kinematics {
         }
 
         return new HandlerPosition(x, y, z);
+    }
+
+    public static final double WRIST_LENGTH = 0; //todo move to constants
+    public static HandlerPosition wristInverseKinematics(HandlerState liftState, double wristAngle){
+        HandlerPosition liftPosition = inverseKinematics(liftState);
+        double x_offset, y_offset, z_offset;
+        x_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.cos(liftState.turretAngle);
+        y_offset = WRIST_LENGTH * Math.sin(wristAngle) * Math.sin(liftState.turretAngle);
+        z_offset = WRIST_LENGTH * Math.cos(wristAngle);
+        return new HandlerPosition(liftPosition.getX() + x_offset, liftPosition.getY() + y_offset, liftPosition.getZ() + z_offset);
     }
 
     //testing
