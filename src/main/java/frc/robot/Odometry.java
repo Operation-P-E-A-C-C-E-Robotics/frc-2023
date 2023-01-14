@@ -59,18 +59,6 @@ public class Odometry{
         return kinematics;
     }
 
-    public double getYaw(){
-        return imu.getYaw();
-    }
-
-    public double getPitch(){
-        return imu.getPitch();
-    }
-
-    public double getRoll(){
-        return imu.getRoll();
-    }
-
     //TODO placeholders
     private Pose2d getVisionPose(){
         return null;

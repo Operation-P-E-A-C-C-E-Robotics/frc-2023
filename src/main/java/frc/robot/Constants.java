@@ -32,18 +32,9 @@ public final class Constants {
         public static final int DRIVER_JOYSTICK = 0;
     }
 
-    public final class Kinematics {
-        public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
-
-    }
-
     public final class Wrist{
         public static final double LENGTH = 0.1,
                                   LENGTH_TO_PLACE = 0;
-    }
-
-    public final class OperatorInterface {
-        public static final int DRIVER_JOYSTICK = 0;
     }
 
     public final class Auto {
