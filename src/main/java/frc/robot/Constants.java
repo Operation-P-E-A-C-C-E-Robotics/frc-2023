@@ -13,6 +13,8 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+    public final class Kinematics {
+        public static final double PIVOT_HEIGHT = 0.3; //TODO how high the pivot is above the ground
 
-
+    }
 }
