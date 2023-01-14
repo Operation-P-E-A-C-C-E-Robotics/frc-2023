@@ -13,6 +13,37 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+    public final class DriveTrain {
+        public static final int LEFT_MASTER  = 0,
+                                LEFT_SLAVE   = 1,
+                                RIGHT_MASTER = 2,
+                                RIGHT_SLAVE  = 3;
+
+
+    }
+
+    public final class OperatorInterface {
+        public static final int DRIVER_JOYSTICK = 0;
+    }
+
+    public final class Auto {
+        public static final int PIGEON_IMU  = 0,
+                                TRACK_WIDTH = 0; //TODO Configure
+
+        public static final double kS = 0,
+                                  kV = 0,
+                                  kA = 0,
+                                  kP = 0,
+                                  kI = 0,
+                                  kD = 0,
+                                  RAMSETE_B = 0,
+                                  RAMSETE_ZETA = 0,
+                                  AUTO_VOLTAGE_MAX = 10,
+                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 0,
+                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0;
+    }
+
     public final class Kinematics {
         public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
 
