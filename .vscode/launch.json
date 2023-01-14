@@ -6,9 +6,9 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Launch Kinematics",
+      "name": "Launch RedField",
       "request": "launch",
-      "mainClass": "frc.robot.Kinematics",
+      "mainClass": "frc.lib.field.RedField",
       "projectName": "frc-2023"
     },
     {
