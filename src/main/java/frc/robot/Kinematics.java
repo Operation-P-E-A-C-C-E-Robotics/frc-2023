@@ -5,8 +5,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import static frc.robot.Constants.Kinematics.*;
 
 public class Kinematics {
-    
-
     /**
      * Convert from an x/y/z position of the manipulator to the position of
      * the manipulator joints
@@ -20,7 +18,7 @@ public class Kinematics {
      * @param pose the target pose
      * @return the handlerstate to reach the target pose.
      */
-    public static HandlerState kinematics(HandlerPosition pose){
+    public static LiftState kinematics(LiftPosition pose, double wristAngle){
         double extension, turret, pivot,
             z = pose.getZ() - PIVOT_HEIGHT; //account for height of pivot
 
@@ -46,7 +44,8 @@ public class Kinematics {
         //For whatever reason, the turret inverts correctly when X is negative, so this
         //is all we have to do.
         if(pose.getX() < 0) pivot = -pivot;
-        return new HandlerState(turret, pivot, extension);
+
+        return new LiftState(turret, pivot, extension, wristAngle);
     }
 
     /**
@@ -61,7 +60,7 @@ public class Kinematics {
      * @param state A state of the manipulator
      * @return the position of the intake when the manipulator is in that state
      */
-    public static HandlerPosition inverseKinematics(HandlerState state){
+    public static LiftPosition inverseKinematics(LiftState state){
         double x, y, z;
         double arm = state.getArmLength(),
                 pivot = state.getPivotAngle(),
@@ -76,20 +75,21 @@ public class Kinematics {
             z = arm * Math.cos(pivot) + PIVOT_HEIGHT;
         }
 
-        return new HandlerPosition(x, y, z);
+        return new LiftPosition(x, y, z);
     }
 
     //testing
     public static void main(String args[]){
-        HandlerPosition testPose = new HandlerPosition(0, 0, 0);
+        LiftPosition testPose = new LiftPosition(1, 0, 0);
         System.out.println(testPose);
-        System.out.println(Kinematics.kinematics(testPose));
-        System.out.println(Kinematics.inverseKinematics(Kinematics.kinematics(testPose)));
+        System.out.println(Kinematics.kinematics(testPose, 91));
+        System.out.println(Kinematics.inverseKinematics(Kinematics.kinematics(testPose, 0)));
     }
 
-    public static class HandlerState{
+    public static class LiftState{
         private double armLength;
         private double turretAngle, pivotAngle;
+        private double wristAngle;
 
         /**
          * class to hold a target state of the gamepiece handler system
@@ -97,10 +97,11 @@ public class Kinematics {
          * @param pivotAngle angle of the pivot - up = 0 - positive tips forward
          * @param armLength total distance from pivot to intake in meters
          */
-        public HandlerState(double turretAngle, double pivotAngle, double armLength){
+        public LiftState(double turretAngle, double pivotAngle, double armLength, double wristAngle){
             this.turretAngle = turretAngle;
             this.pivotAngle = pivotAngle;
             this.armLength = armLength;
+            this.wristAngle = wristAngle;
         }
         public double getTurretAngle(){
             return turretAngle;
@@ -111,20 +112,23 @@ public class Kinematics {
         public double getArmLength(){
             return armLength;
         }
+        public double getWristAngle(){
+            return wristAngle;
+        }
         public String toString(){
             return "turret: " + new Rotation2d(turretAngle).getDegrees() + " pivot: " + new Rotation2d(pivotAngle).getDegrees() + " arm: " + armLength;
         }
     }
 
-    public static class HandlerPosition{
+    public static class LiftPosition{
         private double x, y, z;
         /**
-         * A class to hold the position of the intake, relative to the robot
+         * A class to hold the position of the lift, relative to the robot
          * @param x positive towards the front of the robot
          * @param y positive to the left of the robot
          * @param z positive up
          */
-        public HandlerPosition(double x, double y, double z){
+        public LiftPosition(double x, double y, double z){
             this.x = x;
             this.y = y;
             this.z = z;
@@ -138,8 +142,8 @@ public class Kinematics {
         public double getZ(){
             return z;
         }
-        public static HandlerPosition fromTranslation(Translation2d translation, double height){
-            return new HandlerPosition(translation.getX(), translation.getY(), height);
+        public static LiftPosition fromTranslation(Translation2d translation, double height){
+            return new LiftPosition(translation.getX(), translation.getY(), height);
         }
         public String toString(){
             return "x: " + x + " y: " + y + " z: " + z;

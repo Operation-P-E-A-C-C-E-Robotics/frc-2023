@@ -2,8 +2,8 @@ package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.lib.util.DriveSignal;
-import frc.robot.Kinematics.HandlerPosition;
-import frc.robot.Kinematics.HandlerState;
+import frc.robot.Kinematics.LiftPosition;
+import frc.robot.Kinematics.LiftState;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.Pivot;
@@ -77,17 +77,25 @@ public class Constraints {
 
         return new DriveSignal(signal.getLeft() - pitchCorrectionFactor + rollCorrectionFactor, signal.getRight() - pitchCorrectionFactor + rollCorrectionFactor);
     }
+
     SlewRateLimiter normalDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_NORMAL);
     SlewRateLimiter liftExtendedDrieLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
+
+    /**
+     * constrain the joystick rate of change when driving to
+     * help avoid tipping, especially when the arm is extended.
+     * @param fwd the joystick's forward postion
+     * @return the corrected joystick forward position
+     */
     public double constrainJoystickFwdJerk(double fwd){
         double normal = normalDriveLimiter.calculate(fwd);
         double extended = liftExtendedDrieLimiter.calculate(fwd);
-        return GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER() > LIFT_EXTENDED_THRESHOLD ? extended: normal;
+        return GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER() > LIFT_EXTENDED_THRESHOLD ? extended : normal;
     }
     private double GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER(){
         return 0; //TODO
     }
-    public void constrainHandlerState(HandlerState state){
+    public void constrainHandlerState(LiftPosition currentPose, LiftPosition targetPose){
 
     }
 }
