@@ -16,6 +16,9 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.DriveSignal;
+import frc.robot.Constraints;
+import frc.robot.RobotContainer;
  
 public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
@@ -23,11 +26,14 @@ public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
+  private Constraints constraints;
+  private RobotContainer robot;
 
 
 
   /** Creates a new DriveTrain. */
-  public DriveTrain() {
+  public DriveTrain(RobotContainer robot) {
+    this.robot = robot;
     setNeutralMode(NeutralMode.Brake);
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
@@ -63,6 +69,10 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.feed();
   }
 
+  public void tankDrive(DriveSignal signal){
+    tankDrive(signal.getLeft(), signal.getRight());
+  }
+
   /**
    * drive the motors at a specific voltage
    * see {@link com.ctre.phoenix.motorcontrol.can.WPI_TalonFX#setVoltage(double)} for more details
@@ -83,7 +93,8 @@ public class DriveTrain extends SubsystemBase {
    * 
    */
   public void arcadeDrive(double forward, double wheel) {
-    tankDrive(forward + wheel, forward - wheel);
+    double forwardFiltered = robot.constrains.constrainJoystickFwdJerk(forward);
+    tankDrive(new DriveSignal(forwardFiltered + wheel, forwardFiltered - wheel));
     differentialDrive.feed();
   }
 

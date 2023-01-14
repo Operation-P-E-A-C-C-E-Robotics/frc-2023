@@ -6,6 +6,7 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.Pigeon;
@@ -40,9 +41,6 @@ public class Odometry{
             estimator.addVisionMeasurement(getVisionPose(), getVisionTimestamp());
         }
         estimator.update(imu.getRotation(), driveTrain.getLeftEncoder(),driveTrain.getRightEncoder());
-        SmartDashboard.putNumber("x", getPose().getX());
-        SmartDashboard.putNumber("y", getPose().getY());
-        SmartDashboard.putNumber("rot", getPose().getRotation().getDegrees());
     }
 
     public void resetPose(Pose2d pose){
@@ -70,5 +68,22 @@ public class Odometry{
     }
     private boolean hasNewVisionMeasurement() {
         return false;
+    }
+
+    public Rotation2d getHeading(){
+        return imu.getRotation();
+    }
+
+    public double getYaw(){
+        return imu.getYaw();
+    }
+
+    public double getPitch(){
+        SmartDashboard.putNumber("pitch", imu.getPitch());
+        return imu.getPitch();
+    }
+
+    public double getRoll(){
+        return imu.getRoll();
     }
 }

@@ -28,6 +28,7 @@ public class RobotContainer {
   public final DriveTrain driveTrain;
   public final Odometry odometry;
   //private final Paths paths = new Paths(odometry, driveTrain);
+  public final Constraints constrains;
 
   //commands
   private final ArcadeDrive teleoperatedDriverControl;
@@ -37,8 +38,9 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    driveTrain = new DriveTrain();
+    driveTrain = new DriveTrain(this);
     odometry = new Odometry(this, driveTrain);
+    constrains = new Constraints(driveTrain, new Lift(), new Pivot(), new Turret(), new Wrist(), odometry);
     teleoperatedDriverControl = new ArcadeDrive(driveTrain, driverJoystick);
 
     // Configure the button bindings

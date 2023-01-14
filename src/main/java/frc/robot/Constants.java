@@ -38,8 +38,8 @@ public final class Constants {
     }
 
     public final class Auto {
-        public static final int PIGEON_IMU  = 0,
-                                TRACK_WIDTH = 0; //TODO Configure
+        public static final int PIGEON_IMU  = 20;
+        public static final double TRACK_WIDTH = 0.6; //TODO Configure
 
         public static final double kS = 0,
                                   kV = 0,
