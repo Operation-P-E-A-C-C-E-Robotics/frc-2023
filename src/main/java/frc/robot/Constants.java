@@ -15,10 +15,10 @@ package frc.robot;
 public final class Constants {
 
     public final class DriveTrain {
-        public static final int LEFT_MASTER  = 0,
-                                LEFT_SLAVE   = 1,
-                                RIGHT_MASTER = 2,
-                                RIGHT_SLAVE  = 3;
+        public static final int LEFT_MASTER  = 2,
+                                LEFT_SLAVE   = 3,
+                                RIGHT_MASTER = 0,
+                                RIGHT_SLAVE  = 1;
 
 
     }
@@ -28,10 +28,11 @@ public final class Constants {
     }
 
     public final class Auto {
-        public static final int PIGEON_IMU  = 0,
-                                TRACK_WIDTH = 0; //TODO Configure
+        public static final int PIGEON_IMU  = 20;
+                                 //TODO Configure
 
-        public static final double kS = 0,
+        public static final double TRACK_WIDTH = 0.6,
+                                  kS = 0,
                                   kV = 0,
                                   kA = 0,
                                   kP = 0,
