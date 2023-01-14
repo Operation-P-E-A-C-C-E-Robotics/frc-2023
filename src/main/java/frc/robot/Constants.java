@@ -14,7 +14,7 @@ package frc.robot;
  */
 public final class Constants {
     public final class Kinematics {
-        public static final double PIVOT_HEIGHT = 0.3; //TODO how high the pivot is above the ground
+        public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
 
     }
 
@@ -26,6 +26,11 @@ public final class Constants {
                                 RIGHT_SLAVE  = 3;
 
 
+    }
+
+    public final class Wrist{
+        public static final double LENGTH = 0.1,
+                                  LENGTH_TO_PLACE = 0;
     }
 
     public final class OperatorInterface {
