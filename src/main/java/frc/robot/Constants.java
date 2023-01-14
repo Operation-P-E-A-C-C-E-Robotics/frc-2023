@@ -25,7 +25,7 @@ public final class Constants {
 
     public final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0;
-    }s
+    }
 
     public final class Kinematics {
         public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
