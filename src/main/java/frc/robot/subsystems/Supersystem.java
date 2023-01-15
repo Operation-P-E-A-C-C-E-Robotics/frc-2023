@@ -47,4 +47,12 @@ public class Supersystem extends SubsystemBase {
     public void setSupersystemPosition(Position position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematics(position, wristAngle.getRadians()));
     }
+
+    public void setWristEndPosition(Position position, Rotation2d wristAngle){
+        setSupersystemState(Kinematics.inverseKinematicsFromWristEnd(position, wristAngle.getRadians()));
+    }
+
+    public void setWristPlacePosition(Position position, Rotation2d wristAngle){
+        setSupersystemState(Kinematics.inverseKinematicsFromWristPlacePoint(position, wristAngle.getRadians()));
+    }
 }
