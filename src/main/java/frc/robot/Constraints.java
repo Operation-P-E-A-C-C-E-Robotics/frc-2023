@@ -1,7 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.Kinematics.LiftPosition;
+import frc.robot.Kinematics.Position;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.Pivot;
@@ -46,7 +46,7 @@ public class Constraints {
     private double GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER(){
         return 0; //TODO
     }
-    public void constrainHandlerState(LiftPosition currentPose, LiftPosition targetPose){
+    public void constrainHandlerState(Position currentPose, Position targetPose){
 
     }
 }

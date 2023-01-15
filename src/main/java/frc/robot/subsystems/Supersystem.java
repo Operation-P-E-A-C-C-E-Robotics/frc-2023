@@ -3,8 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Kinematics;
-import frc.robot.Kinematics.LiftPosition;
-import frc.robot.Kinematics.LiftState;
+import frc.robot.Kinematics.Position;
+import frc.robot.Kinematics.SupersystemState;
 
 public class Supersystem extends SubsystemBase {
     private Lift lift;
@@ -21,21 +21,30 @@ public class Supersystem extends SubsystemBase {
         kinematics = new Kinematics(this);
     }
 
-    public LiftState getLiftState(){
-        return new LiftState(
+    public SupersystemState getSupersystemState(){
+        return new SupersystemState(
             turret.getAngle().getRadians(),
-            pivot.getAngle().getDegrees(),
+            pivot.getAngle().getRadians(),
             lift.getExtension(),
-            wrist.getAngle().getDegrees()
+            wrist.getAngle().getRadians()
         );
     }
 
-    public void setLiftState(LiftState state){
+    public Kinematics getKinematics(){
+        return kinematics;
+    }
+
+    public void setSupersystemState(SupersystemState state){
         lift.setExtension(state.getLiftExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
     }
 
-    public void setLiftPosition(LiftPosition position){
+    public void setSupersystemPosition(Position position){
+        setSupersystemState(Kinematics.inverseKinematics(position, wrist.getAngle().getRadians()));
+    }
+
+    public void setSupersystemPosition(Position position, Rotation2d wristAngle){
+        setSupersystemState(Kinematics.inverseKinematics(position, wristAngle.getRadians()));
     }
 }
