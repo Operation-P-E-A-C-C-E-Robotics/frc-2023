@@ -4,17 +4,20 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.DriveTrain.LEFT_MASTER;
-import static frc.robot.Constants.DriveTrain.LEFT_SLAVE;
-import static frc.robot.Constants.DriveTrain.RIGHT_MASTER;
-import static frc.robot.Constants.DriveTrain.RIGHT_SLAVE;
+import static frc.robot.Constants.DriveTrain.*;
+import static frc.robot.Constants.Auto.*;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
@@ -29,6 +32,9 @@ public class DriveTrain extends SubsystemBase {
   private Constraints constraints;
   private RobotContainer robot;
 
+  private SimpleMotorFeedforward feedforward;
+  private PIDController leftController, rightController;
+
 
 
   /** Creates a new DriveTrain. */
@@ -41,6 +47,10 @@ public class DriveTrain extends SubsystemBase {
     rightMaster.setInverted(false);
     leftSlave.setInverted(InvertType.FollowMaster); //TODO Confirm left bottom motor needs to oppose top master
     rightSlave.setInverted(InvertType.FollowMaster); //TODO Confirm right bottom motor needs to follow top master
+
+    feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+    leftController = new PIDController(kP, kI, kD);
+    rightController = new PIDController(kP, kI, kD);
   }
 
   @Override
@@ -96,6 +106,32 @@ public class DriveTrain extends SubsystemBase {
     double forwardFiltered = robot.constrains.constrainJoystickFwdJerk(forward);
     tankDrive(new DriveSignal(forwardFiltered + wheel, forwardFiltered - wheel));
     differentialDrive.feed();
+  }
+
+  public void resetVelocityDrive(){
+    leftController.reset();
+    rightController.reset();
+  }
+
+  double dt = 0;
+  //EXPERIMENTAL
+  public void velocityDrive(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt){
+    double leftFeedforward, rightFeedforward, left, right;
+
+    leftFeedforward = feedforward.calculate(
+      speeds.leftMetersPerSecond,
+      (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
+    );
+
+    rightFeedforward = feedforward.calculate(
+      speeds.rightMetersPerSecond,
+      (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
+    );
+
+    left = leftFeedforward + leftController.calculate(getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond);
+    right = rightFeedforward + rightController.calculate(getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond);
+
+    tankDriveVolts(left, right);
   }
 
 
