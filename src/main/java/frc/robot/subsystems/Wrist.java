@@ -20,6 +20,10 @@ public class Wrist extends SubsystemBase{
         //todo
     }
 
+    public boolean finishedMotion(){
+        return false; //todo
+    }
+
     /**
      * get the angle of the wrist
      * @return

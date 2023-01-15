@@ -41,6 +41,10 @@ public class Turret extends SubsystemBase {
     //todo
   }
 
+  public boolean finishedMotion(){
+    return false; //todo
+  }
+
   /**
    * get the current angle of the turret
    * @return {@link Rotation2d}

@@ -23,6 +23,10 @@ public class Pivot extends SubsystemBase {
     //todo
   }
 
+  public boolean finishedMotion(){
+    return false; //todo
+  }
+
   public Rotation2d getAngle(){
     return null; //todo
   }

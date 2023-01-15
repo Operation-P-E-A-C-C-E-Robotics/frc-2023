@@ -34,6 +34,13 @@ public class Supersystem extends SubsystemBase {
         return kinematics;
     }
 
+    public boolean finishedMotion(){
+        return lift.finishedMotion()
+            && pivot.finishedMotion()
+            && turret.finishedMotion()
+            && wrist.finishedMotion();
+    }
+
     public void setSupersystemState(SupersystemState state){
         lift.setExtension(state.getLiftExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));

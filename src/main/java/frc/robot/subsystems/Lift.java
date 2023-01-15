@@ -37,6 +37,10 @@ public class Lift extends SubsystemBase {
         //todo
     }
 
+    public boolean finishedMotion(){
+        return false; //todo
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run

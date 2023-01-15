@@ -103,4 +103,9 @@ public class Util {
         ar[i] = newv;
         return ar;
     }
+
+    public static double handleDeadband(double joystickPosition, double deadband) {
+        if(inRange(joystickPosition, deadband)) return 0;
+        return joystickPosition;
+    }
 }

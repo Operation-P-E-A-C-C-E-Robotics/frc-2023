@@ -111,6 +111,9 @@ public class Kinematics {
         return new SupersystemState(turret, pivot, extension, wristAngle);
     }
 
+    /**
+     * Convert from x/y/z coordinates of the end of the wrist
+     */
     public static SupersystemState inverseKinematicsFromWristEnd(Position pose, double wristAngle){
         double turret;
 

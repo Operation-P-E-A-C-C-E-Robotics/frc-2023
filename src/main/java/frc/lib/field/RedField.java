@@ -36,7 +36,7 @@ public class RedField {
 
     public static final Translation2d CHARGE_STATION = new Translation2d(0,0);
 
-    public static final Translation2d[] PICKUP_LOCATIONS = {
+    public static final Translation2d[] SUBSTATION_SHELVES = {
         new Translation2d(0,0)
     };
 
