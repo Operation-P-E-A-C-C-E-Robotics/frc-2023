@@ -6,7 +6,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.RobotState_old;
+import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 //TODO experimental
@@ -19,7 +19,7 @@ public class PathFollower extends CommandBase{
     private DifferentialDriveWheelSpeeds prevSpeeds;
 
     private double prevTime;
-    private final RobotState_old robotState;
+    private final RobotState robotState;
 
     /**
      * experimental path follower, to
@@ -31,7 +31,7 @@ public class PathFollower extends CommandBase{
      * @param trajectory trajectory to follow
      * @param robotState robot odometry.
      */
-    public PathFollower(DriveTrain driveTrain, Trajectory trajectory, RobotState_old robotState){
+    public PathFollower(DriveTrain driveTrain, Trajectory trajectory, RobotState robotState){
         this.driveTrain = driveTrain;
         this.trajectory = trajectory;
         this.robotState = robotState;
@@ -72,7 +72,7 @@ public class PathFollower extends CommandBase{
         }
 
         //get chassis speeds from controller
-        var chassis = controller.calculate(robotState.getPose(), trajectory.sample(time));
+        var chassis = controller.calculate(robotState.getOdometryPose(), trajectory.sample(time));
 
         //get wheel speeds
         var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);

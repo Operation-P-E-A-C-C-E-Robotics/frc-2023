@@ -1,7 +1,6 @@
 package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
-
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -11,7 +10,9 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
-import static frc.robot.Constants.Auto.*;
+
+import static frc.robot.Constants.Auto.PIGEON_IMU;
+import static frc.robot.Constants.Auto.TRACK_WIDTH;
 
 public class RobotState_old {
     private final DriveTrain driveTrain;

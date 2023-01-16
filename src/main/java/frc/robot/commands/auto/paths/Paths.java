@@ -12,7 +12,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import frc.robot.RobotState_old;
+import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.List;
@@ -23,14 +23,14 @@ import static frc.robot.Constants.Auto.*;
 */
 public class Paths {
     DriveTrain driveTrain;
-    RobotState_old robotState;
+    RobotState robotState;
     DifferentialDriveVoltageConstraint constraint;
     TrajectoryConfig config;
 
     /**
     * class to hold all the paths the robot will follow
     */
-    public Paths(RobotState_old robotState, DriveTrain driveTrain){
+    public Paths(RobotState robotState, DriveTrain driveTrain){
         this.driveTrain = driveTrain;
         this.robotState = robotState;
         constraint = new DifferentialDriveVoltageConstraint(
@@ -68,7 +68,7 @@ public class Paths {
         //LTVUnicycleController what = new LTVUnicycleController
         RamseteCommand ramseteCommand = new RamseteCommand(
             trajectory,
-            robotState::getPose,
+            robotState::getOdometryPose,
             new RamseteController(RAMSETE_B, RAMSETE_ZETA),
             new SimpleMotorFeedforward(kS, kV, kA),
             robotState.getDriveKinematics(),

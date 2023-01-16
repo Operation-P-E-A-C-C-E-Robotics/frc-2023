@@ -22,16 +22,6 @@ public class RobotState {
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
 
-    public enum Frame{
-        FIELD, //origin bottom left of field with alliance on left
-        DRIVETRAIN, //origin center of drivetrain, towards front of robot
-        TURRET, //origin center of turret, towards front of turret
-        END_EFFECTOR, //origin tip of end effector, towards front of turret.
-        PLACE_POINT, //origin middle of end effector, towards front of turret.
-        APRILTAG_CAMERA, //origin camera lens, towards camera front
-        END_EFFECTOR_CAMERA, //origin camera lens, towards camera front
-    }
-
     public RobotState(RobotContainer robot, DriveTrain driveTrain, Supersystem supersystem){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
@@ -54,6 +44,13 @@ public class RobotState {
 
     public Pose2d getOdometryPose(){
         return fieldToDrivetrainEstimator.getEstimatedPosition();
+    }
+    public void resetOdometry(Pose2d pose){
+        fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftEncoder(), driveTrain.getRightEncoder(), pose);
+    }
+
+    public DifferentialDriveKinematics getDriveKinematics(){
+        return driveKinematics;
     }
     public Pose3d fieldToDrivetrain(Pose3d fieldPoint){
         Pose2d fieldToRobot = fieldToDrivetrainEstimator.getEstimatedPosition();

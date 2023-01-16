@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.Supersystem;
 
-import static frc.robot.Constants.Kinematics.*;
+import static frc.robot.Constants.Kinematics.PIVOT_HEIGHT;
 
 public class Kinematics {
     SupersystemState state;

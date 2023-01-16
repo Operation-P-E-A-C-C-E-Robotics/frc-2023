@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
 import frc.robot.RobotContainer;
-import frc.robot.commands.auto.paths.PathFollower;
 
 import static frc.robot.Constants.Auto.*;
 import static frc.robot.Constants.DriveTrain.*;

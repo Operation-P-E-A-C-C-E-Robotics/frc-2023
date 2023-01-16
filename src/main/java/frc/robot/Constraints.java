@@ -1,11 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Turret;
-import frc.robot.subsystems.Wrist;
+import frc.robot.subsystems.*;
 
 public class Constraints {
     @SuppressWarnings("FieldCanBeLocal")
@@ -19,13 +15,13 @@ public class Constraints {
     @SuppressWarnings("FieldCanBeLocal")
     private final DriveTrain driveTrain;
     @SuppressWarnings("FieldCanBeLocal")
-    private final RobotState_old robotState;
+    private final RobotState robotState;
 
     private static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
                                DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 0, //todo
                                LIFT_EXTENDED_THRESHOLD = 0.4; //todo
 
-    public Constraints(DriveTrain driveTrain, Arm arm, Pivot pivot, Turret turret, Wrist wrist, RobotState_old robotState){
+    public Constraints(DriveTrain driveTrain, Arm arm, Pivot pivot, Turret turret, Wrist wrist, RobotState robotState){
         this.driveTrain = driveTrain;
         this.arm = arm;
         this.pivot = pivot;

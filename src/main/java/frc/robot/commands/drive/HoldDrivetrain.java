@@ -6,16 +6,17 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.RobotState_old;
+import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 //TODO experimental
 public class HoldDrivetrain extends CommandBase{
 
-    LTVUnicycleController controller = new LTVUnicycleController(0.02);
+    private final double dt;
+    LTVUnicycleController controller;
     private final DriveTrain driveTrain;
     private DifferentialDriveWheelSpeeds prevSpeeds;
-    private final RobotState_old robotState;
+    private final RobotState robotState;
     private Pose2d target;
 
     /**
@@ -28,9 +29,11 @@ public class HoldDrivetrain extends CommandBase{
      * @param trajectory trajectory to follow
      * @param robotState robot odometry.
      */
-    public HoldDrivetrain(DriveTrain driveTrain, Trajectory trajectory, RobotState_old robotState){
+    public HoldDrivetrain(DriveTrain driveTrain, Trajectory trajectory, RobotState robotState, double dt){
         this.driveTrain = driveTrain;
         this.robotState = robotState;
+        this.dt = dt;
+        controller = new LTVUnicycleController(dt);
         addRequirements(driveTrain);
     }
 
@@ -39,7 +42,7 @@ public class HoldDrivetrain extends CommandBase{
         //get initial wheel speeds (to find initial acceleration)
         prevSpeeds = new DifferentialDriveWheelSpeeds(0,0);
 
-        this.target = robotState.getPose();
+        this.target = robotState.getOdometryPose();
         //reset pid controllers
         driveTrain.resetVelocityDrive();
     }
@@ -47,13 +50,13 @@ public class HoldDrivetrain extends CommandBase{
     @Override
     public void execute() {
         //get chassis speeds from controller
-        var chassis = controller.calculate(robotState.getPose(), new State(0,0,0,target,0));
+        var chassis = controller.calculate(robotState.getOdometryPose(), new State(0,0,0,target,0));
 
         //get wheel speeds
         var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
 
         //drive
-        driveTrain.velocityDrive(speeds, prevSpeeds, 0.02);
+        driveTrain.velocityDrive(speeds, prevSpeeds, dt);
 
         prevSpeeds = speeds;
     }

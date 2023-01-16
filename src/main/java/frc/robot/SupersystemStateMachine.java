@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Kinematics.SupersystemState;
 import frc.robot.subsystems.Supersystem;
 
@@ -13,7 +12,7 @@ public class SupersystemStateMachine {
         this.supersystem = supersystem;
     }
 
-    
+
     
     //TODO position setpoints:
     private static final SupersystemState

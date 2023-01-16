@@ -11,7 +11,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.field.RedField;
-import frc.robot.RobotState_old;
+import frc.robot.RobotState;
 import frc.robot.subsystems.Supersystem;
 
 /** TODO NOT AT ALL COMPLETE. */
@@ -21,10 +21,10 @@ public class IntakeSubstationShelf extends CommandBase {
     public static final int INTAKE_CONE_BUTTON = 0, INTAKE_CUBE_BUTTON = 0;
     private Stage stage;
 
-    private RobotState_old robotState;
+    private RobotState robotState;
     private Translation2d target;
 
-    public IntakeSubstationShelf(Supersystem supersystem, RobotState_old robotState, Joystick operatorJoystick) {
+    public IntakeSubstationShelf(Supersystem supersystem, RobotState robotState, Joystick operatorJoystick) {
         this.supersystem = supersystem;
         this.robotState = robotState;
         stage = Stage.TOO_FAR_AWAY;
@@ -33,13 +33,13 @@ public class IntakeSubstationShelf extends CommandBase {
 
     @Override
     public void initialize() {
-        target = RedField.nearestLocation(RedField.SUBSTATION_SHELVES, robotState.getPose().getTranslation());
+        target = RedField.nearestLocation(RedField.SUBSTATION_SHELVES, robotState.getOdometryPose().getTranslation());
         stage = Stage.TOO_FAR_AWAY;
     }
 
     @Override
     public void execute() {
-        Pose2d pose = robotState.getPose();
+        Pose2d pose = robotState.getOdometryPose();
         switch(stage){
             case TOO_FAR_AWAY:
                 target = RedField.nearestLocation(RedField.SUBSTATION_SHELVES, pose.getTranslation());
@@ -73,12 +73,12 @@ public class IntakeSubstationShelf extends CommandBase {
     }
 
     private void intakeToFieldRelativePoint(Translation2d point, double height){
-        Translation2d difference = point.minus(robotState.getPose().getTranslation());
+        Translation2d difference = point.minus(robotState.getOdometryPose().getTranslation());
         supersystem.setEndEffectorPosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
     private void placePositionToFieldRelativePoint(Translation2d point, double height){
-        Translation2d difference = point.minus(robotState.getPose().getTranslation());
+        Translation2d difference = point.minus(robotState.getOdometryPose().getTranslation());
         supersystem.setPlacePosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
