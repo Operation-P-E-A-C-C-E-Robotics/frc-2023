@@ -24,7 +24,7 @@ public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
-
+//TODO  low gear make the robot go backwards so like, do something about it
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
