@@ -39,7 +39,7 @@ public class RobotContainer {
   public RobotContainer() {
     driveTrain = new DriveTrain(this);
     odometry = new Odometry(this, driveTrain);
-    constrains = new Constraints(driveTrain, new Lift(), new Pivot(), new Turret(), new Wrist(), odometry);
+    constrains = new Constraints(driveTrain, new Arm(), new Pivot(), new Turret(), new Wrist(), odometry);
     teleoperatedDriverControl = new ArcadeDrive(driveTrain, driverJoystick);
 
     // Configure the button bindings

@@ -38,13 +38,13 @@ public class KinematicJoystick extends CommandBase {
 
     @Override
     public void execute() {
-        Rotation2d wrist;
+        Rotation2d endEffector;
         double x = xPositionHelper.get(joystick.getRawAxis(0));
         double y = xPositionHelper.get(joystick.getRawAxis(1));
         double z = xPositionHelper.get(joystick.getRawAxis(2));
-        if (x < 0)  wrist = Rotation2d.fromDegrees(-90);
-        else wrist = Rotation2d.fromDegrees(90);
-        supersystem.setSupersystemPosition(new Translation3d(x, y, z), wrist);
+        if (x < 0)  endEffector = Rotation2d.fromDegrees(-90);
+        else endEffector = Rotation2d.fromDegrees(90);
+        supersystem.setSupersystemPosition(new Translation3d(x, y, z), endEffector);
     }
 
     @Override

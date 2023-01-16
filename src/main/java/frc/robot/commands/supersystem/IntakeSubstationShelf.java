@@ -74,12 +74,12 @@ public class IntakeSubstationShelf extends CommandBase {
 
     private void intakeToFieldRelativePoint(Translation2d point, double height){
         Translation2d difference = point.minus(odometry.getPose().getTranslation());
-        supersystem.setWristEndPosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
+        supersystem.setEndEffectorPosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
     private void placePositionToFieldRelativePoint(Translation2d point, double height){
         Translation2d difference = point.minus(odometry.getPose().getTranslation());
-        supersystem.setWristPlacePosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
+        supersystem.setPlacePosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
     private enum Stage{

@@ -9,7 +9,7 @@ import static frc.robot.Constants.Kinematics.*;
 public class Kinematics {
     SupersystemState state;
     Translation3d liftPosition;
-    WristPosition wristPosition;
+    EndEffectorPosition endEffectorPosition;
 
     private final Supersystem supersystem;
 
@@ -26,7 +26,7 @@ public class Kinematics {
      */
     public void reset(){
         liftPosition = null;
-        wristPosition = null;
+        endEffectorPosition = null;
     }
 
     /**
@@ -55,15 +55,15 @@ public class Kinematics {
      * get the position of the wrist, both the end of the wrist,
      * and the point where gamepieces are centered for
      * placing.
-     * @return {@link WristPosition}
+     * @return {@link EndEffectorPosition}
      */
-    public WristPosition getWristPosition(){
-        if (wristPosition == null) wristPosition = wristInverseKinematics(
+    public EndEffectorPosition getEndEffectorPosition(){
+        if (endEffectorPosition == null) endEffectorPosition = wristInverseKinematics(
             getSupersystemPosition(),
             getSupersystemState().getTurretAngle(),
             getSupersystemState().getWristAngle()
         );
-        return wristPosition;
+        return endEffectorPosition;
     }
 
     /**
@@ -112,7 +112,7 @@ public class Kinematics {
     /**
      * Convert from x/y/z coordinates of the end of the wrist
      */
-    public static SupersystemState inverseKinematicsFromWristEnd(Translation3d pose, double wristAngle){
+    public static SupersystemState inverseKinematicsFromEndEffector(Translation3d pose, double wristAngle){
         double turret;
 
         if(pose.getX() == 0 && pose.getY() == 0){
@@ -128,7 +128,7 @@ public class Kinematics {
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
 
-    public static SupersystemState inverseKinematicsFromWristPlacePoint(Translation3d pose, double wristAngle){
+    public static SupersystemState inverseKinematicsFromPlacePoint(Translation3d pose, double wristAngle){
         double turret;
 
         if(pose.getX() == 0 && pose.getY() == 0){
@@ -158,7 +158,7 @@ public class Kinematics {
      */
     public static Translation3d kinematics(SupersystemState state){
         double x, y, z;
-        double arm = state.getLiftExtension(),
+        double arm = state.getArmExtension(),
                 pivot = state.getPivotAngle(),
                 turret = state.getTurretAngle();
 
@@ -181,19 +181,19 @@ public class Kinematics {
      * @param liftState the state of the lift
      * @return the position of the wrist with the lift in that state.
      */
-    public static WristPosition wristKinematics(SupersystemState liftState){
+    public static EndEffectorPosition wristKinematics(SupersystemState liftState){
         Translation3d liftPosition = kinematics(liftState);
 
         return wristInverseKinematics(liftPosition, liftState.getTurretAngle(), liftState.getWristAngle());
     }
-    public static WristPosition wristInverseKinematics(Translation3d liftPosition, double turretAngle, double wristAngle){
-        WristPosition offset = wristOffset(turretAngle, wristAngle);
-        return new WristPosition(
+    public static EndEffectorPosition wristInverseKinematics(Translation3d liftPosition, double turretAngle, double wristAngle){
+        EndEffectorPosition offset = wristOffset(turretAngle, wristAngle);
+        return new EndEffectorPosition(
             liftPosition.plus(offset.getEndPosition()),
             liftPosition.plus(offset.getMidPosition())
         );
     }
-    public static WristPosition wristOffset(double turretAngle, double wristAngle){
+    public static EndEffectorPosition wristOffset(double turretAngle, double wristAngle){
         double endX, endY, endZ;
         double midX, midY, midZ;
         double x, y, z;
@@ -209,7 +209,7 @@ public class Kinematics {
         midX = WRIST_MID_LENGTH * x;
         midY = WRIST_MID_LENGTH * y;
         midZ = WRIST_MID_LENGTH * z;
-        return new WristPosition(
+        return new EndEffectorPosition(
             new Translation3d(endX, endY, endZ),
             new Translation3d(midX, midY, midZ)
         );
@@ -222,9 +222,9 @@ public class Kinematics {
         System.out.println(Kinematics.inverseKinematics(testPose, 0));
     }
 
-    public static class WristPosition{
+    public static class EndEffectorPosition {
         private final Translation3d endPosition, midPosition;
-        public WristPosition(Translation3d endPosition, Translation3d midPosition){
+        public EndEffectorPosition(Translation3d endPosition, Translation3d midPosition){
             this.endPosition = endPosition;
             this.midPosition = midPosition;
         }
@@ -262,7 +262,7 @@ public class Kinematics {
         public double getPivotAngle(){
             return pivotAngle;
         }
-        public double getLiftExtension(){
+        public double getArmExtension(){
             return liftExtension;
         }
         public double getWristAngle(){
@@ -273,7 +273,7 @@ public class Kinematics {
             return new SupersystemState(
                     turretAngle + other.getTurretAngle(),
                     pivotAngle + other.getPivotAngle(),
-                    liftExtension + other.getLiftExtension(),
+                    liftExtension + other.getArmExtension(),
                     wristAngle + other.getWristAngle()
             );
         }
