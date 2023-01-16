@@ -66,13 +66,89 @@ public class Supersystem extends SubsystemBase {
     }
 
     public void setWristPlacePositionFieldRelative(Translation2d position, Pose2d robotPose, double height, Rotation2d wristAngle){
-        Translation2d difference = position.minus(robotPose.getTranslation());
+        var difference = position.minus(robotPose.getTranslation());
         difference = difference.rotateBy(robotPose.getRotation().unaryMinus()); //TODO positive or negative rotation?
         setWristPlacePosition(new Translation3d(difference.getX(), position.getY(), height), wristAngle);
     }
 
-    public void setX(double x){
-        Translation3d position = getKinematics().getSupersystemPosition();
-        setWristPlacePosition(new Translation3d(x, position.getY(), position.getZ()), new Rotation2d(getSupersystemState().getWristAngle()));
+    public Supersystem setX(double x){
+        var position = getKinematics().getSupersystemPosition(); //TODO these all need to get the wrist position
+        setWristPlacePosition(
+                new Translation3d(x, position.getY(), position.getZ()),
+                new Rotation2d(getSupersystemState().getWristAngle())
+        );
+        return this;
+    }
+
+    public Supersystem setY(double y){
+        var position = getKinematics().getSupersystemPosition();
+        setWristPlacePosition(
+                new Translation3d(position.getX(),y, position.getZ()),
+                new Rotation2d(getSupersystemState().getWristAngle())
+        );
+        return this;
+    }
+
+    public Supersystem setZ(double z){
+        var position = getKinematics().getSupersystemPosition();
+        setWristPlacePosition(
+                new Translation3d(position.getX(), position.getY(), z),
+                new Rotation2d(getSupersystemState().getWristAngle())
+        );
+        return this;
+    }
+
+    public Supersystem setTurret(Rotation2d position){
+        var state = getSupersystemState();
+        setSupersystemState(new SupersystemState(
+                position.getRadians(),
+                state.getPivotAngle(),
+                state.getLiftExtension(),
+                state.getWristAngle()
+        ));
+        return this;
+    }
+
+    public Supersystem setPivot(Rotation2d position){
+        var state = getSupersystemState();
+        setSupersystemState(new SupersystemState(
+                state.getTurretAngle(),
+                position.getRadians(),
+                state.getLiftExtension(),
+                state.getWristAngle()
+        ));
+        return this;
+    }
+
+    public Supersystem setLift(double extension){
+        var state = getSupersystemState();
+        setSupersystemState(new SupersystemState(
+                state.getTurretAngle(),
+                state.getPivotAngle(),
+                extension,
+                state.getWristAngle()
+        ));
+        return this;
+    }
+
+    public Supersystem setWrist(Rotation2d position){
+        var state = getSupersystemState();
+        setSupersystemState(new SupersystemState(
+                state.getTurretAngle(),
+                state.getPivotAngle(),
+                state.getLiftExtension(),
+                position.getRadians()
+        ));
+        return this;
+    }
+
+    public Supersystem changeStateBy(SupersystemState delta){
+        setSupersystemState(getSupersystemState().plus(delta));
+        return this;
+    }
+
+    public Supersystem changePositionBy(Translation3d delta){
+        setSupersystemPosition(getKinematics().getSupersystemPosition().plus(delta));
+        return this;
     }
 }

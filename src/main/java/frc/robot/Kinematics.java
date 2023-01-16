@@ -240,7 +240,7 @@ public class Kinematics {
     }
 
     public static class SupersystemState{
-        private final double armLength;
+        private final double liftExtension;
         private final double turretAngle, pivotAngle;
         private final double wristAngle;
 
@@ -248,12 +248,12 @@ public class Kinematics {
          * class to hold a target state of the gamepiece handler system
          * @param turretAngle angle of the turret - forward = 0 - counter-clockwise positive
          * @param pivotAngle angle of the pivot - up = 0 - positive tips forward
-         * @param armLength total distance from pivot to intake in meters
+         * @param liftExtension total distance from pivot to intake in meters
          */
-        public SupersystemState(double turretAngle, double pivotAngle, double armLength, double wristAngle){
+        public SupersystemState(double turretAngle, double pivotAngle, double liftExtension, double wristAngle){
             this.turretAngle = turretAngle;
             this.pivotAngle = pivotAngle;
-            this.armLength = armLength;
+            this.liftExtension = liftExtension;
             this.wristAngle = wristAngle;
         }
         public double getTurretAngle(){
@@ -263,13 +263,22 @@ public class Kinematics {
             return pivotAngle;
         }
         public double getLiftExtension(){
-            return armLength;
+            return liftExtension;
         }
         public double getWristAngle(){
             return wristAngle;
         }
+
+        public SupersystemState plus(SupersystemState other){
+            return new SupersystemState(
+                    turretAngle + other.getTurretAngle(),
+                    pivotAngle + other.getPivotAngle(),
+                    liftExtension + other.getLiftExtension(),
+                    wristAngle + other.getWristAngle()
+            );
+        }
         public String toString(){
-            return "turret: " + new Rotation2d(turretAngle).getDegrees() + " pivot: " + new Rotation2d(pivotAngle).getDegrees() + " arm: " + armLength;
+            return "turret: " + new Rotation2d(turretAngle).getDegrees() + " pivot: " + new Rotation2d(pivotAngle).getDegrees() + " arm: " + liftExtension;
         }
     }
 
