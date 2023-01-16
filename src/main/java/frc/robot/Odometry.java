@@ -14,14 +14,12 @@ import frc.robot.subsystems.DriveTrain;
 import static frc.robot.Constants.Auto.*;
 
 public class Odometry{
-    private DriveTrain driveTrain;
-    private Pigeon imu;
-    private DifferentialDriveKinematics kinematics;
-    private DifferentialDrivePoseEstimator estimator;
-    private RobotContainer robot;
+    private final DriveTrain driveTrain;
+    private final Pigeon imu;
+    private final DifferentialDriveKinematics kinematics;
+    private final DifferentialDrivePoseEstimator estimator;
 
     public Odometry(RobotContainer robot, DriveTrain driveTrain) {
-        this.robot = robot;
         this.driveTrain = driveTrain;
         imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
         kinematics = new DifferentialDriveKinematics(TRACK_WIDTH);

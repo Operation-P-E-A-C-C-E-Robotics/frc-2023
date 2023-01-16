@@ -8,7 +8,7 @@ public class SimpleMovingAverage {
 
 	// queue used to store list so that we get the average
 	private final Queue<Double> Dataset
-		= new LinkedList<Double>();
+		= new LinkedList<>();
 	private final int period;
 	private double sum;
 

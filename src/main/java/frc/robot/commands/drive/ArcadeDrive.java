@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
 public class ArcadeDrive extends CommandBase {
-  private DriveTrain driveTrain;
-  private Joystick driverJoystick;
+  private final DriveTrain driveTrain;
+  private final Joystick driverJoystick;
   /** Creates a new TeleoperatedDriverControl. */
   public ArcadeDrive(DriveTrain driveTrain, Joystick driverJoystick) {
     // Use addRequirements() here to declare subsystem dependencies.

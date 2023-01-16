@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -22,7 +20,6 @@ public class Turret extends SubsystemBase {
 
   /**
    * set the turret speed, Positive Values should be Counter Clock Wise
-   * @param speed
    */
   public void setTurretPercent(double speed) {
   }
@@ -30,7 +27,7 @@ public class Turret extends SubsystemBase {
   /**
    * set the angle of the turret with a {@link Rotation2d}
    * 0 is the front of the robot, positive values
-   * turn the turret counter clockwise
+   * turn the turret counterclockwise
    * @param angle {@link Rotation2d}
    */
   public void setAngle(Rotation2d angle){

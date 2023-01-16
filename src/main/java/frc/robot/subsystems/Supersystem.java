@@ -9,11 +9,11 @@ import frc.robot.Kinematics.Position;
 import frc.robot.Kinematics.SupersystemState;
 
 public class Supersystem extends SubsystemBase {
-    private Lift lift;
-    private Pivot pivot;
-    private Turret turret;
-    private Wrist wrist;
-    private Kinematics kinematics;
+    private final Lift lift;
+    private final Pivot pivot;
+    private final Turret turret;
+    private final Wrist wrist;
+    private final Kinematics kinematics;
 
     public Supersystem(Lift lift, Pivot pivot, Turret turret, Wrist wrist){
         this.lift = lift;

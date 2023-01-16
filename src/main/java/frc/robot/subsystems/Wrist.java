@@ -26,7 +26,6 @@ public class Wrist extends SubsystemBase{
 
     /**
      * get the angle of the wrist
-     * @return
      */
     public Rotation2d getAngle(){
         return null; //todo

@@ -50,9 +50,6 @@ public class Pigeon {
         return pg.getRoll();
     }
 
-    // public boolean wasBumped(){
-    //     return bumped;
-    // }
     /**
      * get the fused accelerometer and magnetometer heading from the pigeon
      * @return the heading in degrees

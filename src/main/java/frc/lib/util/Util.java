@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Util {
 
-    public static final double kEpsilon = 1e-12;
+    public static final double EPSILON = 1e-12;
 
     /**
      * Prevent this class from being instantiated.
@@ -48,7 +48,7 @@ public class Util {
     }
 
     public static boolean epsilonEquals(double a, double b) {
-        return epsilonEquals(a, b, kEpsilon);
+        return epsilonEquals(a, b, EPSILON);
     }
 
     public static boolean epsilonEquals(int a, int b, int epsilon) {
@@ -91,9 +91,6 @@ public class Util {
 
     /**
      * shift an element into the left side of a double array, moving all elements one step
-     * @param ar
-     * @param newv
-     * @return
      */
     public static double[] shiftLeft(double[] ar, double newv){
         int i = 0;

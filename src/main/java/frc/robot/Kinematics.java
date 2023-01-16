@@ -11,11 +11,10 @@ public class Kinematics {
     Position liftPosition;
     WristPosition wristPosition;
 
-    private Supersystem supersystem;
+    private final Supersystem supersystem;
 
     /**
      * handles kinematics of the supersystem
-     * @param supersystem
      */
     public Kinematics(Supersystem supersystem){
         this.supersystem = supersystem;
@@ -46,7 +45,6 @@ public class Kinematics {
      * x - toward the front of the robot
      * y - toward the left of the robot
      * z - up
-     * @return
      */
     public Position getSupersystemPosition(){
         if (liftPosition == null) liftPosition = kinematics(getSupersystemState());
@@ -55,7 +53,7 @@ public class Kinematics {
 
     /**
      * get the position of the wrist, both the end of the wrist,
-     * as well as the point where gamepieces are centered for
+     * and the point where gamepieces are centered for
      * placing.
      * @return {@link WristPosition}
      */
@@ -117,8 +115,6 @@ public class Kinematics {
     public static SupersystemState inverseKinematicsFromWristEnd(Position pose, double wristAngle){
         double turret;
 
-        turret = Math.atan(pose.getY()/pose.getX());
-
         if(pose.getX() == 0 && pose.getY() == 0){
             turret = 0;
         } else {
@@ -134,8 +130,6 @@ public class Kinematics {
 
     public static SupersystemState inverseKinematicsFromWristPlacePoint(Position pose, double wristAngle){
         double turret;
-
-        turret = Math.atan(pose.getY()/pose.getX());
 
         if(pose.getX() == 0 && pose.getY() == 0){
             turret = 0;
@@ -222,22 +216,14 @@ public class Kinematics {
     }
 
     //testing
-    public static void main(String args[]){
-        Position testPose = new Position(1, 0, 0);
+    public static void main(String[] args){
+        Position testPose = new Position(-1, 1, 1);
         System.out.println(testPose);
         System.out.println(Kinematics.inverseKinematics(testPose, 0));
-        System.out.println(Kinematics.wristKinematics(Kinematics.inverseKinematics(testPose, Rotation2d.fromDegrees(-90).getRadians())));
-        System.out.println(Kinematics.inverseKinematicsFromWristEnd(
-            Kinematics.wristKinematics(
-                Kinematics.inverseKinematics(
-                    testPose, Rotation2d.fromDegrees(0).getRadians()
-                )
-            ).getEndPosition(), Rotation2d.fromDegrees(0).getRadians()
-        ));
     }
 
     public static class WristPosition{
-        private Position endPosition, midPosition;
+        private final Position endPosition, midPosition;
         public WristPosition(Position endPosition, Position midPosition){
             this.endPosition = endPosition;
             this.midPosition = midPosition;
@@ -254,9 +240,9 @@ public class Kinematics {
     }
 
     public static class SupersystemState{
-        private double armLength;
-        private double turretAngle, pivotAngle;
-        private double wristAngle;
+        private final double armLength;
+        private final double turretAngle, pivotAngle;
+        private final double wristAngle;
 
         /**
          * class to hold a target state of the gamepiece handler system
@@ -288,7 +274,7 @@ public class Kinematics {
     }
 
     public static class Position{
-        private double x, y, z;
+        private final double x,y,z;
         /**
          * A class to hold the position of the lift, relative to the robot
          * @param x positive towards the front of the robot

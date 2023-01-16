@@ -4,36 +4,31 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.DriveTrain.*;
-import static frc.robot.Constants.Auto.*;
-
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
 import frc.robot.RobotContainer;
+import frc.robot.commands.auto.paths.PathFollower;
+
+import static frc.robot.Constants.Auto.*;
+import static frc.robot.Constants.DriveTrain.*;
 
 public class DriveTrain extends SubsystemBase {
-  private WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
-  private WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
-  private WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
-  private WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
+  private final WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
+  private final WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private Constraints constraints;
-  private RobotContainer robot;
+  private final RobotContainer robot;
 
-  private SimpleMotorFeedforward feedforward;
-  private PIDController leftController, rightController;
+  private final SimpleMotorFeedforward feedforward;
+  private final PIDController leftController, rightController;
 
 
 
@@ -41,7 +36,9 @@ public class DriveTrain extends SubsystemBase {
   public DriveTrain(RobotContainer robot) {
     this.robot = robot;
     setNeutralMode(NeutralMode.Brake);
+    WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
     leftSlave.follow(leftMaster);
+    WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
     rightSlave.follow(rightMaster);
     leftMaster.setInverted(true);
     rightMaster.setInverted(false);
@@ -69,7 +66,7 @@ public class DriveTrain extends SubsystemBase {
     rightMaster.setNeutralMode(mode);
   }
   /**
-   * input 2 doubles to drive the drivetrain motors seperatly
+   * input 2 doubles to drive the drivetrain motors separately
    * @param leftSpeed the speed to set the left motors to (Double)
    * @param rightSpeed the speed to set the right motors to (Double)
    */
@@ -97,9 +94,9 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * drive the robot in Arcade mode using the built in WPILib differential drive class
-   * @param xForward joystick forward backward axis
-   * @param zRotate joystick left right axis
+   * drive the robot in Arcade mode using the built-in WPILib differential drive class
+   * @param forward joystick forward backward axis
+   * @param wheel joystick left right axis
    *
    */
   public void arcadeDrive(double forward, double wheel) {
@@ -128,12 +125,38 @@ public class DriveTrain extends SubsystemBase {
       (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
     );
 
-    left = leftFeedforward + leftController.calculate(getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond);
-    right = rightFeedforward + rightController.calculate(getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond);
+    left = leftFeedforward + leftController.calculate(
+            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
+    );
+    right = rightFeedforward + rightController.calculate(
+            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
+    );
 
     tankDriveVolts(left, right);
   }
 
+  public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){
+    double leftFeedforward, rightFeedforward, left, right;
+
+    leftFeedforward = feedforward.calculate(
+            speeds.leftMetersPerSecond,
+            (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
+    ) + (kA * Math.sin(tilt));
+
+    rightFeedforward = feedforward.calculate(
+            speeds.rightMetersPerSecond,
+            (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
+    ) + (kA * Math.sin(tilt));
+
+    left = leftFeedforward + leftController.calculate(
+            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
+    );
+    right = rightFeedforward + rightController.calculate(
+            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
+    );
+
+    tankDriveVolts(left, right);
+  }
 
   //WPILib built in odometry methods from docs
 

@@ -40,7 +40,7 @@ public class Sequencer {
         }
         return result;
     }
-    public static void main(String args[]){
+    public static void main(String[] args){
         double[] test = {0,1,2};
         double[] res = Sequencer.predict(Sequencer.compute(test), 5);
         for (double i : res) System.out.println(i);

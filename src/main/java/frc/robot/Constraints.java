@@ -9,12 +9,18 @@ import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.Wrist;
 
 public class Constraints {
-    private Lift lift;
-    private Pivot pivot;
-    private Turret turret;
-    private Wrist wrist;
-    private DriveTrain driveTrain;
-    private Odometry odometry;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Lift lift;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Pivot pivot;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Turret turret;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Wrist wrist;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final DriveTrain driveTrain;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final Odometry odometry;
 
     private static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
                                DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 0, //todo
@@ -30,23 +36,20 @@ public class Constraints {
     }
 
     SlewRateLimiter normalDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_NORMAL);
-    SlewRateLimiter liftExtendedDrieLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
+    SlewRateLimiter liftExtendedDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
 
     /**
      * constrain the joystick rate of change when driving to
      * help avoid tipping, especially when the arm is extended.
-     * @param fwd the joystick's forward postion
+     * @param fwd the joystick's forward position
      * @return the corrected joystick forward position
      */
     public double constrainJoystickFwdJerk(double fwd){
         double normal = normalDriveLimiter.calculate(fwd);
-        double extended = liftExtendedDrieLimiter.calculate(fwd);
+        double extended = liftExtendedDriveLimiter.calculate(fwd);
         return GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER() > LIFT_EXTENDED_THRESHOLD ? extended : normal;
     }
     private double GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER(){
         return 0; //TODO
-    }
-    public void constrainHandlerState(Position currentPose, Position targetPose){
-
     }
 }

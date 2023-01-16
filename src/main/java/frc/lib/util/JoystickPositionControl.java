@@ -1,13 +1,13 @@
 package frc.lib.util;
 
 public class JoystickPositionControl {
-    private double sensitivity;
-    private double deadband;
+    private final double sensitivity;
+    private final double deadband;
     private double val = 0;
 
     /**
      * sipmle class to speed up linking a joystick to the
-     * position of a robot component by integrating it's value
+     * position of a robot component by integrating its value
      * @param sensitivity joystick sensitivity, in units/20ms
      * @param deadband joystick deadband
      */

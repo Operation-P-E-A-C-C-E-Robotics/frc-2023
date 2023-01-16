@@ -135,7 +135,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
    @exception  IllegalArgumentException Array length must be a multiple of m.
    */
 
-   public Matrix (double vals[], int m) {
+   public Matrix (double[] vals, int m) {
       this.m = m;
       n = (m != 0 ? vals.length/m : 0);
       if (m*n != vals.length) {
@@ -1004,7 +1004,7 @@ public class Matrix implements Cloneable, java.io.Serializable {
       } while (tokenizer.nextToken() == StreamTokenizer.TT_WORD);
 
       int n = vD.size();  // Now we've got the number of columns!
-      double row[] = new double[n];
+      double[] row = new double[n];
       for (int j=0; j<n; j++)  // extract the elements of the 1st row.
          row[j]=vD.elementAt(j).doubleValue();
       java.util.Vector<double[]> v = new java.util.Vector<double[]>();

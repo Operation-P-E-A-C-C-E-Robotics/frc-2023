@@ -46,9 +46,7 @@ public class Limelight {
    */
   public double getTargetDistanceFromHeight(){
     double targetOffsetY = getTargetOffsetY();
-    double distance = 0;
-    distance = (tHeight - cHeight) / Math.tan(Math.toRadians(cAngle) + Math.toRadians(targetOffsetY));
-    return distance;
+    return  (tHeight - cHeight) / Math.tan(Math.toRadians(cAngle) + Math.toRadians(targetOffsetY));
   }
 
   public void update(){
@@ -97,14 +95,14 @@ public class Limelight {
   }
   /**
    * get the width of the rough bounding box
-   * @return the width in pixels from 0 - 320
+   * @return the width in pixels from 0 to 320
    */
   public double getRoughWidth(){ //0-320 pixels
     return limelightTableValue("thor");
   }
   /**
    * get the height of the rough bounding box
-   * @return the height in pixels from 0 - 320
+   * @return the height in pixels from 0 to 320
    */
   public double getRoughHeight(){ //0 - 320 pixels
     return limelightTableValue("tvert");

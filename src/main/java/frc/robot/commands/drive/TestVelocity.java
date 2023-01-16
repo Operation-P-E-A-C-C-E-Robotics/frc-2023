@@ -13,11 +13,11 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
 public class TestVelocity extends CommandBase {
-  private DriveTrain driveTrain;
-  private Joystick driverJoystick;
+  private final DriveTrain driveTrain;
+  private final Joystick driverJoystick;
   double prevTime;
   DifferentialDriveWheelSpeeds prevSpeeds;
-private DifferentialDriveKinematics kinematics;
+private final DifferentialDriveKinematics kinematics;
   /** Creates a new TeleoperatedDriverControl. */
   public TestVelocity(DriveTrain driveTrain, Joystick driverJoystick, DifferentialDriveKinematics kinematics) {
     // Use addRequirements() here to declare subsystem dependencies.

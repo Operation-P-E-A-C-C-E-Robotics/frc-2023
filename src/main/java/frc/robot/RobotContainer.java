@@ -9,13 +9,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.commands.*;
 import frc.robot.commands.auto.Autos;
-import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.NotifierCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -26,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.NotifierCommand;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //subsystems
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   public final DriveTrain driveTrain;
   public final Odometry odometry;
   //private final Paths paths = new Paths(odometry, driveTrain);
@@ -71,6 +68,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return Autos.exampleAuto(exampleSubsystem);
   }
 }

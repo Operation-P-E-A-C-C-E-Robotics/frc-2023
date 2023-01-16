@@ -1,25 +1,24 @@
-package frc.robot.commands.auto.paths;
+package frc.robot.commands.drive;
 
 import edu.wpi.first.math.controller.LTVUnicycleController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Odometry;
 import frc.robot.subsystems.DriveTrain;
 
 //TODO experimental
-public class PathFollower extends CommandBase{
+public class HoldDrivetrain extends CommandBase{
 
     LTVUnicycleController controller = new LTVUnicycleController(0.02);
     private final DriveTrain driveTrain;
-    private final Trajectory trajectory;
-    private final Timer timer;
     private DifferentialDriveWheelSpeeds prevSpeeds;
-
-    private double prevTime;
     private final Odometry odometry;
+    private Pose2d target;
 
     /**
      * experimental path follower, to
@@ -31,57 +30,34 @@ public class PathFollower extends CommandBase{
      * @param trajectory trajectory to follow
      * @param odometry robot odometry.
      */
-    public PathFollower(DriveTrain driveTrain, Trajectory trajectory, Odometry odometry){
+    public HoldDrivetrain(DriveTrain driveTrain, Trajectory trajectory, Odometry odometry){
         this.driveTrain = driveTrain;
-        this.trajectory = trajectory;
         this.odometry = odometry;
-        timer = new Timer();
         addRequirements(driveTrain);
     }
 
     @Override
     public void initialize() {
-        var initialState = trajectory.sample(0);
-
         //get initial wheel speeds (to find initial acceleration)
-        prevSpeeds = odometry.getKinematics().toWheelSpeeds(new ChassisSpeeds(
-        initialState.velocityMetersPerSecond,
-        0,
-            initialState.curvatureRadPerMeter * initialState.velocityMetersPerSecond
-        ));
+        prevSpeeds = new DifferentialDriveWheelSpeeds(0,0);
 
+        this.target = odometry.getPose();
         //reset pid controllers
         driveTrain.resetVelocityDrive();
-
-        //reset timer
-        prevTime = -1;
-        timer.reset();
-        timer.start();
     }
 
     @Override
     public void execute() {
-        var time = timer.get();
-        var dt = time - prevTime; //time discretization step, whatevertf that means
-
-        //account for time between init and execute.
-        if (prevTime < 0){
-            driveTrain.tankDriveVolts(0, 0);
-            prevTime = time;
-            return;
-        }
-
         //get chassis speeds from controller
-        var chassis = controller.calculate(odometry.getPose(), trajectory.sample(time));
+        var chassis = controller.calculate(odometry.getPose(), new State(0,0,0,target,0));
 
         //get wheel speeds
         var speeds = odometry.getKinematics().toWheelSpeeds(chassis);
 
         //drive
-        driveTrain.velocityDrive(speeds, prevSpeeds, dt);
+        driveTrain.velocityDrive(speeds, prevSpeeds, 0.02);
 
         prevSpeeds = speeds;
-        prevTime = time;
     }
 
 

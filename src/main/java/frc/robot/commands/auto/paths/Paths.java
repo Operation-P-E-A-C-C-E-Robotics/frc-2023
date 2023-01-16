@@ -1,7 +1,5 @@
 package frc.robot.commands.auto.paths;
 
-import edu.wpi.first.math.controller.LTVDifferentialDriveController;
-import edu.wpi.first.math.controller.LTVUnicycleController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -13,13 +11,13 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import frc.robot.Odometry;
 import frc.robot.subsystems.DriveTrain;
-import static frc.robot.Constants.Auto.*;
 
 import java.util.List;
+
+import static frc.robot.Constants.Auto.*;
 /**
 * will hold all paths the robot will follow
 */

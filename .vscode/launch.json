@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch ChargeStation",
+      "request": "launch",
+      "mainClass": "frc.lib.field.ChargeStation",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
       "name": "Launch Kinematics",
       "request": "launch",
       "mainClass": "frc.robot.Kinematics",

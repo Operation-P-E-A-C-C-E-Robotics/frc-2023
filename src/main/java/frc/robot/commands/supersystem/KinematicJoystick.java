@@ -13,9 +13,11 @@ import frc.robot.subsystems.Supersystem;
 
 /** An example command that uses an example subsystem. */
 public class KinematicJoystick extends CommandBase {
-    private Supersystem supersystem;
-    private Joystick joystick;
-    private JoystickPositionControl xPositionHelper, yPositionHelper, zPositionHelper;
+    private final Supersystem supersystem;
+    private final Joystick joystick;
+    private final JoystickPositionControl xPositionHelper,
+                                          yPositionHelper,
+                                          zPositionHelper;
 
     public KinematicJoystick(Supersystem supersystem, Joystick operatorJoystick) {
         this.supersystem = supersystem;

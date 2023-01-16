@@ -47,12 +47,12 @@ public class CubicSplineInterpolate{
 		return interpolatedSample;
 	}
 	/**
-		Method for cubic spline interpolation. Cannot remember which sources I used for the maths, but likely likely something like  http://en.wikipedia.org/wiki/Spline_interpolation and http://mathworld.wolfram.com/CubicSpline.html
-		@param samplingInstants, a 1D array of sampling instants
-		@param sampledValues, a 1D array of sampled values corresponding to the sampling instants
-		@param interpolationInstants, a 1D array of time instants to interpolate the sample at. Must be entirely within the samplingInstants.
-		@return interpolatedSamples, the samples interpolated at interpolationInstants
-	*/
+	 Method for cubic spline interpolation. Cannot remember which sources I used for the maths, but likely something like  <a href="http://en.wikipedia.org/wiki/Spline_interpolation">...</a> and <a href="http://mathworld.wolfram.com/CubicSpline.html">...</a>
+	 @param samplingInstants, a 1D array of sampling instants
+	 @param sampledValues, a 1D array of sampled values corresponding to the sampling instants
+	 @param interpolationInstants, a 1D array of time instants to interpolate the sample at. Must be entirely within the samplingInstants.
+	 @return interpolatedSamples, the samples interpolated at interpolationInstants
+	 */
 	public static double[] cubicSplineInterpolate(double[] samplingInstants,double[] sampledValues,  double[] interpolationInstants){
 		double[][] a = new double[sampledValues.length][sampledValues.length];
 		double[] b = new double[sampledValues.length];
@@ -105,9 +105,5 @@ public class CubicSplineInterpolate{
 			}
 		}
 		double[] interpolatedValues = cubicSplineInterpolate(samplingInstants,sampledValues,interpolatedSamplingInstants);
-		/*Print out the result*/
-		for (int i = 0; i< interpolatedValues.length;++i){
-			//System.out.println("si\t"+String.format("%.3f",samplingInstants[i])+"\tKnown\t"+String.format("%.2f",sampledValues[i])+"\tsi\t"+String.format("%.3f",interpolatedSamplingInstants[i])+"\tKnown\t"+String.format("%.2f",knownValues[i])+"\tinterp\t"+String.format("%.2f",interpolatedValues[i]));
-		}
 	}
 }

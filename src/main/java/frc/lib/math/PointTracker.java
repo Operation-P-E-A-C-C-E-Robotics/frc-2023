@@ -25,12 +25,6 @@ public class PointTracker {
         }
     }
 
-    // public PointTracker(double x, double y){
-    //     this.x = x;
-    //     this.y = y;
-    //     computePolar();
-    // }
-
     public double p(){
         return p[p.length - 1];
     }
@@ -92,7 +86,7 @@ public class PointTracker {
                 "\n\thistory - x:" + Arrays.toString(x) + " y:" + Arrays.toString(y);
     }
 
-    public static void main(String args[]){
+    public static void main(String[] args){
         PointTracker test = new PointTracker(3);
         test.xy(0,0);
         test.xy(1,1);

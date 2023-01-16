@@ -13,13 +13,13 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public final class Kinematics {
+    public static final class Kinematics {
         public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
 
     }
 
 
-    public final class DriveTrain {
+    public static final class DriveTrain {
         public static final int LEFT_MASTER  = 0,
                                 LEFT_SLAVE   = 1,
                                 RIGHT_MASTER = 2,
@@ -28,16 +28,17 @@ public final class Constants {
 
     }
 
-    public final class OperatorInterface {
+    public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0;
     }
 
-    public final class Wrist{
+    public static final class Wrist{
         public static final double LENGTH = 0.1,
                                   LENGTH_TO_PLACE = 0;
     }
 
-    public final class Auto {
+    @SuppressWarnings("HungarianNotationConstants")
+    public static final class Auto {
         public static final int PIGEON_IMU  = 20;
         public static final double TRACK_WIDTH = 0.6; //TODO Configure
 
