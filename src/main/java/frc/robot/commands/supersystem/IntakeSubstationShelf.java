@@ -7,11 +7,11 @@ package frc.robot.commands.supersystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.field.RedField;
 import frc.robot.Odometry;
-import frc.robot.Kinematics.Position;
 import frc.robot.subsystems.Supersystem;
 
 /** TODO NOT AT ALL COMPLETE. */
@@ -74,12 +74,12 @@ public class IntakeSubstationShelf extends CommandBase {
 
     private void intakeToFieldRelativePoint(Translation2d point, double height){
         Translation2d difference = point.minus(odometry.getPose().getTranslation());
-        supersystem.setWristEndPosition(new Position(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
+        supersystem.setWristEndPosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
     private void placePositionToFieldRelativePoint(Translation2d point, double height){
         Translation2d difference = point.minus(odometry.getPose().getTranslation());
-        supersystem.setWristPlacePosition(new Position(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
+        supersystem.setWristPlacePosition(new Translation3d(difference.getX(), difference.getY(), height), Rotation2d.fromDegrees(90));
     }
 
     private enum Stage{

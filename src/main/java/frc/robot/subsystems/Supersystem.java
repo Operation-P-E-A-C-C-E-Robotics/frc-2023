@@ -3,9 +3,9 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Kinematics;
-import frc.robot.Kinematics.Position;
 import frc.robot.Kinematics.SupersystemState;
 
 public class Supersystem extends SubsystemBase {
@@ -49,25 +49,30 @@ public class Supersystem extends SubsystemBase {
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
     }
 
-    public void setSupersystemPosition(Position position){
+    public void setSupersystemPosition(Translation3d position){
         setSupersystemState(Kinematics.inverseKinematics(position, wrist.getAngle().getRadians()));
     }
 
-    public void setSupersystemPosition(Position position, Rotation2d wristAngle){
+    public void setSupersystemPosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematics(position, wristAngle.getRadians()));
     }
 
-    public void setWristEndPosition(Position position, Rotation2d wristAngle){
+    public void setWristEndPosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematicsFromWristEnd(position, wristAngle.getRadians()));
     }
 
-    public void setWristPlacePosition(Position position, Rotation2d wristAngle){
+    public void setWristPlacePosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematicsFromWristPlacePoint(position, wristAngle.getRadians()));
     }
 
     public void setWristPlacePositionFieldRelative(Translation2d position, Pose2d robotPose, double height, Rotation2d wristAngle){
         Translation2d difference = position.minus(robotPose.getTranslation());
         difference = difference.rotateBy(robotPose.getRotation().unaryMinus()); //TODO positive or negative rotation?
-        setWristPlacePosition(new Position(difference.getX(), position.getY(), height), wristAngle);
+        setWristPlacePosition(new Translation3d(difference.getX(), position.getY(), height), wristAngle);
+    }
+
+    public void setX(double x){
+        Translation3d position = getKinematics().getSupersystemPosition();
+        setWristPlacePosition(new Translation3d(x, position.getY(), position.getZ()), new Rotation2d(getSupersystemState().getWristAngle()));
     }
 }

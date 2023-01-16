@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.Kinematics.Position;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Lift;
 import frc.robot.subsystems.Pivot;

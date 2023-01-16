@@ -1,14 +1,14 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.Supersystem;
 
 import static frc.robot.Constants.Kinematics.*;
 
 public class Kinematics {
     SupersystemState state;
-    Position liftPosition;
+    Translation3d liftPosition;
     WristPosition wristPosition;
 
     private final Supersystem supersystem;
@@ -46,7 +46,7 @@ public class Kinematics {
      * y - toward the left of the robot
      * z - up
      */
-    public Position getSupersystemPosition(){
+    public Translation3d getSupersystemPosition(){
         if (liftPosition == null) liftPosition = kinematics(getSupersystemState());
         return liftPosition;
     }
@@ -79,7 +79,7 @@ public class Kinematics {
      * @param pose the target pose
      * @return the LiftState to reach the target pose.
      */
-    public static SupersystemState inverseKinematics(Position pose, double wristAngle){
+    public static SupersystemState inverseKinematics(Translation3d pose, double wristAngle){
         double extension, turret, pivot,
             z = pose.getZ() - PIVOT_HEIGHT; //account for height of pivot
 
@@ -112,7 +112,7 @@ public class Kinematics {
     /**
      * Convert from x/y/z coordinates of the end of the wrist
      */
-    public static SupersystemState inverseKinematicsFromWristEnd(Position pose, double wristAngle){
+    public static SupersystemState inverseKinematicsFromWristEnd(Translation3d pose, double wristAngle){
         double turret;
 
         if(pose.getX() == 0 && pose.getY() == 0){
@@ -122,13 +122,13 @@ public class Kinematics {
             turret = Math.atan(pose.getY()/pose.getX());
         }
 
-        Position wristOffset = wristOffset(turret, wristAngle).getEndPosition();
-        Position poseWithoutWrist = pose.subtract(wristOffset);
+        Translation3d wristOffset = wristOffset(turret, wristAngle).getEndPosition();
+        Translation3d poseWithoutWrist = pose.minus(wristOffset);
 
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
 
-    public static SupersystemState inverseKinematicsFromWristPlacePoint(Position pose, double wristAngle){
+    public static SupersystemState inverseKinematicsFromWristPlacePoint(Translation3d pose, double wristAngle){
         double turret;
 
         if(pose.getX() == 0 && pose.getY() == 0){
@@ -138,8 +138,8 @@ public class Kinematics {
             turret = Math.atan(pose.getY()/pose.getX());
         }
 
-        Position wristOffset = wristOffset(turret, wristAngle).getMidPosition();
-        Position poseWithoutWrist = pose.subtract(wristOffset);
+        Translation3d wristOffset = wristOffset(turret, wristAngle).getMidPosition();
+        Translation3d poseWithoutWrist = pose.minus(wristOffset);
 
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
@@ -156,7 +156,7 @@ public class Kinematics {
      * @param state A state of the manipulator
      * @return the position of the intake when the manipulator is in that state
      */
-    public static Position kinematics(SupersystemState state){
+    public static Translation3d kinematics(SupersystemState state){
         double x, y, z;
         double arm = state.getLiftExtension(),
                 pivot = state.getPivotAngle(),
@@ -171,7 +171,7 @@ public class Kinematics {
             z = arm * Math.cos(pivot) + PIVOT_HEIGHT;
         }
 
-        return new Position(x, y, z);
+        return new Translation3d(x, y, z);
     }
 
     public static final double WRIST_LENGTH = 0.2,
@@ -182,15 +182,15 @@ public class Kinematics {
      * @return the position of the wrist with the lift in that state.
      */
     public static WristPosition wristKinematics(SupersystemState liftState){
-        Position liftPosition = kinematics(liftState);
+        Translation3d liftPosition = kinematics(liftState);
 
         return wristInverseKinematics(liftPosition, liftState.getTurretAngle(), liftState.getWristAngle());
     }
-    public static WristPosition wristInverseKinematics(Position liftPosition, double turretAngle, double wristAngle){
+    public static WristPosition wristInverseKinematics(Translation3d liftPosition, double turretAngle, double wristAngle){
         WristPosition offset = wristOffset(turretAngle, wristAngle);
         return new WristPosition(
-            liftPosition.add(offset.getEndPosition()),
-            liftPosition.add(offset.getMidPosition())
+            liftPosition.plus(offset.getEndPosition()),
+            liftPosition.plus(offset.getMidPosition())
         );
     }
     public static WristPosition wristOffset(double turretAngle, double wristAngle){
@@ -210,28 +210,28 @@ public class Kinematics {
         midY = WRIST_MID_LENGTH * y;
         midZ = WRIST_MID_LENGTH * z;
         return new WristPosition(
-            new Position(endX, endY, endZ),
-            new Position(midX, midY, midZ)
+            new Translation3d(endX, endY, endZ),
+            new Translation3d(midX, midY, midZ)
         );
     }
 
     //testing
     public static void main(String[] args){
-        Position testPose = new Position(-1, 1, 1);
+        Translation3d testPose = new Translation3d(-1, 1, 1);
         System.out.println(testPose);
         System.out.println(Kinematics.inverseKinematics(testPose, 0));
     }
 
     public static class WristPosition{
-        private final Position endPosition, midPosition;
-        public WristPosition(Position endPosition, Position midPosition){
+        private final Translation3d endPosition, midPosition;
+        public WristPosition(Translation3d endPosition, Translation3d midPosition){
             this.endPosition = endPosition;
             this.midPosition = midPosition;
         }
-        public Position getEndPosition(){
+        public Translation3d getEndPosition(){
             return endPosition;
         }
-        public Position getMidPosition(){
+        public Translation3d getMidPosition(){
             return midPosition;
         }
         public String toString(){
@@ -273,42 +273,42 @@ public class Kinematics {
         }
     }
 
-    public static class Position{
-        private final double x,y,z;
-        /**
-         * A class to hold the position of the lift, relative to the robot
-         * @param x positive towards the front of the robot
-         * @param y positive to the left of the robot
-         * @param z positive up
-         */
-        public Position(double x, double y, double z){
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        public double getX(){
-            return x;
-        }
-        public double getY(){
-            return y;
-        }
-        public double getZ(){
-            return z;
-        }
-        public static Position fromTranslation(Translation2d translation, double height){
-            return new Position(translation.getX(), translation.getY(), height);
-        }
-        public String toString(){
-            return "x: " + x + " y: " + y + " z: " + z;
-        }
-        public Position add(double x, double y, double z){
-            return new Position(this.x + x, this.y + y, this.z + z);
-        }
-        public Position add(Position other){
-            return new Position(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
-        }
-        public Position subtract(Position other){
-            return new Position(this.x - other.getX(), this.y - other.getY(), this.z - other.getZ());
-        }
-    }
+//    public static class Position{
+//        private final double x,y,z;
+//        /**
+//         * A class to hold the position of the lift, relative to the robot
+//         * @param x positive towards the front of the robot
+//         * @param y positive to the left of the robot
+//         * @param z positive up
+//         */
+//        public Position(double x, double y, double z){
+//            this.x = x;
+//            this.y = y;
+//            this.z = z;
+//        }
+//        public double getX(){
+//            return x;
+//        }
+//        public double getY(){
+//            return y;
+//        }
+//        public double getZ(){
+//            return z;
+//        }
+//        public static Position fromTranslation(Translation2d translation, double height){
+//            return new Position(translation.getX(), translation.getY(), height);
+//        }
+//        public String toString(){
+//            return "x: " + x + " y: " + y + " z: " + z;
+//        }
+//        public Position add(double x, double y, double z){
+//            return new Position(this.x + x, this.y + y, this.z + z);
+//        }
+//        public Position add(Position other){
+//            return new Position(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
+//        }
+//        public Translation3d subtract(Position other){
+//            return new Position(this.x - other.getX(), this.y - other.getY(), this.z - other.getZ());
+//        }
+//    }
 }

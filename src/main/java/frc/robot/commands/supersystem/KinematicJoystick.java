@@ -5,10 +5,10 @@
 package frc.robot.commands.supersystem;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.util.JoystickPositionControl;
-import frc.robot.Kinematics.Position;
 import frc.robot.subsystems.Supersystem;
 
 /** An example command that uses an example subsystem. */
@@ -30,7 +30,7 @@ public class KinematicJoystick extends CommandBase {
 
     @Override
     public void initialize() {
-        Position currentPosition = supersystem.getKinematics().getSupersystemPosition();
+        Translation3d currentPosition = supersystem.getKinematics().getSupersystemPosition();
         xPositionHelper.reset(currentPosition.getX());
         yPositionHelper.reset(currentPosition.getY());
         zPositionHelper.reset(currentPosition.getZ());
@@ -44,7 +44,7 @@ public class KinematicJoystick extends CommandBase {
         double z = xPositionHelper.get(joystick.getRawAxis(2));
         if (x < 0)  wrist = Rotation2d.fromDegrees(-90);
         else wrist = Rotation2d.fromDegrees(90);
-        supersystem.setSupersystemPosition(new Position(x, y, z), wrist);
+        supersystem.setSupersystemPosition(new Translation3d(x, y, z), wrist);
     }
 
     @Override
