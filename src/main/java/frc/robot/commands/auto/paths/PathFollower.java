@@ -6,7 +6,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Odometry;
+import frc.robot.RobotState_old;
 import frc.robot.subsystems.DriveTrain;
 
 //TODO experimental
@@ -19,7 +19,7 @@ public class PathFollower extends CommandBase{
     private DifferentialDriveWheelSpeeds prevSpeeds;
 
     private double prevTime;
-    private final Odometry odometry;
+    private final RobotState_old robotState;
 
     /**
      * experimental path follower, to
@@ -29,12 +29,12 @@ public class PathFollower extends CommandBase{
      *      than with {@link edu.wpi.first.wpilibj2.command.RamseteCommand}
      * @param driveTrain drivetrain subsystem
      * @param trajectory trajectory to follow
-     * @param odometry robot odometry.
+     * @param robotState robot odometry.
      */
-    public PathFollower(DriveTrain driveTrain, Trajectory trajectory, Odometry odometry){
+    public PathFollower(DriveTrain driveTrain, Trajectory trajectory, RobotState_old robotState){
         this.driveTrain = driveTrain;
         this.trajectory = trajectory;
-        this.odometry = odometry;
+        this.robotState = robotState;
         timer = new Timer();
         addRequirements(driveTrain);
     }
@@ -44,7 +44,7 @@ public class PathFollower extends CommandBase{
         var initialState = trajectory.sample(0);
 
         //get initial wheel speeds (to find initial acceleration)
-        prevSpeeds = odometry.getKinematics().toWheelSpeeds(new ChassisSpeeds(
+        prevSpeeds = robotState.getDriveKinematics().toWheelSpeeds(new ChassisSpeeds(
         initialState.velocityMetersPerSecond,
         0,
             initialState.curvatureRadPerMeter * initialState.velocityMetersPerSecond
@@ -72,10 +72,10 @@ public class PathFollower extends CommandBase{
         }
 
         //get chassis speeds from controller
-        var chassis = controller.calculate(odometry.getPose(), trajectory.sample(time));
+        var chassis = controller.calculate(robotState.getPose(), trajectory.sample(time));
 
         //get wheel speeds
-        var speeds = odometry.getKinematics().toWheelSpeeds(chassis);
+        var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
 
         //drive
         driveTrain.velocityDrive(speeds, prevSpeeds, dt);

@@ -25,7 +25,7 @@ public class RobotContainer {
   //subsystems
   private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   public final DriveTrain driveTrain;
-  public final Odometry odometry;
+  public final RobotState_old robotState;
   //private final Paths paths = new Paths(odometry, driveTrain);
   public final Constraints constrains;
 
@@ -38,8 +38,8 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     driveTrain = new DriveTrain(this);
-    odometry = new Odometry(this, driveTrain);
-    constrains = new Constraints(driveTrain, new Arm(), new Pivot(), new Turret(), new Wrist(), odometry);
+    robotState = new RobotState_old(this, driveTrain, null); //TODO will not run with null
+    constrains = new Constraints(driveTrain, new Arm(), new Pivot(), new Turret(), new Wrist(), robotState);
     teleoperatedDriverControl = new ArcadeDrive(driveTrain, driverJoystick);
 
     // Configure the button bindings

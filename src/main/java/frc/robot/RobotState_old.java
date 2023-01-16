@@ -13,18 +13,23 @@ import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
 import static frc.robot.Constants.Auto.*;
 
-public class Odometry{
+public class RobotState_old {
     private final DriveTrain driveTrain;
     private final Pigeon imu;
-    private final DifferentialDriveKinematics kinematics;
+    private final DifferentialDriveKinematics driveKinematics;
     private final DifferentialDrivePoseEstimator estimator;
+    private final Kinematics superstructureKinematics;
 
-    public Odometry(RobotContainer robot, DriveTrain driveTrain) {
+
+
+    public RobotState_old(RobotContainer robot, DriveTrain driveTrain, Kinematics superstructureKinematics) {
         this.driveTrain = driveTrain;
+        this.superstructureKinematics = superstructureKinematics;
+
         imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
-        kinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
+        driveKinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
         estimator = new DifferentialDrivePoseEstimator(
-            kinematics,
+                driveKinematics,
             imu.getRotation(),
             driveTrain.getLeftEncoder(),
             driveTrain.getRightEncoder(),
@@ -53,8 +58,8 @@ public class Odometry{
         return estimator;
     }
 
-    public DifferentialDriveKinematics getKinematics() {
-        return kinematics;
+    public DifferentialDriveKinematics getDriveKinematics() {
+        return driveKinematics;
     }
 
     //TODO placeholders

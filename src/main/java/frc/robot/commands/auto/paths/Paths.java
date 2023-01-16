@@ -12,7 +12,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import frc.robot.Odometry;
+import frc.robot.RobotState_old;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.List;
@@ -23,25 +23,25 @@ import static frc.robot.Constants.Auto.*;
 */
 public class Paths {
     DriveTrain driveTrain;
-    Odometry odometry;
+    RobotState_old robotState;
     DifferentialDriveVoltageConstraint constraint;
     TrajectoryConfig config;
 
     /**
     * class to hold all the paths the robot will follow
     */
-    public Paths(Odometry odometry, DriveTrain driveTrain){
+    public Paths(RobotState_old robotState, DriveTrain driveTrain){
         this.driveTrain = driveTrain;
-        this.odometry = odometry;
+        this.robotState = robotState;
         constraint = new DifferentialDriveVoltageConstraint(
             new SimpleMotorFeedforward(kS, kV, kA),
-            odometry.getKinematics(),
+            robotState.getDriveKinematics(),
             AUTO_VOLTAGE_MAX
         );
         config = new TrajectoryConfig(
             AUTO_MAX_SPEED_METERS_PER_SECOND,
             AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED
-        ).setKinematics(odometry.getKinematics()).addConstraint(constraint);
+        ).setKinematics(robotState.getDriveKinematics()).addConstraint(constraint);
     }
 
     public Command testPath(){
@@ -68,10 +68,10 @@ public class Paths {
         //LTVUnicycleController what = new LTVUnicycleController
         RamseteCommand ramseteCommand = new RamseteCommand(
             trajectory,
-            odometry::getPose,
+            robotState::getPose,
             new RamseteController(RAMSETE_B, RAMSETE_ZETA),
             new SimpleMotorFeedforward(kS, kV, kA),
-            odometry.getKinematics(),
+            robotState.getDriveKinematics(),
             driveTrain::getWheelSpeeds,
             new PIDController(kP, kI, kD),
             new PIDController(kP, kI, kD),

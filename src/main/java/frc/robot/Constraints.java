@@ -19,19 +19,19 @@ public class Constraints {
     @SuppressWarnings("FieldCanBeLocal")
     private final DriveTrain driveTrain;
     @SuppressWarnings("FieldCanBeLocal")
-    private final Odometry odometry;
+    private final RobotState_old robotState;
 
     private static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
                                DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 0, //todo
                                LIFT_EXTENDED_THRESHOLD = 0.4; //todo
 
-    public Constraints(DriveTrain driveTrain, Arm arm, Pivot pivot, Turret turret, Wrist wrist, Odometry odometry){
+    public Constraints(DriveTrain driveTrain, Arm arm, Pivot pivot, Turret turret, Wrist wrist, RobotState_old robotState){
         this.driveTrain = driveTrain;
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
         this.wrist = wrist;
-        this.odometry = odometry;
+        this.robotState = robotState;
     }
 
     SlewRateLimiter normalDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_NORMAL);
