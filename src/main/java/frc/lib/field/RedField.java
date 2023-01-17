@@ -2,6 +2,7 @@ package frc.lib.field;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 //TODO
 /**
@@ -13,31 +14,31 @@ import edu.wpi.first.math.geometry.Translation2d;
  * The X axis points away from the alliance wall
  */
 public class RedField {
-    public static final Translation2d[] TOP_CONE_SCORE_LOCATIONS = {
-        new Translation2d(1, 2),
-        new Translation2d(0,-14)
+    public static final Translation3d[] TOP_CONE_SCORE_LOCATIONS = {
+        new Translation2d(1, 2,0),
+        new Translation2d(0,-14,0)
     };
 
-    public static final Translation2d[] MID_CONE_SCORE_LOCATIONS = {
-        new Translation2d(0, 0)
+    public static final Translation3d[] MID_CONE_SCORE_LOCATIONS = {
+        new Translation2d(0, 0,0)
     };
 
-    public static final Translation2d[] TOP_SPHEQUARE_SCORE_LOCATIONS = {
-        new Translation2d(0,0)
+    public static final Translation3d[] TOP_SPHEQUARE_SCORE_LOCATIONS = {
+        new Translation3d(0,0,0)
     };
 
-    public static final Translation2d[] MID_SPHEQUARE_SCORE_LOCATIONS = {
-        new Translation2d(0,0)
+    public static final Translation3d[] MID_SPHEQUARE_SCORE_LOCATIONS = {
+        new Translation3d(0,0,0)
     };
 
-    public static final Translation2d[] JOINT_SCORE_LOCATIONS = {
-        new Translation2d(0,0)
+    public static final Translation3d[] JOINT_SCORE_LOCATIONS = {
+        new Translation3d(0,0,0)
     };
 
     public static final Translation2d CHARGE_STATION = new Translation2d(0,0);
 
-    public static final Translation2d[] SUBSTATION_SHELVES = {
-        new Translation2d(0,0)
+    public static final Translation3d[] SUBSTATION_SHELVES = {
+        new Translation3d(0,0,0)
     };
 
     /**
@@ -55,10 +56,10 @@ public class RedField {
      * @param translation The robot's translation
      * @return the translation that is nearest to the robot
      */
-    public static Translation2d nearestLocation(Translation2d[] options, Translation2d translation){
+    public static Translation3d nearestLocation(Translation3d[] options, Translation3d translation){
         double min_distance = 100;
-        Translation2d min = options[0];
-        for (Translation2d i : options) {
+        Translation3d min = options[0];
+        for (Translation3d i : options) {
             var dist = translation.getDistance(i);
             if(dist < min_distance) {
                 min = i;

@@ -151,4 +151,31 @@ public class Supersystem extends SubsystemBase {
         setSupersystemPosition(getKinematics().getSupersystemPosition().plus(delta));
         return this;
     }
+
+    public static class SupersystemTolerance{
+        private final double armTolerance;
+        private final Rotation2d turretTolerance;
+        private final Rotation2d pivotTolerance;
+        private final Rotation2d wristTolerance;
+
+        public SupersystemTolerance(double armTolerance, Rotation2d turretTolerance, Rotation2d pivotTolerance, Rotation2d wristTolerance){
+            this.armTolerance = armTolerance;
+            this.turretTolerance = turretTolerance;
+            this.pivotTolerance = pivotTolerance;
+            this.wristTolerance = wristTolerance;
+        }
+
+        public double getArmTolerance() {
+            return armTolerance;
+        }
+        public Rotation2d getTurretTolerance() {
+            return turretTolerance;
+        }
+        public Rotation2d getWristTolerance() {
+            return wristTolerance;
+        }
+        public Rotation2d getPivotTolerance() {
+            return pivotTolerance;
+        }
+    }
 }
