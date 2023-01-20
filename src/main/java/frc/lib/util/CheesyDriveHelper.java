@@ -15,14 +15,14 @@ public class CheesyDriveHelper {
     private static final double kHighWheelNonLinearity = 0.7;
     private static final double kLowWheelNonLinearity = 0.5;
 
-    private static final double kHighNegInertiaScalar = 1.8;
+    private static final double kHighNegInertiaScalar = 5;
 
     private static final double kLowNegInertiaThreshold = 0.65;
     private static final double kLowNegInertiaTurnScalar = 3.5;
     private static final double kLowNegInertiaCloseScalar = 4.0;
     private static final double kLowNegInertiaFarScalar = 5.0;
 
-    private static final double kHighSensitivity = 0.65;
+    private static final double kHighSensitivity = 0.8;
     private static final double kLowSensitiity = 0.65;
 
     private static final double kQuickStopDeadband = 0.5;
@@ -53,9 +53,9 @@ public class CheesyDriveHelper {
             wheelNonLinearity = kLowWheelNonLinearity;
             final double denominator = Math.sin(Math.PI / 2.0 * wheelNonLinearity);
             // Apply a sin function that's scaled to make it feel better.
-            wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
-            wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
-            wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
+            // wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
+            // wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
+            // wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
         }
 
         double leftPwm, rightPwm, overPower;

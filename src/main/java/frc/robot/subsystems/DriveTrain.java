@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.DriveSignal;
 
 public class DriveTrain extends SubsystemBase {
   private WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
@@ -150,6 +151,10 @@ public class DriveTrain extends SubsystemBase {
   public void setMaxOutput(double maxOutput) {
     differentialDrive.setMaxOutput(maxOutput);
   }
+
+public void tankDrive(DriveSignal cheesyDrive) {
+  tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
+}
 
 }
 

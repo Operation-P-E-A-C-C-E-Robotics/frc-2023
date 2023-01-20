@@ -31,7 +31,7 @@ public class RobotContainer {
   //private final Paths paths = new Paths(odometry, driveTrain);
 
   //commands
-  private final ArcadeDrive teleoperatedDriverControl;
+  private final PeaccyDrive teleoperatedDriverControl;
 
   //OI
   public static Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); //left this public for easy accesability, we can make it private if you think we should
@@ -40,7 +40,7 @@ public class RobotContainer {
   public RobotContainer() {
     driveTrain = new DriveTrain();
     odometry = new Odometry(this, driveTrain);
-    teleoperatedDriverControl =  new ArcadeDrive(this.driveTrain, RobotContainer.driverJoystick);
+    teleoperatedDriverControl =  new PeaccyDrive(this.driveTrain, RobotContainer.driverJoystick);
 
     Notifier test = new Notifier(() -> odometry.update());
     test.startPeriodic(0.01);
