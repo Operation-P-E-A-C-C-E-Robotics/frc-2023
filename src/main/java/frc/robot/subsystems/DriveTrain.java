@@ -29,7 +29,7 @@ public class DriveTrain extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward;
   private final PIDController leftController, rightController;
 
-
+//TODO  low gear make the robot go backwards so like, do something about it
 
   /** Creates a new DriveTrain. */
   public DriveTrain(RobotContainer robot) {
@@ -75,10 +75,6 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.feed();
   }
 
-  public void tankDrive(DriveSignal signal){
-    tankDrive(signal.getLeft(), signal.getRight());
-  }
-
   /**
    * drive the motors at a specific voltage
    * see {@link com.ctre.phoenix.motorcontrol.can.WPI_TalonFX#setVoltage(double)} for more details
@@ -93,13 +89,13 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * drive the robot in Arcade mode using the built-in WPILib differential drive class
-   * @param forward joystick forward backward axis
-   * @param wheel joystick left right axis
+   * drive the robot in Arcade mode using the built in WPILib differential drive class
+   * @param xForward joystick forward backward axis
+   * @param zRotate joystick left right axis
    *
    */
   public void arcadeDrive(double forward, double wheel) {
-    double forwardFiltered = robot.constrains.constrainJoystickFwdJerk(forward);
+    double forwardFiltered = forward;//robot.constrains.constrainJoystickFwdJerk(forward);
     tankDrive(new DriveSignal(forwardFiltered + wheel, forwardFiltered - wheel));
     differentialDrive.feed();
   }
@@ -167,7 +163,7 @@ public class DriveTrain extends SubsystemBase {
    * @return The current wheel speeds.
    */
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorVelocity(), rightMaster.getSelectedSensorVelocity()); //TODO confirm this returns correct data
+    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorVelocity(), rightMaster.getSelectedSensorVelocity());
   }
 
 
@@ -219,6 +215,10 @@ public class DriveTrain extends SubsystemBase {
   public void setMaxOutput(double maxOutput) {
     differentialDrive.setMaxOutput(maxOutput);
   }
+
+public void tankDrive(DriveSignal cheesyDrive) {
+  tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
+}
 
 }
 

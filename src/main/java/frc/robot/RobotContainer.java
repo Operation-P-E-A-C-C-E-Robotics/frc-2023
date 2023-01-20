@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.PeaccyDrive;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.subsystems.*;
@@ -25,12 +26,12 @@ public class RobotContainer {
   //subsystems
   private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   public final DriveTrain driveTrain;
-  public final RobotState robotState;
+  //public final RobotState robotState;
   //private final Paths paths = new Paths(odometry, driveTrain);
-  public final Constraints constrains;
+ //public final Constraints constrains;
 
   //commands
-  private final ArcadeDrive teleoperatedDriverControl;
+  private final PeaccyDrive teleoperatedDriverControl;
 
   //OI
   public static Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); //left this public for easy accesability, we can make it private if you think we should
@@ -38,9 +39,7 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     driveTrain = new DriveTrain(this);
-    robotState = new RobotState(this, driveTrain, null); //TODO will not run with null
-    constrains = new Constraints(driveTrain, new Arm(), new Pivot(), new Turret(), new Wrist(), robotState);
-    teleoperatedDriverControl = new ArcadeDrive(driveTrain, driverJoystick);
+    teleoperatedDriverControl =  new PeaccyDrive(this.driveTrain, RobotContainer.driverJoystick);
 
     // Configure the button bindings
     configureBindings();

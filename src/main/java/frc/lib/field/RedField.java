@@ -15,12 +15,12 @@ import edu.wpi.first.math.geometry.Translation3d;
  */
 public class RedField {
     public static final Translation3d[] TOP_CONE_SCORE_LOCATIONS = {
-        new Translation2d(1, 2,0),
-        new Translation2d(0,-14,0)
+        new Translation3d(1, 2,0),
+        new Translation3d(0,-14,0)
     };
 
     public static final Translation3d[] MID_CONE_SCORE_LOCATIONS = {
-        new Translation2d(0, 0,0)
+        new Translation3d(0, 0,0)
     };
 
     public static final Translation3d[] TOP_SPHEQUARE_SCORE_LOCATIONS = {
