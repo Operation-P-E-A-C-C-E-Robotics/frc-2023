@@ -34,16 +34,20 @@ public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
   public DriveTrain(RobotContainer robot) {
     this.robot = robot;
-    setNeutralMode(NeutralMode.Brake);
     WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
-    leftSlave.follow(leftMaster);
     WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
+    
+    leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
+    
     leftMaster.setInverted(true);
     rightMaster.setInverted(false);
+    
     leftSlave.setInverted(InvertType.FollowMaster); //TODO Confirm left bottom motor needs to oppose top master
     rightSlave.setInverted(InvertType.FollowMaster); //TODO Confirm right bottom motor needs to follow top master
-
+    
+    setNeutralMode(NeutralMode.Brake);
+    
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);

@@ -39,7 +39,7 @@ public class RobotState {
                 driveTrain.getLeftEncoder(),
                 driveTrain.getRightEncoder(),
                 robot.getStartingPose(),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //todo figure out wtf these are
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
     }

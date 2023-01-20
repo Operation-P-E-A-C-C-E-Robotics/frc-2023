@@ -25,7 +25,8 @@ public final class Constants {
                                 RIGHT_MASTER = 2,
                                 RIGHT_SLAVE  = 3;
 
-
+        public static final double DRIVE_ENCODER_CPR = 2048;
+        public static final double GEARBOX_RATIO_HIGH = 10.66;//:1
     }
 
     public static final class OperatorInterface {
