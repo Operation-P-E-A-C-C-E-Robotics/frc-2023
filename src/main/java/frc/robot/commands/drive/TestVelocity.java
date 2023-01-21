@@ -45,8 +45,7 @@ private final DifferentialDriveKinematics kinematics;
     var wheelSpeeds = kinematics.toWheelSpeeds(
         new ChassisSpeeds(driverJoystick.getY() * 5, 0, -driverJoystick.getX() * 5)
     );
-    SmartDashboard.putNumber("setpoint", wheelSpeeds.leftMetersPerSecond);
-    SmartDashboard.putNumber("current", driveTrain.getLeftVelocity());
+
     driveTrain.velocityDrive(wheelSpeeds, prevSpeeds, dt);
     prevTime = time;
     prevSpeeds = wheelSpeeds;

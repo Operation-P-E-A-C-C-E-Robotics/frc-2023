@@ -11,9 +11,14 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
+import frc.robot.DashboardManager;
 import frc.robot.RobotContainer;
 
 import static frc.robot.Constants.Auto.*;
@@ -51,11 +56,16 @@ public class DriveTrain extends SubsystemBase {
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
+ 
+
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+   
+    // SmartDashboard.putData(differentialDrive);
+    DashboardManager.updateDrivetrain(differentialDrive);
 
   }
 

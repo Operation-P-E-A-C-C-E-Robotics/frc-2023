@@ -37,12 +37,12 @@ public class RobotContainer {
 
   //OI
   public static Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); //left this public for easy accesability, we can make it private if you think we should
-
+  public DashboardManager dashboardManager;
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     driveTrain = new DriveTrain(this);
     teleoperatedDriverControl =  new PeaccyDrive(this.driveTrain, RobotContainer.driverJoystick);
-
+    dashboardManager = new DashboardManager(driveTrain);
     // Configure the button bindings
     configureBindings();
 
