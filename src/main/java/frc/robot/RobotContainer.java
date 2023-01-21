@@ -61,9 +61,9 @@ public class RobotContainer {
 
   public void updateRobotState(){
     robotState.update();
-    System.out.println("");
-    System.out.println(robotState.getOdometryPose());
-    System.out.println("");
+    // System.out.println("");
+    // System.out.println(robotState.getOdometryPose());
+    // System.out.println("");
   }
 
   /**

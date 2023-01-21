@@ -73,7 +73,7 @@ public class PathFollower extends CommandBase{
 
         //account for time between init and execute.
         if (prevTime < 0){
-            System.out.println("HI");
+            // System.out.println("HI");
             driveTrain.tankDriveVolts(0, 0);
             timer.reset();
             time = timer.get();
@@ -81,7 +81,7 @@ public class PathFollower extends CommandBase{
             return;
         }
 
-        System.out.println("time: " + time + " prev time: " + prevTime);
+        // System.out.println("time: " + time + " prev time: " + prevTime);
         System.out.println(robotState.getOdometryPose());
         System.out.println(trajectory.sample(time));
 

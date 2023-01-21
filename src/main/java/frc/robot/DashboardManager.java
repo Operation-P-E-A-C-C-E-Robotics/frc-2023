@@ -27,11 +27,9 @@ public class DashboardManager {
 
     public static void updateDrivetrain(DifferentialDrive differentialDrive) {
         SmartDashboard.putData("Drivetrain", differentialDrive);
-        SmartDashboard.putData(field);
         field.setRobotPose(robotState.getOdometryPose().getX(), robotState.getOdometryPose().getY(), robotState.getOdometryPose().getRotation());
-        SmartDashboard.putNumber("Robot X", robotState.getOdometryPose().getX());
-        SmartDashboard.putNumber("Robot Y", robotState.getOdometryPose().getY());
-        SmartDashboard.putNumber("Robot Rot", robotState.getOdometryPose().getRotation().getDegrees());
+        SmartDashboard.putData(field);
+
 
         
      }
