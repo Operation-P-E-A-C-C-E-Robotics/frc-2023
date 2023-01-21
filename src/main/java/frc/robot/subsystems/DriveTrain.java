@@ -159,6 +159,14 @@ public class DriveTrain extends SubsystemBase {
 
   //WPILib built in odometry methods from docs
 
+  public double getLeftVelocity(){
+    return (leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH;
+  }
+
+  public double getRightVelocity(){
+    return (rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH;
+  }
+
 
 
   /**
@@ -167,7 +175,7 @@ public class DriveTrain extends SubsystemBase {
    * @return The current wheel speeds.
    */
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(leftMaster.getSelectedSensorVelocity(), rightMaster.getSelectedSensorVelocity());
+    return new DifferentialDriveWheelSpeeds(getLeftVelocity(), getRightVelocity());
   }
 
 

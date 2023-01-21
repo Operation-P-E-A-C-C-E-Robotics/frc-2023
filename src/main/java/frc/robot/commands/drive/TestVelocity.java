@@ -9,6 +9,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
@@ -42,8 +43,10 @@ private final DifferentialDriveKinematics kinematics;
     double time = Timer.getFPGATimestamp();
     double dt = time - prevTime;
     var wheelSpeeds = kinematics.toWheelSpeeds(
-        new ChassisSpeeds(driverJoystick.getY() * 0.01, 0, driverJoystick.getX() * 0.01)
+        new ChassisSpeeds(driverJoystick.getY() * 5, 0, -driverJoystick.getX() * 5)
     );
+    SmartDashboard.putNumber("setpoint", wheelSpeeds.leftMetersPerSecond);
+    SmartDashboard.putNumber("current", driveTrain.getLeftVelocity());
     driveTrain.velocityDrive(wheelSpeeds, prevSpeeds, dt);
     prevTime = time;
     prevSpeeds = wheelSpeeds;

@@ -43,10 +43,10 @@ public final class Constants {
         public static final int PIGEON_IMU  = 20;
         public static final double TRACK_WIDTH = 0.6; //TODO Configure
 
-        public static final double kS = 0,
-                                  kV = 0,
-                                  kA = 0,
-                                  kP = 0,
+        public static final double kS = 0.205,
+                                  kV = 2.08,
+                                  kA = 0.208,
+                                  kP = 0.02,
                                   kI = 0,
                                   kD = 0,
                                   RAMSETE_B = 0,
