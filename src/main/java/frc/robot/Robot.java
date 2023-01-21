@@ -19,7 +19,6 @@ public class Robot extends TimedRobot {
   private Command autonomousCommand;
 
   private RobotContainer robotContainer;
-  private RobotState robotState;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -30,7 +29,6 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
-    robotState = new RobotContainer().robotState;
   }
 
   /**
@@ -47,7 +45,7 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    robotState.update();
+    robotContainer.updateRobotState();
     
   }
 

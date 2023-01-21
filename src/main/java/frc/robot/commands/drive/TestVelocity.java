@@ -4,6 +4,7 @@
 
 package frc.robot.commands.drive;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
@@ -11,6 +12,8 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constraints;
+import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 public class TestVelocity extends CommandBase {
@@ -19,13 +22,17 @@ public class TestVelocity extends CommandBase {
   double prevTime;
   DifferentialDriveWheelSpeeds prevSpeeds;
 private final DifferentialDriveKinematics kinematics;
+private RobotState robotState;
   /** Creates a new TeleoperatedDriverControl. */
-  public TestVelocity(DriveTrain driveTrain, Joystick driverJoystick, DifferentialDriveKinematics kinematics) {
+private Constraints constraints;
+  public TestVelocity(DriveTrain driveTrain, Joystick driverJoystick, DifferentialDriveKinematics kinematics, RobotState robotState, Constraints constraints) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveTrain);
     this.driverJoystick = driverJoystick;
     this.driveTrain = driveTrain;
     this.kinematics = kinematics;
+    this.robotState = robotState;
+    this.constraints = constraints;
   }
 
   // Called when the command is initially scheduled.
@@ -42,9 +49,14 @@ private final DifferentialDriveKinematics kinematics;
   public void execute() {
     double time = Timer.getFPGATimestamp();
     double dt = time - prevTime;
+    double fwd = constraints.constrainJoystickFwdJerk(-driverJoystick.getY());
     var wheelSpeeds = kinematics.toWheelSpeeds(
-        new ChassisSpeeds(driverJoystick.getY() * 5, 0, -driverJoystick.getX() * 5)
+        new ChassisSpeeds(fwd * 2, 0, -driverJoystick.getX() * 1)
     );
+    if(driverJoystick.getRawButton(3)){
+      driveTrain.resetVelocityDrive();
+      robotState.resetOdometry(new Pose2d());
+    }
 
     driveTrain.velocityDrive(wheelSpeeds, prevSpeeds, dt);
     prevTime = time;

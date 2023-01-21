@@ -27,6 +27,7 @@ public final class Constants {
 
         public static final double DRIVE_ENCODER_CPR = 2048;
         public static final double GEARBOX_RATIO_HIGH = 10.66;//:1
+        public static final double METERS_PER_ROTATION = 0.4844;
     }
 
     public static final class OperatorInterface {
@@ -43,16 +44,16 @@ public final class Constants {
         public static final int PIGEON_IMU  = 20;
         public static final double TRACK_WIDTH = 0.6; //TODO Configure
 
-        public static final double kS = 0.205,
-                                  kV = 2.08,
-                                  kA = 0.208,
-                                  kP = 0.02,
+        public static final double kS = 0.10351,
+                                  kV = 2.4155,
+                                  kA = 0.2751,
+                                  kP = 0.24921,
                                   kI = 0,
                                   kD = 0,
-                                  RAMSETE_B = 0,
-                                  RAMSETE_ZETA = 0,
-                                  AUTO_VOLTAGE_MAX = 10,
-                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 0,
-                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0;
+                                  RAMSETE_B = 2.0,
+                                  RAMSETE_ZETA = 0.3,
+                                  AUTO_VOLTAGE_MAX = 7,
+                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 0.5,
+                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.5;
     }
 }

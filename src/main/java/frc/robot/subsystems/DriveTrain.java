@@ -171,11 +171,11 @@ public class DriveTrain extends SubsystemBase {
   //WPILib built in odometry methods from docs
 
   public double getLeftVelocity(){
-    return (leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH;
+    return ((leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
 
   public double getRightVelocity(){
-    return (rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH;
+    return ((rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
 
 
@@ -207,7 +207,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the average of the two encoder readings
    */
   public double getAverageEncoderDistance() {
-    return (getLeftEncoder() + getRightEncoder() / 2.0);
+    return (getLeftMeters() + getRightMeters() / 2.0);
   }
 
 
@@ -217,8 +217,8 @@ public class DriveTrain extends SubsystemBase {
    *
    * @return the left drive encoder
    */
-  public double getLeftEncoder() {
-    return (leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH; //TODO convert to Meters
+  public double getLeftMeters() {
+    return ((leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION; //TODO convert to Meters
   }
 
   /**
@@ -226,8 +226,8 @@ public class DriveTrain extends SubsystemBase {
    *
    * @return the right drive encoder
    */
-  public double getRightEncoder() {
-    return (leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH; //TODO convert to Meters
+  public double getRightMeters() {
+    return ((leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION; //TODO convert to Meters
   }
 
   /**

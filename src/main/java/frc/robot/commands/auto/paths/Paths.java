@@ -23,7 +23,7 @@ import static frc.robot.Constants.Auto.*;
 */
 public class Paths {
     DriveTrain driveTrain;
-    RobotState robotState;
+    //RobotState robotState;
     DifferentialDriveVoltageConstraint constraint;
     TrajectoryConfig config;
 
@@ -32,7 +32,7 @@ public class Paths {
     */
     public Paths(RobotState robotState, DriveTrain driveTrain){
         this.driveTrain = driveTrain;
-        this.robotState = robotState;
+        //this.robotState = robotState;
         constraint = new DifferentialDriveVoltageConstraint(
             new SimpleMotorFeedforward(kS, kV, kA),
             robotState.getDriveKinematics(),
@@ -44,19 +44,19 @@ public class Paths {
         ).setKinematics(robotState.getDriveKinematics()).addConstraint(constraint);
     }
 
-    public Command testPath(){
+    public Command testPath(RobotState robotState){
         // An example trajectory to follow.  All units in meters.
         Trajectory exampleTrajectory =
         TrajectoryGenerator.generateTrajectory(
             // Start at the origin facing the +X direction
             new Pose2d(0, 0, new Rotation2d(0)),
             // Pass through these two interior waypoints, making an 's' curve path
-            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            List.of(new Translation2d(0.5, 0)),
             // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(3, 0, new Rotation2d(0)),
+            new Pose2d(1, 0, Rotation2d.fromDegrees(0)),
             // Pass config
             config);
-        return createPathCommand(exampleTrajectory);
+        return createPathCommand(exampleTrajectory, robotState);
     }
 
     /**
@@ -64,20 +64,22 @@ public class Paths {
     * @param trajectory the trajectory to follow.
     * @return a ramsete command to follow the path
     */
-    private Command createPathCommand(Trajectory trajectory){
+    private Command createPathCommand(Trajectory trajectory, RobotState robotState){
         //LTVUnicycleController what = new LTVUnicycleController
-        RamseteCommand ramseteCommand = new RamseteCommand(
-            trajectory,
-            robotState::getOdometryPose,
-            new RamseteController(RAMSETE_B, RAMSETE_ZETA),
-            new SimpleMotorFeedforward(kS, kV, kA),
-            robotState.getDriveKinematics(),
-            driveTrain::getWheelSpeeds,
-            new PIDController(kP, kI, kD),
-            new PIDController(kP, kI, kD),
-            driveTrain::tankDriveVolts,
-            driveTrain
-        );
-        return ramseteCommand.andThen(() -> driveTrain.tankDrive(0,0));
+        // RamseteCommand ramseteCommand = new RamseteCommand(
+        //     trajectory,
+        //     robotState::getOdometryPose,
+        //     new RamseteController(RAMSETE_B, RAMSETE_ZETA),
+        //     new SimpleMotorFeedforward(kS, kV, kA),
+        //     robotState.getDriveKinematics(),
+        //     driveTrain::getWheelSpeeds,
+        //     new PIDController(kP, kI, kD),
+        //     new PIDController(kP, kI, kD),
+        //     driveTrain::tankDriveVolts,
+        //     driveTrain
+        // );
+        System.out.println(trajectory);
+        //robotState.resetOdometry(trajectory.getInitialPose());
+        return new PathFollower(driveTrain, trajectory, robotState);
     }
 }

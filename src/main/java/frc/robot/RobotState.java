@@ -44,8 +44,8 @@ public class RobotState {
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 driveKinematics,
                 imu.getRotation(),
-                driveTrain.getLeftEncoder(),
-                driveTrain.getRightEncoder(),
+                driveTrain.getLeftMeters(),
+                driveTrain.getRightMeters(),
                 robot.getStartingPose(),
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
@@ -56,7 +56,7 @@ public class RobotState {
      * update drivetrain odometry
      */
     public void update(){
-        fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftEncoder(),driveTrain.getRightEncoder());
+        fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
         // SmartDashboard.putBoolean("RobotState Update", true);
        
     }
@@ -74,7 +74,7 @@ public class RobotState {
      * @param pose the robots current pose on the field
      */
     public void resetOdometry(Pose2d pose){
-        fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftEncoder(), driveTrain.getRightEncoder(), pose);
+        fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters(), pose);
     }
 
     /**

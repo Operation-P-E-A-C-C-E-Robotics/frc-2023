@@ -41,12 +41,13 @@ public class PathFollower extends CommandBase{
 
     @Override
     public void initialize() {
+        System.out.println("AHJKFLDA");
         var initialState = trajectory.sample(0);
 
         //get initial wheel speeds (to find initial acceleration)
         prevSpeeds = robotState.getDriveKinematics().toWheelSpeeds(new ChassisSpeeds(
-        initialState.velocityMetersPerSecond,
-        0,
+            initialState.velocityMetersPerSecond,
+            0,
             initialState.curvatureRadPerMeter * initialState.velocityMetersPerSecond
         ));
 
@@ -66,14 +67,21 @@ public class PathFollower extends CommandBase{
 
         //account for time between init and execute.
         if (prevTime < 0){
+            System.out.println("HI");
             driveTrain.tankDriveVolts(0, 0);
+            timer.reset();
+            time = timer.get();
             prevTime = time;
             return;
         }
 
+        System.out.println("time: " + time + " prev time: " + prevTime);
+        System.out.println(robotState.getOdometryPose());
+        System.out.println(trajectory.sample(time));
+
         //get chassis speeds from controller
         var chassis = controller.calculate(robotState.getOdometryPose(), trajectory.sample(time));
-
+        System.out.println(chassis);
         //get wheel speeds
         var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
 
@@ -88,10 +96,11 @@ public class PathFollower extends CommandBase{
     @Override
     public void end(boolean interrupted) {
         driveTrain.tankDriveVolts(0, 0);
+        timer.reset();
     }
     @Override
     public boolean isFinished() {
-        return false;
+        return timer.hasElapsed(trajectory.getTotalTimeSeconds());
     }
 
 }
