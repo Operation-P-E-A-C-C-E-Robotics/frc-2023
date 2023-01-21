@@ -53,7 +53,7 @@ public final class Constants {
                                   RAMSETE_B = 2.0,
                                   RAMSETE_ZETA = 0.3,
                                   AUTO_VOLTAGE_MAX = 7,
-                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 0.5,
-                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.5;
+                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 1,
+                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.8;
     }
 }

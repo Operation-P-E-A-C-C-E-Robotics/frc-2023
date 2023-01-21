@@ -1,5 +1,6 @@
 package frc.robot.commands.auto.paths;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.LTVUnicycleController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
@@ -12,7 +13,12 @@ import frc.robot.subsystems.DriveTrain;
 //TODO experimental
 public class PathFollower extends CommandBase{
 
-    LTVUnicycleController controller = new LTVUnicycleController(0.02);
+    LTVUnicycleController controller = new LTVUnicycleController(
+        VecBuilder.fill(0.08,0.15,2), 
+        VecBuilder.fill(0.5,1.5),
+        0.020
+    );
+   
     private final DriveTrain driveTrain;
     private final Trajectory trajectory;
     private final Timer timer;
