@@ -11,10 +11,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
@@ -27,12 +23,13 @@ import static frc.robot.Constants.DriveTrain.*;
 public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
   private final WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
-  private DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
+  public DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private Constraints constraints;
   private final RobotContainer robot;
 
   private final SimpleMotorFeedforward feedforward;
-  private final PIDController leftController, rightController;
+  private final PIDController leftController;
+  private final PIDController rightController;
 
 //TODO  low gear make the robot go backwards so like, do something about it
 
@@ -68,6 +65,9 @@ public class DriveTrain extends SubsystemBase {
     DashboardManager.updateDrivetrain(differentialDrive);
 
   }
+
+ 
+
 
   /**
    * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
