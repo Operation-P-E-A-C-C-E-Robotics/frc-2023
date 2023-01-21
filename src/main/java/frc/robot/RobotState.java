@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Supersystem;
@@ -203,6 +202,7 @@ public class RobotState {
     public Pose3d endEffectorToTurret(Pose3d endEffectorPoint){
         Translation3d endEffectorPosition = supersystem.getKinematics()
                 .getEndEffectorPosition()
+
                 .getEndPosition();
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
         return endEffectorPoint.plus(new Transform3d(endEffectorPosition, new Rotation3d(0, endEffectorAngle, 0)));

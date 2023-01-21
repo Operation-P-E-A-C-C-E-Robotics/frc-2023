@@ -9,14 +9,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.PeaccyDrive;
-import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.paths.Paths;
-import frc.robot.commands.drive.TestVelocity;
-import frc.robot.subsystems.*;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Wrist;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,7 +27,6 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //subsystems
-  private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   private final DriveTrain driveTrain;
   private final RobotState robotState;
   //private final Paths paths = new Paths(odometry, driveTrain);
@@ -37,7 +36,7 @@ public class RobotContainer {
   private final PeaccyDrive teleoperatedDriverControl;
 
   //OI
-  private Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); //left this public for easy accesability, we can make it private if you think we should
+  private Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); 
   private DashboardManager dashboardManager;
   private Command autoCommand;
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -48,11 +47,12 @@ public class RobotContainer {
     teleoperatedDriverControl =  new PeaccyDrive(this.driveTrain, driverJoystick);
     dashboardManager = new DashboardManager(driveTrain, robotState);
     autoCommand = new Paths(robotState, driveTrain).testPath(robotState);
+    
     // Configure the button bindings
     configureBindings();
 
     //default commands
-    //driveTrain.setDefaultCommand(teleoperatedDriverControl);
+    driveTrain.setDefaultCommand(teleoperatedDriverControl);
   }
 
   public Pose2d getStartingPose(){
@@ -61,9 +61,7 @@ public class RobotContainer {
 
   public void updateRobotState(){
     robotState.update();
-    // System.out.println("");
-    // System.out.println(robotState.getOdometryPose());
-    // System.out.println("");
+
   }
 
   /**
@@ -72,9 +70,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureBindings() {
-    new JoystickButton(driverJoystick, 4).whileTrue(teleoperatedDriverControl);
-  }
+  private void configureBindings() {}
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

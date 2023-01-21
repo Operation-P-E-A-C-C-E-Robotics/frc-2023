@@ -10,7 +10,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
@@ -24,6 +23,8 @@ import static frc.robot.Constants.DriveTrain.*;
 public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
   private final WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
+  private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
+  private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
   public DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private Constraints constraints;
   private final RobotContainer robot;
@@ -37,8 +38,6 @@ public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveTrain. */
   public DriveTrain(RobotContainer robot) {
     this.robot = robot;
-    WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
-    WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
     
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
@@ -46,8 +45,8 @@ public class DriveTrain extends SubsystemBase {
     leftMaster.setInverted(true);
     rightMaster.setInverted(false);
     
-    leftSlave.setInverted(InvertType.FollowMaster); //TODO Confirm left bottom motor needs to oppose top master
-    rightSlave.setInverted(InvertType.FollowMaster); //TODO Confirm right bottom motor needs to follow top master
+    leftSlave.setInverted(InvertType.FollowMaster); 
+    rightSlave.setInverted(InvertType.FollowMaster); 
     
     setNeutralMode(NeutralMode.Brake);
     
@@ -61,10 +60,7 @@ public class DriveTrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-   
-    // SmartDashboard.putData(differentialDrive);
     DashboardManager.updateDrivetrain(differentialDrive);
-    
   }
 
  
@@ -79,6 +75,7 @@ public class DriveTrain extends SubsystemBase {
     leftMaster.setNeutralMode(mode);
     rightMaster.setNeutralMode(mode);
   }
+  
   /**
    * input 2 doubles to drive the drivetrain motors separately
    * @param leftSpeed the speed to set the left motors to (Double)
@@ -145,7 +142,14 @@ public class DriveTrain extends SubsystemBase {
     tankDriveVolts(left, right);
   }
 
-  public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){
+  /**
+   * 
+   * @param speeds
+   * @param previousSpeeds
+   * @param dt
+   * @param tilt
+   */
+  public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
     double leftFeedforward, rightFeedforward, left, right;
 
     leftFeedforward = feedforward.calculate(
@@ -170,11 +174,19 @@ public class DriveTrain extends SubsystemBase {
 
   //WPILib built in odometry methods from docs
 
-  public double getLeftVelocity(){
+  /**
+   * 
+   * @return
+   */
+  public double getLeftVelocity(){ //TODO Write Javadoc
     return ((leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
 
-  public double getRightVelocity(){
+  /**
+   * 
+   * @return
+   */
+  public double getRightVelocity(){ //TODO Write Javadoc
     return ((rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
 
