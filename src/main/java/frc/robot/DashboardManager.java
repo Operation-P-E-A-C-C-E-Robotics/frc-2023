@@ -3,6 +3,8 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,9 +27,11 @@ public class DashboardManager {
 
     public static void updateDrivetrain(DifferentialDrive differentialDrive) {
         SmartDashboard.putData("Drivetrain", differentialDrive);
-        field.setRobotPose(robotState.getOdometryPose());
         SmartDashboard.putData(field);
-        
+        field.setRobotPose(robotState.getOdometryPose().getX(), robotState.getOdometryPose().getY(), robotState.getOdometryPose().getRotation());
+        SmartDashboard.putNumber("Robot X", robotState.getOdometryPose().getX());
+        SmartDashboard.putNumber("Robot Y", robotState.getOdometryPose().getY());
+        SmartDashboard.putNumber("Robot Rot", robotState.getOdometryPose().getRotation().getDegrees());
 
         
      }

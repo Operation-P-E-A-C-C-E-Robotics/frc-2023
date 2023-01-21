@@ -10,6 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
@@ -63,7 +64,7 @@ public class DriveTrain extends SubsystemBase {
    
     // SmartDashboard.putData(differentialDrive);
     DashboardManager.updateDrivetrain(differentialDrive);
-
+    
   }
 
  
@@ -217,7 +218,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftEncoder() {
-    return leftMaster.getSelectedSensorPosition(); //TODO convert to Meters
+    return (leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH; //TODO convert to Meters
   }
 
   /**
@@ -226,7 +227,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightEncoder() {
-    return leftMaster.getSelectedSensorPosition(); //TODO convert to Meters
+    return (leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH; //TODO convert to Meters
   }
 
   /**

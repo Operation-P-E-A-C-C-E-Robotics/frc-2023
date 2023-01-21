@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.Pigeon;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Supersystem;
@@ -56,6 +57,7 @@ public class RobotState {
      */
     public void update(){
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftEncoder(),driveTrain.getRightEncoder());
+        // SmartDashboard.putBoolean("RobotState Update", true);
        
     }
 

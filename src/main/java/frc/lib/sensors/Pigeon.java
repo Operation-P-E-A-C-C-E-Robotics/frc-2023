@@ -55,7 +55,7 @@ public class Pigeon {
      * @return the heading in degrees
      */
     public double getHeading(){
-        return Math.IEEEremainder(pg.getFusedHeading(), 360.0d) * -1.0d;
+        return Math.IEEEremainder(pg.getFusedHeading(), 360.0d);
     }
 
     public Rotation2d getRotation(){
