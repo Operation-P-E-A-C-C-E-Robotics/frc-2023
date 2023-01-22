@@ -4,6 +4,7 @@
 
 package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,13 +12,30 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /** Add your docs here. */
 public class DashboardManager {
     private final Field2d field = new Field2d();
+    private DifferentialDrive differentialDrive;
 
     public DashboardManager() {
     }
 
-    public  void updateDriveWidgets(DifferentialDrive differentialDrive, Pose2d robotPose) {
-        SmartDashboard.putData("Drivetrain", differentialDrive);
+    public void drawCone(Pose2d pose){
+        field.getObject("cone").setPose(pose);
+    }
+
+    public void drawCube(Pose2d pose){
+        field.getObject("cube").setPose(pose);
+    }
+
+    public void drawTrajectory(Trajectory trajectory){
+        field.getObject("trajectory").setTrajectory(trajectory);
+    }
+
+    public  void drawDrivetrain(DifferentialDrive differentialDrive, Pose2d robotPose) {
+        this.differentialDrive = differentialDrive;
         field.setRobotPose(robotPose.getX(), robotPose.getY(), robotPose.getRotation());
+    }
+
+    public void put(){
         SmartDashboard.putData(field);
-     }
+        SmartDashboard.putData(differentialDrive);
+    }
 }
