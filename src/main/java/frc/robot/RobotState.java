@@ -56,8 +56,6 @@ public class RobotState {
      */
     public void update(){
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
-        
-       
     }
 
     /**

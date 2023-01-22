@@ -46,17 +46,11 @@ public class DriveTrain extends SubsystemBase {
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
-
-
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
-    // SmartDashboard.putData(differentialDrive);
-    DashboardManager.updateDrivetrain(differentialDrive);
-
   }
 
   /**
@@ -134,13 +128,6 @@ public class DriveTrain extends SubsystemBase {
     tankDriveVolts(left, right);
   }
 
-  /**
-   *
-   * @param speeds
-   * @param previousSpeeds
-   * @param dt
-   * @param tilt
-   */
   public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
     double leftFeedforward, rightFeedforward, left, right;
 
@@ -166,23 +153,13 @@ public class DriveTrain extends SubsystemBase {
 
   //WPILib built in odometry methods from docs
 
-  /**
-   *
-   * @return
-   */
   public double getLeftVelocity(){ //TODO Write Javadoc
     return ((leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
 
-  /**
-   *
-   * @return
-   */
   public double getRightVelocity(){ //TODO Write Javadoc
     return ((rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
   }
-
-
 
   /**
    * Returns the current wheel speeds of the robot.
@@ -192,12 +169,6 @@ public class DriveTrain extends SubsystemBase {
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
     return new DifferentialDriveWheelSpeeds(getLeftVelocity(), getRightVelocity());
   }
-
-
-
-
-
-
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
@@ -213,8 +184,6 @@ public class DriveTrain extends SubsystemBase {
   public double getAverageEncoderDistance() {
     return (getLeftMeters() + getRightMeters() / 2.0);
   }
-
-
 
   /**
    * Gets the left drive encoder.

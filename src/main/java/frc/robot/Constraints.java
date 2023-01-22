@@ -12,8 +12,6 @@ public class Constraints {
     public Constraints(){
     }
 
-
-
     /**
      * constrain the joystick rate of change when driving to
      * help avoid tipping, especially when the arm is extended.
