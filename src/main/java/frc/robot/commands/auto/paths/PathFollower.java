@@ -7,8 +7,10 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.DashboardManager;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
+import static frc.robot.Constants.DriveTrain.DRIVE_KINEMATICS;
 
 //TODO experimental
 public class PathFollower extends CommandBase{
@@ -49,7 +51,7 @@ public class PathFollower extends CommandBase{
         var initialState = trajectory.sample(0);
 
         //get initial wheel speeds (to find initial acceleration)
-        prevSpeeds = robotState.getDriveKinematics().toWheelSpeeds(new ChassisSpeeds(
+        prevSpeeds = DRIVE_KINEMATICS.toWheelSpeeds(new ChassisSpeeds(
             initialState.velocityMetersPerSecond,
             0,
             initialState.curvatureRadPerMeter * initialState.velocityMetersPerSecond
@@ -57,6 +59,8 @@ public class PathFollower extends CommandBase{
 
         //reset pid controllers
         driveTrain.resetVelocityDrive();
+        robotState.resetOdometry(trajectory.getInitialPose());
+        DashboardManager.getInstance().drawTrajectory(trajectory);
 
         //reset timer
         prevTime = -1;
@@ -83,7 +87,7 @@ public class PathFollower extends CommandBase{
         var chassis = controller.calculate(robotState.getOdometryPose(), trajectory.sample(time));
 
         //get wheel speeds
-        var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
+        var speeds = DRIVE_KINEMATICS.toWheelSpeeds(chassis);
 
         //drive
         driveTrain.velocityDrive(speeds, prevSpeeds, dt);

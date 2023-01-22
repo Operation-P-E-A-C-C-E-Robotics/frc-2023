@@ -28,7 +28,7 @@ public class Pivot extends SubsystemBase {
   }
 
   public Rotation2d getAngle(){
-    return null; //todo
+    return new Rotation2d(0); //todo
   }
 
   @Override

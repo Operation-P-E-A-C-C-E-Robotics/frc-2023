@@ -15,13 +15,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 /**
  * Add your docs here.
  */
-public class Pigeon {
+public class PigeonHelper {
     private final PigeonIMU pg;
     private final BasePigeonSimCollection sim;
 
     // private boolean bumped = false;
 
-    public Pigeon(PigeonIMU pigeon){
+    public PigeonHelper(PigeonIMU pigeon){
         pg = pigeon;
         sim = pg.getSimCollection();
     }

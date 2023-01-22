@@ -13,8 +13,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class DashboardManager {
     private final Field2d field = new Field2d();
     private DifferentialDrive differentialDrive;
+    private static final DashboardManager instance = new DashboardManager();
 
-    public DashboardManager() {
+    private DashboardManager() {
+    }
+
+    public static DashboardManager getInstance(){
+        return instance;
     }
 
     public void drawCone(Pose2d pose){

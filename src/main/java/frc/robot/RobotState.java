@@ -1,10 +1,6 @@
 package frc.robot;
 
-import static frc.robot.Constants.DriveTrain.PIGEON_IMU;
-import static frc.robot.Constants.DriveTrain.TRACK_WIDTH;
-
-import com.ctre.phoenix.sensors.PigeonIMU;
-
+import static frc.robot.Constants.DriveTrain.*;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -13,17 +9,15 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import frc.lib.sensors.Pigeon;
+import frc.lib.sensors.PigeonHelper;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Supersystem;
 
 public class RobotState {
     private final DriveTrain driveTrain;
-    private final Pigeon imu;
+    private final PigeonHelper imu;
 
-    private final DifferentialDriveKinematics driveKinematics; //consider moving to constants
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
 
@@ -35,13 +29,12 @@ public class RobotState {
      * @param driveTrain DriveTrain (for encoder values)
      * @param supersystem Supersystem (for supersystem position + kinematics)
      */
-    public RobotState(DriveTrain driveTrain, Supersystem supersystem, Pigeon imu){
+    public RobotState(DriveTrain driveTrain, Supersystem supersystem, PigeonHelper imu){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         this.imu = imu;
-        driveKinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
-                driveKinematics,
+                DRIVE_KINEMATICS,
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
@@ -51,16 +44,12 @@ public class RobotState {
         );
     }
 
-    public Pigeon getPigeon(){
-        return imu;
-    }
-
     /**
      * update drivetrain odometry
      */
     public void update(){
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
-        RobotContainer.getDashboard().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+        DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
     }
 
     /**
@@ -77,13 +66,6 @@ public class RobotState {
      */
     public void resetOdometry(Pose2d pose){
         fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters(), pose);
-    }
-
-    /**
-     * @return the drivetrain's kinematics
-     */
-    public DifferentialDriveKinematics getDriveKinematics(){
-        return driveKinematics;
     }
 
     /**

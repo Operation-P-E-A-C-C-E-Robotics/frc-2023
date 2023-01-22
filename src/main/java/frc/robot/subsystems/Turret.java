@@ -47,6 +47,6 @@ public class Turret extends SubsystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-    return null; //todo
+    return new Rotation2d(); //todo
   }
 }

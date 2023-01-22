@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.util.JoystickPositionControl;
 import frc.robot.subsystems.Supersystem;
 
-/** An example command that uses an example subsystem. */
+/** test class for kinematics */
 public class KinematicJoystick extends CommandBase {
     private final Supersystem supersystem;
     private final Joystick joystick;
@@ -40,8 +40,8 @@ public class KinematicJoystick extends CommandBase {
     public void execute() {
         Rotation2d endEffector;
         double x = xPositionHelper.get(joystick.getRawAxis(0));
-        double y = xPositionHelper.get(joystick.getRawAxis(1));
-        double z = xPositionHelper.get(joystick.getRawAxis(2));
+        double y = yPositionHelper.get(joystick.getRawAxis(1));
+        double z = zPositionHelper.get(joystick.getRawAxis(2));
         if (x < 0)  endEffector = Rotation2d.fromDegrees(-90);
         else endEffector = Rotation2d.fromDegrees(90);
         supersystem.setSupersystemPosition(new Translation3d(x, y, z), endEffector);

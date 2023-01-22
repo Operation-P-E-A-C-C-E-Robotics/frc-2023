@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.sensors.Pigeon;
+import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.PeaccyDrive;
 import frc.robot.subsystems.*;
@@ -26,7 +26,7 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
-  private final Pigeon pigeon = new Pigeon(new PigeonIMU(20));
+  private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(20));
 
   //subsystems
   private final Arm arm = new Arm();
@@ -44,11 +44,6 @@ public class RobotContainer {
 
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon);
   private final Paths testPaths = new Paths(robotState, driveTrain);
-  private static final DashboardManager dashboard = new DashboardManager();
-
-  public static DashboardManager getDashboard(){
-    return dashboard;
-  }
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -57,7 +52,7 @@ public class RobotContainer {
 
   public void update(){
     robotState.update();
-    dashboard.put();
+    DashboardManager.getInstance().put();
   }
 
   /**

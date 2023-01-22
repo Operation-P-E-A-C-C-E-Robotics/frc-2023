@@ -1,15 +1,15 @@
 package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.subsystems.*;
+import static frc.robot.Constants.Constraints.*;
 
 public class Constraints {
-    private static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
-                               DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 0, //todo
-                               LIFT_EXTENDED_THRESHOLD = 0.4; //todo
     SlewRateLimiter normalDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_NORMAL);
     SlewRateLimiter liftExtendedDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
-    public Constraints(){
+    private Kinematics kinematics;
+
+    public Constraints(Kinematics kinematics){
+        this.kinematics = kinematics;
     }
 
     /**
@@ -21,9 +21,6 @@ public class Constraints {
     public double constrainJoystickFwdJerk(double fwd){
         double normal = normalDriveLimiter.calculate(fwd);
         double extended = liftExtendedDriveLimiter.calculate(fwd);
-        return GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER() > LIFT_EXTENDED_THRESHOLD ? extended : normal;
-    }
-    private double GET_LIFT_X_FROM_KINEMATICS_PLACEHOLDER(){
-        return 0; //TODO
+        return kinematics.getSupersystemPosition().getX() > LIFT_EXTENDED_THRESHOLD ? extended : normal;
     }
 }

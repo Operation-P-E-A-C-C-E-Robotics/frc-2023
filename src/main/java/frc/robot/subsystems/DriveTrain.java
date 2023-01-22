@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.sensors.Pigeon;
+import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
 import frc.robot.RobotContainer;
@@ -36,31 +36,12 @@ public class DriveTrain extends SubsystemBase {
   private final SimpleMotorFeedforward feedforward;
   private final PIDController leftController;
   private final PIDController rightController;
-
-  private final TalonFXSimCollection leftMasterSim = new TalonFXSimCollection(leftMaster);
-  private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
-
-  // Create the simulation model of our drivetrain.
-  DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
-    DCMotor.getFalcon500(2),       // 2 falcon motors on each side of the drivetrain.
-    GEARBOX_RATIO_HIGH,                    // gearing reduction.
-    MOMENT_OF_INERTIA,                     // MOI
-    MASS,                    // The mass of the robot.
-    Units.inchesToMeters(3), // The robot uses 3" radius wheels.
-    0.7112,                  // The track width is 0.7112 meters.
-
-    // The standard deviations for measurement noise:
-    // x and y:          0.001 m
-    // heading:          0.001 rad
-    // l and r velocity: 0.1   m/s
-    // l and r position: 0.005 m
-    VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
-  private final Pigeon pigeon;
+  private final PigeonHelper pigeon;
 
 //TODO  low gear make the robot go backwards so like, do something about it
 
   /** Creates a new DriveTrain. */
-  public DriveTrain(Pigeon pigeon) {
+  public DriveTrain(PigeonHelper pigeon) {
     this.pigeon = pigeon;
 
     leftSlave.follow(leftMaster);
@@ -85,17 +66,6 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-  }
-
-  @Override
-  public void simulationPeriodic(){
-    driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
-    driveSim.update(0.02);
-    leftMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
-    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
-    leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
-    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
-    pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
   }
 
   public double countsToMeters(double encoderCounts){
@@ -125,6 +95,11 @@ public class DriveTrain extends SubsystemBase {
     leftMaster.set(leftSpeed);
     rightMaster.set(rightSpeed);
     differentialDrive.feed();
+  }
+
+
+  public void tankDrive(DriveSignal cheesyDrive) {
+    tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
   }
 
   /**
@@ -207,11 +182,11 @@ public class DriveTrain extends SubsystemBase {
   //WPILib built in odometry methods from docs
 
   public double getLeftVelocity(){ //TODO Write Javadoc
-    return ((leftMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
+    return countsToMeters(leftMaster.getSelectedSensorVelocity());
   }
 
   public double getRightVelocity(){ //TODO Write Javadoc
-    return ((rightMaster.getSelectedSensorVelocity() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
+    return countsToMeters(rightMaster.getSelectedSensorVelocity());
   }
 
   /**
@@ -244,7 +219,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftMeters() {
-    return ((leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION; //TODO convert to Meters
+    return countsToMeters(leftMaster.getSelectedSensorPosition());
   }
 
   /**
@@ -253,7 +228,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightMeters() {
-    return ((leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION; //TODO convert to Meters
+    return countsToMeters(rightMaster.getSelectedSensorPosition());
   }
 
   /**
@@ -265,10 +240,31 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.setMaxOutput(maxOutput);
   }
 
-public void tankDrive(DriveSignal cheesyDrive) {
-  tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
-}
+  //simulation
+  private final TalonFXSimCollection leftMasterSim = new TalonFXSimCollection(leftMaster);
+  private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
 
+  DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
+    DCMotor.getFalcon500(2),
+    GEARBOX_RATIO_HIGH,
+    MOMENT_OF_INERTIA,
+    MASS,
+    Units.inchesToMeters(3), //wheel radius
+    TRACK_WIDTH,
+
+    // The standard deviations for measurement noise:
+    //x meters, y meters, heading rad, l velocity m/s, r velocity m/s, l position m, r position m
+    VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
+  @Override
+  public void simulationPeriodic(){
+    driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
+    driveSim.update(0.02);
+    leftMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
+    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
+    leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
+    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
+    pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
+  }
 }
 
 

@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
@@ -53,7 +54,7 @@ public class HoldDrivetrain extends CommandBase{
         var chassis = controller.calculate(robotState.getOdometryPose(), new State(0,0,0,target,0));
 
         //get wheel speeds
-        var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
+        var speeds = Constants.DriveTrain.DRIVE_KINEMATICS.toWheelSpeeds(chassis);
 
         //drive
         driveTrain.velocityDrive(speeds, prevSpeeds, dt);

@@ -32,13 +32,13 @@ public class Paths {
         //this.robotState = robotState;
         constraint = new DifferentialDriveVoltageConstraint(
             new SimpleMotorFeedforward(kS, kV, kA),
-            robotState.getDriveKinematics(),
+            DRIVE_KINEMATICS,
             AUTO_VOLTAGE_MAX
         );
         config = new TrajectoryConfig(
             AUTO_MAX_SPEED_METERS_PER_SECOND,
             AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED
-        ).setKinematics(robotState.getDriveKinematics()).addConstraint(constraint);
+        ).setKinematics(DRIVE_KINEMATICS).addConstraint(constraint);
     }
 
     public Command testPath(RobotState robotState){
