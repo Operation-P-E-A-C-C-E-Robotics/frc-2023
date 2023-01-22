@@ -6,12 +6,21 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.sensors.Pigeon;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
 import frc.robot.RobotContainer;
@@ -28,10 +37,32 @@ public class DriveTrain extends SubsystemBase {
   private final PIDController leftController;
   private final PIDController rightController;
 
+  private final TalonFXSimCollection leftMasterSim = new TalonFXSimCollection(leftMaster);
+  private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
+
+  // Create the simulation model of our drivetrain.
+  DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
+    DCMotor.getFalcon500(2),       // 2 falcon motors on each side of the drivetrain.
+    GEARBOX_RATIO_HIGH,                    // gearing reduction.
+    MOMENT_OF_INERTIA,                     // MOI
+    MASS,                    // The mass of the robot.
+    Units.inchesToMeters(3), // The robot uses 3" radius wheels.
+    0.7112,                  // The track width is 0.7112 meters.
+
+    // The standard deviations for measurement noise:
+    // x and y:          0.001 m
+    // heading:          0.001 rad
+    // l and r velocity: 0.1   m/s
+    // l and r position: 0.005 m
+    VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
+  private final Pigeon pigeon;
+
 //TODO  low gear make the robot go backwards so like, do something about it
 
   /** Creates a new DriveTrain. */
-  public DriveTrain() {
+  public DriveTrain(Pigeon pigeon) {
+    this.pigeon = pigeon;
+
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
 
@@ -48,9 +79,31 @@ public class DriveTrain extends SubsystemBase {
     rightController = new PIDController(kP, kI, kD);
   }
 
+  public DifferentialDrive getDifferentialDrive(){
+    return differentialDrive;
+  }
+
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+  }
+
+  @Override
+  public void simulationPeriodic(){
+    driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
+    driveSim.update(0.02);
+    leftMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
+    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
+    leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
+    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
+    pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
+  }
+
+  public double countsToMeters(double encoderCounts){
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
+  }
+
+  public double metersToCounts(double meters){
+    return ((meters / METERS_PER_ROTATION) * GEARBOX_RATIO_HIGH) * DRIVE_ENCODER_CPR;
   }
 
   /**

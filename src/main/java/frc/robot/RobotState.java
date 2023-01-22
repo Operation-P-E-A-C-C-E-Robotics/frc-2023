@@ -35,10 +35,10 @@ public class RobotState {
      * @param driveTrain DriveTrain (for encoder values)
      * @param supersystem Supersystem (for supersystem position + kinematics)
      */
-    public RobotState(DriveTrain driveTrain, Supersystem supersystem){
+    public RobotState(DriveTrain driveTrain, Supersystem supersystem, Pigeon imu){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
-        imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
+        this.imu = imu;
         driveKinematics = new DifferentialDriveKinematics(TRACK_WIDTH);
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 driveKinematics,
@@ -51,11 +51,16 @@ public class RobotState {
         );
     }
 
+    public Pigeon getPigeon(){
+        return imu;
+    }
+
     /**
      * update drivetrain odometry
      */
     public void update(){
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
+        RobotContainer.getDashboard().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
     }
 
     /**

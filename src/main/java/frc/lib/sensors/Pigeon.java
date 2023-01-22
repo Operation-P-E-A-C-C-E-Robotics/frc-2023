@@ -7,6 +7,7 @@
 
 package frc.lib.sensors;
 
+import com.ctre.phoenix.sensors.BasePigeonSimCollection;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,11 +17,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
  */
 public class Pigeon {
     private final PigeonIMU pg;
+    private final BasePigeonSimCollection sim;
 
     // private boolean bumped = false;
 
     public Pigeon(PigeonIMU pigeon){
         pg = pigeon;
+        sim = pg.getSimCollection();
+    }
+
+    public void setSimHeading(double heading){
+        sim.setRawHeading(heading);
     }
 
     public short[] getAcceleration(){

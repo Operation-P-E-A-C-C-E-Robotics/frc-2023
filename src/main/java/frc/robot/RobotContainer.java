@@ -4,12 +4,15 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.sensors.Pigeon;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.PeaccyDrive;
 import frc.robot.subsystems.*;
@@ -22,10 +25,13 @@ import frc.robot.subsystems.*;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  //sensors
+  private final Pigeon pigeon = new Pigeon(new PigeonIMU(20));
+
   //subsystems
   private final Arm arm = new Arm();
-  private final DriveTrain driveTrain = new DriveTrain();
   private final Pivot pivot = new Pivot();
+  private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
   private final Wrist wrist = new Wrist();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
@@ -36,12 +42,22 @@ public class RobotContainer {
   //commands
   private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick);
 
-  private final RobotState robotState = new RobotState(driveTrain, supersystem);
+  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon);
   private final Paths testPaths = new Paths(robotState, driveTrain);
+  private static final DashboardManager dashboard = new DashboardManager();
+
+  public static DashboardManager getDashboard(){
+    return dashboard;
+  }
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     configureBindings();
+  }
+
+  public void update(){
+    robotState.update();
+    dashboard.put();
   }
 
   /**

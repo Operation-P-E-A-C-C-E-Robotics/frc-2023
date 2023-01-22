@@ -29,6 +29,8 @@ public final class Constants {
         public static final double DRIVE_ENCODER_CPR = 2048,
                                    GEARBOX_RATIO_HIGH = 10.66,//:1
                                    METERS_PER_ROTATION = 0.4844,
+                                   MOMENT_OF_INERTIA = 7.5, //TODO
+                                   MASS = 60.0, //TODO
                                     TRACK_WIDTH = 0.6; //TODO Configure
 
         public static final int PIGEON_IMU  = 20;
