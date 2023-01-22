@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
+import frc.robot.DashboardManager;
 import frc.robot.RobotContainer;
 import static frc.robot.Constants.DriveTrain.*;
 
@@ -66,6 +68,7 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
+    
   }
 
   public double countsToMeters(double encoderCounts){
@@ -244,7 +247,7 @@ public class DriveTrain extends SubsystemBase {
   private final TalonFXSimCollection leftMasterSim = new TalonFXSimCollection(leftMaster);
   private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
 
-  DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
+  public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
     DCMotor.getFalcon500(2),
     GEARBOX_RATIO_HIGH,
     MOMENT_OF_INERTIA,
@@ -264,7 +267,13 @@ public class DriveTrain extends SubsystemBase {
     leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
     rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
     pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
+
+
+    
   }
+
+
+
 }
 
 

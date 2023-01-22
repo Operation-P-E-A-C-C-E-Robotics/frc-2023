@@ -39,7 +39,7 @@ public class DashboardManager {
         field.setRobotPose(robotPose.getX(), robotPose.getY(), robotPose.getRotation());
     }
 
-    public void put(){
+    public void update(){
         SmartDashboard.putData(field);
         SmartDashboard.putData(differentialDrive);
     }

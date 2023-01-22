@@ -52,7 +52,7 @@ public class RobotContainer {
 
   public void update(){
     robotState.update();
-    DashboardManager.getInstance().put();
+    DashboardManager.getInstance().update();
   }
 
   /**

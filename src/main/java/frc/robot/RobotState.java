@@ -49,7 +49,12 @@ public class RobotState {
      */
     public void update(){
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
-        DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+        if (Robot.isReal()) {
+            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+        } else {
+            // driveTrain.driveSim.setPose(getOdometryPose());
+            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
+        }
     }
 
     /**
