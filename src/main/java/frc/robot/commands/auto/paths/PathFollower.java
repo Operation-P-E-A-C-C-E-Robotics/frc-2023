@@ -12,20 +12,14 @@ import frc.robot.subsystems.DriveTrain;
 
 //TODO experimental
 public class PathFollower extends CommandBase{
-
-    LTVUnicycleController controller = new LTVUnicycleController(
-        VecBuilder.fill(0.08,0.15,2), 
-        VecBuilder.fill(0.5,1.5),
-        0.020
-    );
-   
+    private final LTVUnicycleController controller;
     private final DriveTrain driveTrain;
     private final Trajectory trajectory;
     private final Timer timer;
-    private DifferentialDriveWheelSpeeds prevSpeeds;
-
-    private double prevTime;
     private final RobotState robotState;
+
+    private DifferentialDriveWheelSpeeds prevSpeeds;
+    private double prevTime;
 
     /**
      * experimental path follower, to
@@ -41,13 +35,17 @@ public class PathFollower extends CommandBase{
         this.driveTrain = driveTrain;
         this.trajectory = trajectory;
         this.robotState = robotState;
+        controller = new LTVUnicycleController(
+                VecBuilder.fill(0.08,0.15,2), //maximum desired error tolerances (x meters, y meters, rotation rad)
+                VecBuilder.fill(0.5,1.5), //maximum desired control effort (meters/second, rad/second)
+                0.020 //discretion timestep (loop time) seconds
+        );
         timer = new Timer();
         addRequirements(driveTrain);
     }
 
     @Override
     public void initialize() {
-        System.out.println("AHJKFLDA");
         var initialState = trajectory.sample(0);
 
         //get initial wheel speeds (to find initial acceleration)
@@ -81,13 +79,9 @@ public class PathFollower extends CommandBase{
             return;
         }
 
-        // System.out.println("time: " + time + " prev time: " + prevTime);
-        System.out.println(robotState.getOdometryPose());
-        System.out.println(trajectory.sample(time));
-
         //get chassis speeds from controller
         var chassis = controller.calculate(robotState.getOdometryPose(), trajectory.sample(time));
-        System.out.println(chassis);
+
         //get wheel speeds
         var speeds = robotState.getDriveKinematics().toWheelSpeeds(chassis);
 
@@ -98,12 +92,12 @@ public class PathFollower extends CommandBase{
         prevTime = time;
     }
 
-
     @Override
     public void end(boolean interrupted) {
         driveTrain.tankDriveVolts(0, 0);
         timer.reset();
     }
+
     @Override
     public boolean isFinished() {
         return timer.hasElapsed(trajectory.getTotalTimeSeconds());

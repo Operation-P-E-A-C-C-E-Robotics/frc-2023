@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
 
+//TODO change to use RobotState
 public class Supersystem extends SubsystemBase {
     private final Arm arm;
     private final Pivot pivot;
@@ -15,6 +16,13 @@ public class Supersystem extends SubsystemBase {
     private final Wrist wrist;
     private final Kinematics kinematics;
 
+    /**
+     * unify motion of entire supersystem
+     * @param arm arm subsystem
+     * @param pivot pivot subsystem
+     * @param turret turret subsystem
+     * @param wrist wrist subsystem
+     */
     public Supersystem(Arm arm, Pivot pivot, Turret turret, Wrist wrist){
         this.arm = arm;
         this.pivot = pivot;
@@ -23,6 +31,9 @@ public class Supersystem extends SubsystemBase {
         kinematics = new Kinematics(this);
     }
 
+    /**
+     * @return the current position of all the supersystem joints
+     */
     public SupersystemState getSupersystemState(){
         return new SupersystemState(
             turret.getAngle().getRadians(),
@@ -32,10 +43,14 @@ public class Supersystem extends SubsystemBase {
         );
     }
 
+    /**
+     * @return supersystem kinematics
+     */
     public Kinematics getKinematics(){
         return kinematics;
     }
 
+    //TODO change to tolerance based thing
     public boolean finishedMotion(){
         return arm.finishedMotion()
             && pivot.finishedMotion()
@@ -43,34 +58,66 @@ public class Supersystem extends SubsystemBase {
             && wrist.finishedMotion();
     }
 
+    /**
+     * set the position of all supersystem joints
+     */
     public void setSupersystemState(SupersystemState state){
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
     }
 
+    /**
+     * set the position of the end of the lift
+     * @param position position from the center of the robot
+     */
     public void setSupersystemPosition(Translation3d position){
         setSupersystemState(Kinematics.inverseKinematics(position, wrist.getAngle().getRadians()));
     }
 
+    /**
+     * set the position of the end of the lift, and the wrist angle
+     * @param position position from the center of the robot
+     * @param wristAngle the wrist angle - 0 is straight up
+     */
     public void setSupersystemPosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematics(position, wristAngle.getRadians()));
     }
 
+    /**
+     * set the position of the end effector, and the wrist angle
+     * @param position position from the center of the robot
+     * @param wristAngle the wrist angle - 0 is straight up
+     */
     public void setEndEffectorPosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematicsFromEndEffector(position, wristAngle.getRadians()));
     }
 
+    /**
+     * set the position to the center of where the end effector is held.
+     * @param position position from the center of the robot
+     * @param wristAngle the wrist angle - 0 is straight up
+     */
     public void setPlacePosition(Translation3d position, Rotation2d wristAngle){
         setSupersystemState(Kinematics.inverseKinematicsFromPlacePoint(position, wristAngle.getRadians()));
     }
 
+    /**
+     * set the place point to a field relative point
+     * @param position the point on the field
+     * @param robotPose the robot's pose
+     * @param height the height above the field translation
+     * @param wristAngle the angle of the wrist - 0 is straight up.
+     */
     public void setPlacePositionFieldRelative(Translation2d position, Pose2d robotPose, double height, Rotation2d wristAngle){
         var difference = position.minus(robotPose.getTranslation());
         difference = difference.rotateBy(robotPose.getRotation().unaryMinus()); //TODO positive or negative rotation?
         setPlacePosition(new Translation3d(difference.getX(), position.getY(), height), wristAngle);
     }
 
+    /**
+     * set only the x position of the supersystem
+     */
     public Supersystem setX(double x){
         var position = getKinematics().getSupersystemPosition(); //TODO these all need to get the wrist position
         setPlacePosition(
@@ -80,6 +127,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the y position of the supersystem
+     */
     public Supersystem setY(double y){
         var position = getKinematics().getSupersystemPosition();
         setPlacePosition(
@@ -89,6 +139,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the height of the supersystem
+     */
     public Supersystem setZ(double z){
         var position = getKinematics().getSupersystemPosition();
         setPlacePosition(
@@ -98,6 +151,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the turret
+     */
     public Supersystem setTurret(Rotation2d position){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
@@ -109,6 +165,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the pivot
+     */
     public Supersystem setPivot(Rotation2d position){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
@@ -120,6 +179,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the lift
+     */
     public Supersystem setLift(double extension){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
@@ -131,6 +193,9 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * set only the wrist angle
+     */
     public Supersystem setWrist(Rotation2d position){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
@@ -142,11 +207,19 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
+    /**
+     * modify the joint angles by another state
+     * @param delta the difference between current and target joint angles
+     */
     public Supersystem changeStateBy(SupersystemState delta){
         setSupersystemState(getSupersystemState().plus(delta));
         return this;
     }
 
+    /**
+     * modify the position of the end of the arm by a translation
+     * @param delta difference between current and target positions
+     */
     public Supersystem changePositionBy(Translation3d delta){
         setSupersystemPosition(getKinematics().getSupersystemPosition().plus(delta));
         return this;

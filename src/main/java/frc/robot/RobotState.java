@@ -1,7 +1,7 @@
 package frc.robot;
 
-import static frc.robot.Constants.Auto.PIGEON_IMU;
-import static frc.robot.Constants.Auto.TRACK_WIDTH;
+import static frc.robot.Constants.DriveTrain.PIGEON_IMU;
+import static frc.robot.Constants.DriveTrain.TRACK_WIDTH;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
@@ -35,7 +35,7 @@ public class RobotState {
      * @param driveTrain DriveTrain (for encoder values)
      * @param supersystem Supersystem (for supersystem position + kinematics)
      */
-    public RobotState(RobotContainer robot, DriveTrain driveTrain, Supersystem supersystem){
+    public RobotState(DriveTrain driveTrain, Supersystem supersystem){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         imu = new Pigeon(new PigeonIMU(PIGEON_IMU));
@@ -45,7 +45,7 @@ public class RobotState {
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
-                robot.getStartingPose(),
+                new Pose2d(), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
@@ -222,6 +222,13 @@ public class RobotState {
         ));
     }
 
+    /**
+     * convert from a pose relative to the center of a game piece
+     * held in the end effector to the same pose relative to the
+     * end effector
+     * @param placePointPoint the pose relative to the place point
+     * @return the pose offset to account for where the game piece is held
+     */
     public Pose3d placePointToEndEffector(Pose3d placePointPoint){
         return placePointPoint.plus(new Transform3d(
                 new Translation3d(-0.1,0,0),
@@ -229,6 +236,12 @@ public class RobotState {
         )); //TODO offset and check math
     }
 
+    /**
+     * convert from a pose relative to the end effector
+     * to a pose relative to the camera on the end effector
+     * @param endEffectorPoint pose relative to the end effector
+     * @return pose offset to account for camera position
+     */
     public Pose3d endEffectorToEndEffectorCamera(Pose3d endEffectorPoint){
         return endEffectorPoint.relativeTo(new Pose3d(
                 0,0,0, //TODO camera position
@@ -236,6 +249,12 @@ public class RobotState {
         ));
     }
 
+    /**
+     * convert from a pose relative to the end effector camera to a pose
+     * relative to the end effector
+     * @param endEffectorPoint pose relative to the end effector
+     * @return pose with offset to account for camera position
+     */
     public Pose3d endEffectorCameraToEndEffector(Pose3d endEffectorPoint){
         return endEffectorPoint.plus(new Transform3d(
                 new Translation3d(0,0,0), //TODO camera position

@@ -14,7 +14,7 @@ import frc.robot.subsystems.DriveTrain;
 
 import java.util.List;
 
-import static frc.robot.Constants.Auto.*;
+import static frc.robot.Constants.DriveTrain.*;
 /**
 * will hold all paths the robot will follow
 */

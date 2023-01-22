@@ -281,43 +281,4 @@ public class Kinematics {
             return "turret: " + new Rotation2d(turretAngle).getDegrees() + " pivot: " + new Rotation2d(pivotAngle).getDegrees() + " arm: " + liftExtension;
         }
     }
-
-//    public static class Position{
-//        private final double x,y,z;
-//        /**
-//         * A class to hold the position of the lift, relative to the robot
-//         * @param x positive towards the front of the robot
-//         * @param y positive to the left of the robot
-//         * @param z positive up
-//         */
-//        public Position(double x, double y, double z){
-//            this.x = x;
-//            this.y = y;
-//            this.z = z;
-//        }
-//        public double getX(){
-//            return x;
-//        }
-//        public double getY(){
-//            return y;
-//        }
-//        public double getZ(){
-//            return z;
-//        }
-//        public static Position fromTranslation(Translation2d translation, double height){
-//            return new Position(translation.getX(), translation.getY(), height);
-//        }
-//        public String toString(){
-//            return "x: " + x + " y: " + y + " z: " + z;
-//        }
-//        public Position add(double x, double y, double z){
-//            return new Position(this.x + x, this.y + y, this.z + z);
-//        }
-//        public Position add(Position other){
-//            return new Position(this.x + other.getX(), this.y + other.getY(), this.z + other.getZ());
-//        }
-//        public Translation3d subtract(Position other){
-//            return new Position(this.x - other.getX(), this.y - other.getY(), this.z - other.getZ());
-//        }
-//    }
 }

@@ -10,13 +10,9 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.commands.PeaccyDrive;
 import frc.robot.commands.auto.paths.Paths;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Turret;
-import frc.robot.subsystems.Wrist;
+import frc.robot.commands.drive.PeaccyDrive;
+import frc.robot.subsystems.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,41 +23,25 @@ import frc.robot.subsystems.Wrist;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //subsystems
-  private final DriveTrain driveTrain;
-  private final RobotState robotState;
-  //private final Paths paths = new Paths(odometry, driveTrain);
-  private final Constraints constrains;
-  
-  //commands
-  private final PeaccyDrive teleoperatedDriverControl;
+  private final Arm arm = new Arm();
+  private final DriveTrain driveTrain = new DriveTrain();
+  private final Pivot pivot = new Pivot();
+  private final Turret turret = new Turret();
+  private final Wrist wrist = new Wrist();
+  private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
   //OI
-  private Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK); 
-  private DashboardManager dashboardManager;
-  private Command autoCommand;
+  private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
+
+  //commands
+  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick);
+
+  private final RobotState robotState = new RobotState(driveTrain, supersystem);
+  private final Paths testPaths = new Paths(robotState, driveTrain);
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    driveTrain = new DriveTrain(this);
-    robotState = new RobotState(this, driveTrain, null);
-    constrains = new Constraints(driveTrain, new Arm(), new Pivot(), new Turret(), new Wrist(), robotState);
-    teleoperatedDriverControl =  new PeaccyDrive(this.driveTrain, driverJoystick);
-    dashboardManager = new DashboardManager(driveTrain, robotState);
-    autoCommand = new Paths(robotState, driveTrain).testPath(robotState);
-    
-    // Configure the button bindings
     configureBindings();
-
-    //default commands
-    driveTrain.setDefaultCommand(teleoperatedDriverControl);
-  }
-
-  public Pose2d getStartingPose(){
-    return new Pose2d(0,0,new Rotation2d(0));
-  }
-
-  public void updateRobotState(){
-    robotState.update();
-
   }
 
   /**
@@ -70,7 +50,9 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureBindings() {}
+  private void configureBindings() {
+    driveTrain.setDefaultCommand(peaccyDrive);
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -79,6 +61,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return autoCommand;
+    return testPaths.testPath(robotState);
   }
 }

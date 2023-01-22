@@ -14,10 +14,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
-import frc.robot.DashboardManager;
 import frc.robot.RobotContainer;
-
-import static frc.robot.Constants.Auto.*;
 import static frc.robot.Constants.DriveTrain.*;
 
 public class DriveTrain extends SubsystemBase {
@@ -25,9 +22,7 @@ public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
-  public DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
-  private Constraints constraints;
-  private final RobotContainer robot;
+  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
   private final SimpleMotorFeedforward feedforward;
   private final PIDController leftController;
@@ -36,35 +31,33 @@ public class DriveTrain extends SubsystemBase {
 //TODO  low gear make the robot go backwards so like, do something about it
 
   /** Creates a new DriveTrain. */
-  public DriveTrain(RobotContainer robot) {
-    this.robot = robot;
-    
+  public DriveTrain() {
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
-    
+
     leftMaster.setInverted(true);
     rightMaster.setInverted(false);
-    
-    leftSlave.setInverted(InvertType.FollowMaster); 
-    rightSlave.setInverted(InvertType.FollowMaster); 
-    
+
+    leftSlave.setInverted(InvertType.FollowMaster);
+    rightSlave.setInverted(InvertType.FollowMaster);
+
     setNeutralMode(NeutralMode.Brake);
-    
+
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
- 
+
 
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    // SmartDashboard.putData(differentialDrive);
     DashboardManager.updateDrivetrain(differentialDrive);
+
   }
-
- 
-
 
   /**
    * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
@@ -75,7 +68,7 @@ public class DriveTrain extends SubsystemBase {
     leftMaster.setNeutralMode(mode);
     rightMaster.setNeutralMode(mode);
   }
-  
+
   /**
    * input 2 doubles to drive the drivetrain motors separately
    * @param leftSpeed the speed to set the left motors to (Double)
@@ -101,14 +94,13 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * drive the robot in Arcade mode using the built in WPILib differential drive class
-   * @param xForward joystick forward backward axis
-   * @param zRotate joystick left right axis
+   * drive the robot in Arcade mode using the built-in WPILib differential drive class
+   * @param forward joystick forward backward axis
+   * @param wheel joystick left right axis
    *
    */
   public void arcadeDrive(double forward, double wheel) {
-    double forwardFiltered = forward;//robot.constrains.constrainJoystickFwdJerk(forward);
-    tankDrive(new DriveSignal(forwardFiltered + wheel, forwardFiltered - wheel));
+    tankDrive(new DriveSignal(forward + wheel, forward - wheel));
     differentialDrive.feed();
   }
 
@@ -143,7 +135,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * 
+   *
    * @param speeds
    * @param previousSpeeds
    * @param dt
@@ -175,7 +167,7 @@ public class DriveTrain extends SubsystemBase {
   //WPILib built in odometry methods from docs
 
   /**
-   * 
+   *
    * @return
    */
   public double getLeftVelocity(){ //TODO Write Javadoc
@@ -183,7 +175,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * 
+   *
    * @return
    */
   public double getRightVelocity(){ //TODO Write Javadoc

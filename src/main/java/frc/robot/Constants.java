@@ -14,8 +14,9 @@ package frc.robot;
  */
 public final class Constants {
     public static final class Kinematics {
-        public static final double PIVOT_HEIGHT = 0; //TODO how high the pivot is above the ground
-
+        public static final double  PIVOT_HEIGHT = 0,
+                                    END_EFFECTOR_LENGTH = 0.1,
+                                    END_EFFECTOR_LENGTH_TO_PLACE = 0;
     }
 
 
@@ -25,35 +26,28 @@ public final class Constants {
                                 RIGHT_MASTER = 2,
                                 RIGHT_SLAVE  = 3;
 
-        public static final double DRIVE_ENCODER_CPR = 2048;
-        public static final double GEARBOX_RATIO_HIGH = 10.66;//:1
-        public static final double METERS_PER_ROTATION = 0.4844;
+        public static final double DRIVE_ENCODER_CPR = 2048,
+                                   GEARBOX_RATIO_HIGH = 10.66,//:1
+                                   METERS_PER_ROTATION = 0.4844,
+                                    TRACK_WIDTH = 0.6; //TODO Configure
+
+        public static final int PIGEON_IMU  = 20;
+
+        //velocity constants:
+        public static final double  kS = 0.10351,
+                                    kV = 2.4155,
+                                    kA = 0.2751,
+                                    kP = 0.24921,
+                                    kI = 0,
+                                    kD = 0,
+                                    RAMSETE_B = 2.0,
+                                    RAMSETE_ZETA = 0.3,
+                                    AUTO_VOLTAGE_MAX = 7,
+                                    AUTO_MAX_SPEED_METERS_PER_SECOND = 1,
+                                    AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.8;
     }
 
     public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0;
-    }
-
-    public static final class EndEffector {
-        public static final double LENGTH = 0.1,
-                                  LENGTH_TO_PLACE = 0;
-    }
-
-    @SuppressWarnings("HungarianNotationConstants")
-    public static final class Auto {
-        public static final int PIGEON_IMU  = 20;
-        public static final double TRACK_WIDTH = 0.6; //TODO Configure
-
-        public static final double kS = 0.10351,
-                                  kV = 2.4155,
-                                  kA = 0.2751,
-                                  kP = 0.24921,
-                                  kI = 0,
-                                  kD = 0,
-                                  RAMSETE_B = 2.0,
-                                  RAMSETE_ZETA = 0.3,
-                                  AUTO_VOLTAGE_MAX = 7,
-                                  AUTO_MAX_SPEED_METERS_PER_SECOND = 1,
-                                  AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.8;
     }
 }
