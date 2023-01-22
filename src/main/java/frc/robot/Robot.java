@@ -21,6 +21,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
+
+    
   }
 
   @Override
@@ -44,6 +46,7 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+    robotContainer.setDriveTrainCommand();
   }
 
   @Override

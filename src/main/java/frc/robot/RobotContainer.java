@@ -6,14 +6,15 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
+import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.PeaccyDrive;
 import frc.robot.subsystems.*;
 
@@ -38,16 +39,20 @@ public class RobotContainer {
 
   //OI
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
+  private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
 
   //commands
   private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick);
-
+  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick);
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon);
   private final Paths testPaths = new Paths(robotState, driveTrain);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     configureBindings();
+    teleopDriveMode.setDefaultOption("Arcade Drive", arcadeDrive);
+    teleopDriveMode.addOption("Cheezy Drive",peaccyDrive);
+    SmartDashboard.putData("Drive Mode", teleopDriveMode);
   }
 
   public void update(){
@@ -62,7 +67,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    driveTrain.setDefaultCommand(peaccyDrive);
+    
   }
 
   /**
@@ -74,4 +79,12 @@ public class RobotContainer {
     // An example command will be run in autonomous
     return testPaths.testPath(robotState);
   }
+  public Command teleCommand() {
+    return teleopDriveMode.getSelected();
+  }
+
+  public void setDriveTrainCommand() {
+    driveTrain.setDefaultCommand(teleCommand());
+  }
+
 }
