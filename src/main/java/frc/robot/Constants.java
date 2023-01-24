@@ -15,4 +15,8 @@ package frc.robot;
 public final class Constants {
 
 
+    public static final class Pivot{
+        public static final int PIVOT_MASTER = 50, //TODO Arbitrary number to not conflict
+                                PIVOT_SLAVE  = 51;
+    }
 }
