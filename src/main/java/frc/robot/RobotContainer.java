@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.sensors.ApriltagLimelight;
 import frc.lib.sensors.Limelight;
@@ -18,7 +19,7 @@ import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.PeaccyDrive;
-import frc.robot.subsystems.*;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a

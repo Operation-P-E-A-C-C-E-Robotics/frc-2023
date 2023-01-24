@@ -15,13 +15,12 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final class Kinematics {
-        public static final double   PIVOT_HEIGHT = 0,
-                                    END_EFFECTOR_LENGTH = 0.1,
-                                    END_EFFECTOR_LENGTH_TO_PLACE = 0;
+
+
+    public static final class Pivot{
+        public static final int PIVOT_MASTER = 50, //TODO Arbitrary number to not conflict
+                                PIVOT_SLAVE  = 51;
     }
-
-
     public static final class DriveTrain {
         public static final int  LEFT_MASTER  = 0,
                                 LEFT_SLAVE   = 1,
