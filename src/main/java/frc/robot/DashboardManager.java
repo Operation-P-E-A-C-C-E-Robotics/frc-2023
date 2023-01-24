@@ -8,14 +8,18 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.sensors.ApriltagLimelight;
 
 /** Add your docs here. */
 public class DashboardManager {
     private final Field2d field = new Field2d();
     private DifferentialDrive differentialDrive;
     private static final DashboardManager instance = new DashboardManager();
+    // private static final RobotState robotState;
+    // private static final ApriltagLimelight aprilTagLimelight = new ApriltagLimelight();
 
     private DashboardManager() {
+        // this.robotState = robotState;
     }
 
     public static DashboardManager getInstance(){
@@ -24,6 +28,10 @@ public class DashboardManager {
 
     public void drawCone(Pose2d pose){
         field.getObject("cone").setPose(pose);
+    }
+
+    public void drawAprilTag(Pose2d pose){
+        field.getObject("apriltag").setPose(pose);
     }
 
     public void drawCube(Pose2d pose){

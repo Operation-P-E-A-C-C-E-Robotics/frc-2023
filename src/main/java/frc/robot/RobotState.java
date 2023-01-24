@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
+import frc.lib.sensors.ApriltagLimelight;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Supersystem;
@@ -20,6 +22,7 @@ public class RobotState {
 
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
+    private ApriltagLimelight limelight;
 
 
 
@@ -29,10 +32,11 @@ public class RobotState {
      * @param driveTrain DriveTrain (for encoder values)
      * @param supersystem Supersystem (for supersystem position + kinematics)
      */
-    public RobotState(DriveTrain driveTrain, Supersystem supersystem, PigeonHelper imu){
+    public RobotState(DriveTrain driveTrain, Supersystem supersystem, PigeonHelper imu, ApriltagLimelight limelight){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         this.imu = imu;
+        this.limelight = limelight;
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 DRIVE_KINEMATICS,
                 imu.getRotation(),
@@ -40,7 +44,7 @@ public class RobotState {
                 driveTrain.getRightMeters(),
                 new Pose2d(), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.02)
         );
     }
 
@@ -48,13 +52,15 @@ public class RobotState {
      * update drivetrain odometry
      */
     public void update(){
-        fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
+        limelight.updatePoseEstimator(fieldToDrivetrainEstimator);
+        fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
             // driveTrain.driveSim.setPose(getOdometryPose());
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
+        DashboardManager.getInstance().drawAprilTag(limelight.getCameraPose());
     }
 
     /**
