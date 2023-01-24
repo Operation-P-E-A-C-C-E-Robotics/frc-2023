@@ -8,14 +8,19 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
+import java.util.function.DoubleSupplier;
+
 public class ArcadeDrive extends CommandBase {
   private final DriveTrain driveTrain;
-  private final Joystick driverJoystick;
+  private final DoubleSupplier forwardSupplier;
+  private final DoubleSupplier rotationSupplier;
+
   /** Creates a new TeleoperatedDriverControl. */
-  public ArcadeDrive(DriveTrain driveTrain, Joystick driverJoystick) {
+  public ArcadeDrive(DriveTrain driveTrain, DoubleSupplier forward, DoubleSupplier rotation) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveTrain);
-    this.driverJoystick = driverJoystick;
+    this.forwardSupplier = forward;
+    this.rotationSupplier = rotation;
     this.driveTrain = driveTrain;
   }
 
@@ -27,6 +32,6 @@ public class ArcadeDrive extends CommandBase {
 
   @Override
   public void execute() {
-    driveTrain.arcadeDrive(-driverJoystick.getY(), driverJoystick.getX());
+    driveTrain.arcadeDrive(-forwardSupplier.getAsDouble(), rotationSupplier.getAsDouble());
   }
 }

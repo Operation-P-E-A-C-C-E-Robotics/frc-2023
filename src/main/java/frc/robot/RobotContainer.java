@@ -46,8 +46,8 @@ public class RobotContainer {
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
 
   //commands
-  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick);
-  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick);
+  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick::getY, driverJoystick::getX, () -> driverJoystick.getRawButton(1));
+  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick::getY, driverJoystick::getX);
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight);
   private final Paths testPaths = new Paths(robotState, driveTrain);
 
