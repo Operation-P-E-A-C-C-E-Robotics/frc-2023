@@ -14,8 +14,11 @@ public class ApriltagLimelight {
     private final DoubleArraySubscriber botposeSub;
     private DoubleArraySubscriber cameraPoseSub;
     private DoubleSubscriber latencySub;
-    private DoubleSubscriber TEEELOOOOONGGGGG;
-    private DoubleArraySubscriber TEEEEEEEECOOOORNEXUAIIII;
+    private DoubleSubscriber tLong;
+    private DoubleArraySubscriber tCorners;
+    
+
+    
 
     public ApriltagLimelight(){
         NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
@@ -24,8 +27,8 @@ public class ApriltagLimelight {
         DoubleArrayTopic cameraPoseTopic = limelight.getDoubleArrayTopic("campose");
         botposeSub = botposeTopic.subscribe(new double[0]);
         latencySub = limelight.getDoubleTopic("tl").subscribe(0);
-        TEEEEEEEECOOOORNEXUAIIII = limelight.getDoubleArrayTopic("tcornxy").subscribe(new double[0]);
-        TEEELOOOOONGGGGG = limelight.getDoubleTopic("tlong").subscribe(0);
+        tCorners = limelight.getDoubleArrayTopic("tcornxy").subscribe(new double[0]);
+        tLong = limelight.getDoubleTopic("tlong").subscribe(0);
         cameraPoseSub = cameraPoseTopic.subscribe(new double[0]);
     }
 
@@ -60,7 +63,7 @@ public class ApriltagLimelight {
     // }
 
     public double getTLONGGGGGGG(){
-        return TEEELOOOOONGGGGG.get();
+        return tLong.get();
     }
 
     public Pose2d getCameraPose() {
