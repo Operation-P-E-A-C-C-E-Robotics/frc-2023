@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class ApriltagLimelight {
     private final static String NETWORKTABLES_NAME = "limelight"; //TODO
@@ -42,9 +43,9 @@ public class ApriltagLimelight {
         TimestampedDoubleArray[] visionMeasurements = botposeSub.readQueue();
         for(TimestampedDoubleArray i : visionMeasurements){
             double time = Timer.getFPGATimestamp();// - getLatency();
-            System.out.println("asdfasdf");
-            System.out.println(Timer.getFPGATimestamp());
-            System.out.println(time);
+            // System.out.println("asdfasdf");
+            // System.out.println(Timer.getFPGATimestamp());
+            // System.out.println(time);
             double[] val = i.value;
             if(val.length == 6) {
                 estimator.addVisionMeasurement(new Pose2d(
@@ -53,7 +54,9 @@ public class ApriltagLimelight {
                         Rotation2d.fromDegrees(val[5])
                 )//.relativeTo(new Pose2d(halfFieldWidth, halfFieldHeight, Rotation2d.fromDegrees(180)))
                 ,time,
-                VecBuilder.fill(1/getTLONGGGGGGG(), 1/getTLONGGGGGGG(), 10/getTLONGGGGGGG()));
+                VecBuilder.fill(1/getTLong(), 1/getTLong(), 10/getTLong()));
+            
+                SmartDashboard.putNumber("Vec Builder", 1/getTLong());
             }
         }
     }
@@ -62,11 +65,11 @@ public class ApriltagLimelight {
     //     new Translation2d().
     // }
 
-    public double getTLONGGGGGGG(){
+    public double getTLong(){
         return tLong.get();
     }
 
-    public Pose2d getCameraPose() {
+    public Pose2d getCameraPose() { //TODO Javadoc
         var camData = cameraPoseSub.get();
         if (camData.length == 3) {
             return new Pose2d(camData[0], camData[1], new Rotation2d());
