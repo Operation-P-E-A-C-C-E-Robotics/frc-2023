@@ -48,6 +48,7 @@ public class DashboardManager {
 
     public void update(){
         SmartDashboard.putData(field);
-        SmartDashboard.putData(differentialDrive);
+        // SmartDashboard.putData(differentialDrive); Unneccisary Clutter
+        
     }
 }
