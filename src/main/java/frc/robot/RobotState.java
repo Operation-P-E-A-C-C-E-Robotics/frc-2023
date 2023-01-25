@@ -4,16 +4,12 @@ import static frc.robot.Constants.DriveTrain.*;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
-import frc.lib.sensors.ApriltagLimelight;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
 
 public class RobotState {
@@ -22,21 +18,21 @@ public class RobotState {
 
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
-    private ApriltagLimelight limelight;
+    private Limelight apriltagCamera, armCamera;
 
 
 
     /**
      * A class to keep track of the position of different robot elements on the field.
-     * @param robot RobotContainer (for initial pose)
      * @param driveTrain DriveTrain (for encoder values)
      * @param supersystem Supersystem (for supersystem position + kinematics)
      */
-    public RobotState(DriveTrain driveTrain, Supersystem supersystem, PigeonHelper imu, ApriltagLimelight limelight){
+    public RobotState(DriveTrain driveTrain, Supersystem supersystem, PigeonHelper imu, Limelight apriltagCamera, Limelight armCamera){
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         this.imu = imu;
-        this.limelight = limelight;
+        this.apriltagCamera = apriltagCamera;
+        this.armCamera = armCamera;
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 DRIVE_KINEMATICS,
                 imu.getRotation(),
@@ -48,11 +44,27 @@ public class RobotState {
         );
     }
 
+    public Pose3d testConeDetection(){
+        var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
+        var pose = drivetrainToField(
+                apriltagCameraToDriveTrain(
+                        new Pose3d(
+                                poseRelativeToCamera.getX(),
+                                poseRelativeToCamera.getY(),
+                                0,
+                                new Rotation3d()
+                        )
+                )
+        );
+        DashboardManager.getInstance().drawCone(new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
+        return pose;
+    }
+
     /**
      * update drivetrain odometry
      */
     public void update(){
-        limelight.updatePoseEstimator(fieldToDrivetrainEstimator);
+        apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
@@ -60,7 +72,7 @@ public class RobotState {
             // driveTrain.driveSim.setPose(getOdometryPose());
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
-        DashboardManager.getInstance().drawAprilTag(limelight.getCameraPose());
+        DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
     }
 
     /**
@@ -78,6 +90,8 @@ public class RobotState {
     public void resetOdometry(Pose2d pose){
         fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters(), pose);
     }
+
+    public void getCubePosition(){}
 
     /**
      * convert a point on the field to it's robot-relative equivalent
