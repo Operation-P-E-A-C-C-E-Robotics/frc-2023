@@ -13,8 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.sensors.ApriltagLimelight;
-import frc.lib.sensors.Limelight;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
@@ -31,7 +29,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(20));
-  private final ApriltagLimelight apriltagLimelight = new ApriltagLimelight();
+  private final Limelight apriltagLimelight = new Limelight("limelight"),
+                          armLimelight = new Limelight("limelight"); //TODO
 
   //subsystems
   private final Arm arm = new Arm();
@@ -41,15 +40,15 @@ public class RobotContainer {
   private final Wrist wrist = new Wrist();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
-
   //OI
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
 
   //commands
-  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick);
-  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick);
-  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight);
+  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick::getY, driverJoystick::getX, () -> driverJoystick.getRawButton(1));
+  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick::getY, driverJoystick::getX);
+
+  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
   private final Paths testPaths = new Paths(robotState, driveTrain);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */

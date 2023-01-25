@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 /*
  *Simple class for interfacing with the limelight camera.
 */
-public class Limelight {
+public class Limelight_old {
   public NetworkTable limelight = NetworkTableInstance.getDefault().getTable("limelight");
   private final double tHeight;
   private final double cHeight;
@@ -18,7 +18,7 @@ public class Limelight {
    * @param targetHeight the height of the target for calculating distance
    * @param cameraHeight the height of the camera for calculating distance
    */
-  public Limelight(double targetHeight, double cameraHeight, double cameraAngle){
+  public Limelight_old(double targetHeight, double cameraHeight, double cameraAngle){
     tHeight = targetHeight;
     cHeight = cameraHeight;
     cAngle = cameraAngle;
