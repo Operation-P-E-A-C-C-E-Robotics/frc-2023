@@ -7,6 +7,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
@@ -46,6 +47,7 @@ public class RobotState {
 
     public Pose3d testConeDetection(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
+        //System.out.println(poseRelativeToCamera);
         var pose = drivetrainToField(
                 apriltagCameraToDriveTrain(
                         new Pose3d(
@@ -54,9 +56,16 @@ public class RobotState {
                                 0,
                                 new Rotation3d()
                         )
-                )
+               )
+        );
+        pose = new Pose3d(
+            -pose.getX(),
+            -pose.getY(),
+            pose.getZ(),
+            pose.getRotation()
         );
         DashboardManager.getInstance().drawCone(new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
+        System.out.println(pose);
         return pose;
     }
 
@@ -73,6 +82,7 @@ public class RobotState {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
         DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
+        testConeDetection();
     }
 
     /**
@@ -112,6 +122,10 @@ public class RobotState {
         ));
     }
 
+    // public Pose3d fieldOriginFromDrivetrain(){
+        
+    // }
+
     /**
      * convert a drivetrain relative point to a field-relative point
      * @param drivetrainPoint a pose relative to the center of the drivetrain
@@ -119,18 +133,45 @@ public class RobotState {
      */
     public Pose3d drivetrainToField(Pose3d drivetrainPoint){
         Pose2d fieldToRobot = fieldToDrivetrainEstimator.getEstimatedPosition();
+        // var x = drivetrainPoint.getX();
+        // var y = drivetrainPoint.getY();
+        // var theta = fieldToRobot.getRotation();
+        // var cosTheta = theta.getCos();
+        // var sinTheta = theta.getSin();
+        // Pose3d rotatedDrivetrainPoint = new Pose3d(
+        //     x * cosTheta - y * sinTheta,
+        //     y * cosTheta + x * sinTheta,
+        //     drivetrainPoint.getZ();
+        //     new Rotation3d(
+        //         drivetrainPoint.getRotation().getX(),
+        //         drivetrainPoint.getY(),
+        //         drivetrainPoint.getZ() - theta.getRadians()
+        //     )
+        // );
+        // return new Pose3d(
+        //         fieldToRobot.getX(),
+        //         fieldToRobot.getY(),
+        //         0, //TODO apriltag z
+        //         new Rotation3d(
+        //                 Units.degreesToRadians(imu.getRoll()), //TODO better yaw pitch roll
+        //                 Units.degreesToRadians(imu.getPitch()),
+        //                 imu.getRotation().getRadians()
+        //         )
+        // ).plus(new Transform3d(
+        //         drivetrainPoint.getTranslation(),
+        //         drivetrainPoint.getRotation()
+        // ));
         return new Pose3d(
-                fieldToRobot.getX(),
-                fieldToRobot.getY(),
-                0, //TODO apriltag z
-                new Rotation3d(
-                        Units.degreesToRadians(imu.getRoll()), //TODO better yaw pitch roll
-                        Units.degreesToRadians(imu.getPitch()),
-                        imu.getRotation().getRadians()
-                )
-        ).plus(new Transform3d(
-                drivetrainPoint.getTranslation(),
-                drivetrainPoint.getRotation()
+            fieldToRobot.getX(),
+            fieldToRobot.getY(),
+            0,
+            new Rotation3d(
+                0,0,
+                imu.getRotation().getRadians()
+            )
+        ).relativeTo(new Pose3d(
+            new Translation3d().minus(drivetrainPoint.getTranslation()),
+            new Rotation3d().minus(drivetrainPoint.getRotation())
         ));
     }
 
@@ -180,9 +221,9 @@ public class RobotState {
      * @return the pose offset to account for the camera position
      */
     public Pose3d apriltagCameraToDriveTrain(Pose3d apriltagCameraPoint){
-        return apriltagCameraPoint.plus(new Transform3d(
+        return apriltagCameraPoint.relativeTo(new Pose3d(
                 new Translation3d(0,0,0), //TODO camera center in robot
-                new Rotation3d(0,0,0) //TODO camera rotation in robot
+                new Rotation3d(0,0,Units.degreesToRadians(180)) //TODO camera rotation in robot
         ));
     }
 

@@ -8,7 +8,7 @@ import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 
 public class LimelightHelper {
-    private static final double FOCAL_LENGTH = 0; //TODO
+    private static final double FOCAL_LENGTH = (1 * 240) / 0.32; //TODO 183 px = 0.21 meters
 
     private final DoubleArraySubscriber botpose, campose, camtran, tcornxy, tc;
     private final DoubleSubscriber tv, tx, ty, ta, ts, tl, tshort, tlong, thor, tvert;
@@ -156,8 +156,7 @@ public class LimelightHelper {
      * @return approximate distance
      */
     public double getDistance(double objectHeight, double objectWidth, BoundingBox target){
-        return Math.min((objectHeight * FOCAL_LENGTH) / target.getHeight(),
-                        (objectWidth * FOCAL_LENGTH) / target.getWidth());
+        return (objectHeight * FOCAL_LENGTH) / getRoughHeight();
     }
 
     /**
