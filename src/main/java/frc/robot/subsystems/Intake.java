@@ -4,13 +4,22 @@
 
 package frc.robot.subsystems;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
-  public static IntakeState intakeState = frc.robot.subsystems.Intake.intakeState.OPEN;
+  private IntakeState intakeState = IntakeState.OPEN;
+  private final CANSparkMax leftMotor = new CANSparkMax(0, MotorType.kBrushless);
+  private final CANSparkMax rightMotor = new CANSparkMax(1, MotorType.kBrushless);
   /** Creates a new Intake. */
   public Intake() {
-  }
+    leftMotor.setInverted(false);
+    rightMotor.setInverted(false);
+    }
 
   @Override
   public void periodic() {
@@ -21,7 +30,8 @@ public class Intake extends SubsystemBase {
    * @param speed
    */
   public void setPercent(double speed) {
-
+    leftMotor.set(speed);
+    rightMotor.set(speed);
   }
 
   /**
