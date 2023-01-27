@@ -73,6 +73,10 @@ public class RobotState {
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
+    public Pose3d getRawApriltagBotpose(){
+        return apriltagCamera.getBotpose();
+    }
+
     /**
      * get pose from odometry
      * @return robot's position, relative to the field
