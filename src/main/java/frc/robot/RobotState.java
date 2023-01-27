@@ -9,6 +9,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
+import frc.lib.util.AveragePose;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
@@ -16,7 +17,7 @@ import frc.robot.subsystems.Supersystem;
 public class RobotState {
     private final DriveTrain driveTrain;
     private final PigeonHelper imu;
-
+    private final AveragePose conePoseSmoothed = new AveragePose();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private Limelight apriltagCamera, armCamera;
@@ -39,7 +40,7 @@ public class RobotState {
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
-                new Pose2d(), //TODO starting pose
+                new Pose2d(10, 5, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.02)
         );
@@ -64,8 +65,12 @@ public class RobotState {
             pose.getZ(),
             pose.getRotation()
         );
+
+        // conePoseSmoothed.reset();
+        pose = conePoseSmoothed.calculate(pose);
+
         DashboardManager.getInstance().drawCone(new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
-        System.out.println(pose);
+        // System.out.println(pose);
         return pose;
     }
 
