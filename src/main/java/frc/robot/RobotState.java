@@ -7,9 +7,9 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.AveragePose;
+import frc.lib.util.Util;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
@@ -41,36 +41,18 @@ public class RobotState {
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
                 new Pose2d(10, 5, new Rotation2d()), //TODO starting pose
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), //TODO figure out wtf these are
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.02)
         );
     }
 
-    public Pose3d testConeDetection(){
+    public Pose3d getConePose(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
-        //System.out.println(poseRelativeToCamera);
-        var pose = drivetrainToField(
-                apriltagCameraToDriveTrain(
-                        new Pose3d(
-                                poseRelativeToCamera.getX(),
-                                poseRelativeToCamera.getY(),
-                                0,
-                                new Rotation3d()
-                        )
-               )
-        );
-        pose = new Pose3d(
-            -pose.getX(),
-            -pose.getY(),
-            pose.getZ(),
-            pose.getRotation()
-        );
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera)));
 
-        // conePoseSmoothed.reset();
-        pose = conePoseSmoothed.calculate(pose);
+        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
 
-        DashboardManager.getInstance().drawCone(new Pose2d(pose.getX(), pose.getY(), new Rotation2d()));
-        // System.out.println(pose);
         return pose;
     }
 
@@ -87,7 +69,8 @@ public class RobotState {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
         DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
-        testConeDetection();
+        var conePose = getConePose();
+        DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
     /**
@@ -105,8 +88,6 @@ public class RobotState {
     public void resetOdometry(Pose2d pose){
         fieldToDrivetrainEstimator.resetPosition(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters(), pose);
     }
-
-    public void getCubePosition(){}
 
     /**
      * convert a point on the field to it's robot-relative equivalent
@@ -138,46 +119,8 @@ public class RobotState {
      */
     public Pose3d drivetrainToField(Pose3d drivetrainPoint){
         Pose2d fieldToRobot = fieldToDrivetrainEstimator.getEstimatedPosition();
-        // var x = drivetrainPoint.getX();
-        // var y = drivetrainPoint.getY();
-        // var theta = fieldToRobot.getRotation();
-        // var cosTheta = theta.getCos();
-        // var sinTheta = theta.getSin();
-        // Pose3d rotatedDrivetrainPoint = new Pose3d(
-        //     x * cosTheta - y * sinTheta,
-        //     y * cosTheta + x * sinTheta,
-        //     drivetrainPoint.getZ();
-        //     new Rotation3d(
-        //         drivetrainPoint.getRotation().getX(),
-        //         drivetrainPoint.getY(),
-        //         drivetrainPoint.getZ() - theta.getRadians()
-        //     )
-        // );
-        // return new Pose3d(
-        //         fieldToRobot.getX(),
-        //         fieldToRobot.getY(),
-        //         0, //TODO apriltag z
-        //         new Rotation3d(
-        //                 Units.degreesToRadians(imu.getRoll()), //TODO better yaw pitch roll
-        //                 Units.degreesToRadians(imu.getPitch()),
-        //                 imu.getRotation().getRadians()
-        //         )
-        // ).plus(new Transform3d(
-        //         drivetrainPoint.getTranslation(),
-        //         drivetrainPoint.getRotation()
-        // ));
-        return new Pose3d(
-            fieldToRobot.getX(),
-            fieldToRobot.getY(),
-            0,
-            new Rotation3d(
-                0,0,
-                imu.getRotation().getRadians()
-            )
-        ).relativeTo(new Pose3d(
-            new Translation3d().minus(drivetrainPoint.getTranslation()),
-            new Rotation3d().minus(drivetrainPoint.getRotation())
-        ));
+        Pose3d fieldToRobot3d = Util.toPose3d(fieldToRobot,0,0,0);
+        return Util.localToGlobalPose(fieldToRobot3d, drivetrainPoint);
     }
 
     /**

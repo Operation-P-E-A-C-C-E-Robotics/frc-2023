@@ -9,12 +9,34 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class LimelightHelper {
     private static final double FOCAL_LENGTH = (1 * 240) / 0.32; //TODO 183 px = 0.21 meters
+    NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
+    NetworkTable limelight;
 
-    private final DoubleArraySubscriber botpose, campose, camtran, tcornxy, tc;
-    private final DoubleSubscriber tv, tx, ty, ta, ts, tl, tshort, tlong, thor, tvert;
-    private final IntegerSubscriber getpipe, tid;
-    private final IntegerPublisher ledMode, camMode, stream, snapshot, pipeline;
-    private final DoubleArrayPublisher crop;
+    private DoubleArraySubscriber botpose, campose, camtran, tcornxy, tc;
+    private DoubleSubscriber tv, tx, ty, ta, ts, tl, tshort, tlong, thor, tvert;
+    private IntegerSubscriber getpipe, tid;
+    private IntegerPublisher ledMode, camMode, stream, snapshot, pipeline;
+    private DoubleArrayPublisher crop;
+
+    private DoubleSubscriber dSub(String name){
+        return limelight.getDoubleTopic(name).subscribe(0);
+    }
+
+    private DoubleArraySubscriber daSub(String name){
+        return limelight.getDoubleArrayTopic(name).subscribe(new double[0]);
+    }
+
+    private IntegerSubscriber iSub(String name){
+        return limelight.getIntegerTopic(name).subscribe(0);
+    }
+
+    private IntegerPublisher iPub(String name){
+        return limelight.getIntegerTopic(name).publish();
+    }
+
+    private DoubleArrayPublisher daPub(String name){
+        return limelight.getDoubleArrayTopic(name).publish();
+    }
 
 
     /**
@@ -24,129 +46,114 @@ public class LimelightHelper {
      * @param networktablesName the limelight's table in networktables
      */
     public LimelightHelper(String networktablesName){
-        NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
-        NetworkTable limelight = networkTables.getTable(networktablesName);
-
-        tv = limelight.getDoubleTopic("tv").subscribe(0); //has target 0 or 1
-        tx = limelight.getDoubleTopic("tx").subscribe(0); //crosshair x degrees
-        ty = limelight.getDoubleTopic("ty").subscribe(0); //crosshair y degrees
-        ta = limelight.getDoubleTopic("ta").subscribe(0); //target area of image 0-100%
-        ts = limelight.getDoubleTopic("ts").subscribe(0); //target skew/rotation of blue box degrees
-        tl = limelight.getDoubleTopic("tl").subscribe(0); //pipeline latency ms
-        tshort = limelight.getDoubleTopic("tshort").subscribe(0); //shortest fitted side length px
-        tlong = limelight.getDoubleTopic("tlong").subscribe(0); //longest fitted side length px
-        thor = limelight.getDoubleTopic("thor").subscribe(0); //width of rough box
-        tvert = limelight.getDoubleTopic("tvert").subscribe(0); //height of rough box
-        getpipe = limelight.getIntegerTopic("getpipe").subscribe(0); //active pipeline
-        camtran = limelight.getDoubleArrayTopic("camtran").subscribe(new double[0]); //camera transform
-        tid = limelight.getIntegerTopic("tid").subscribe(0); //primary apriltag id
-        botpose = limelight.getDoubleArrayTopic("botpose").subscribe(new double[0]); //robot pose
-        tcornxy = limelight.getDoubleArrayTopic("tcornxy").subscribe(new double[0]); //raw corner positions
-        campose = limelight.getDoubleArrayTopic("campose").subscribe(new double[0]); //camera pose
-        tc = limelight.getDoubleArrayTopic("tc").subscribe(new double[0]); //hsv under crosshair
-
-        ledMode = limelight.getIntegerTopic("ledMode").publish();
-        camMode = limelight.getIntegerTopic("camMode").publish();
-        pipeline = limelight.getIntegerTopic("pipeline").publish();
-        stream = limelight.getIntegerTopic("stream").publish();
-        snapshot = limelight.getIntegerTopic("snapshot").publish();;
-        crop = limelight.getDoubleArrayTopic("crop").publish();
+        limelight = networkTables.getTable(networktablesName);
+        botpose = daSub("botpose");
+        campose = daSub("campose");
     }
 
+    //NETWORKTABLES API:
     public boolean hasTarget(){
+        if(tv == null) tv = dSub("tv");
         return tv.get() == 1;
     }
 
     public double getTargetX(){
+        if(tx == null) tx = dSub("tx");
         return tx.get();
     }
 
     public double getTargetY(){
+        if(ty == null) ty = dSub("ty");
         return ty.get();
     }
 
     public double getTargetArea(){
+        if(ta == null) ta = dSub("ta");
         return ta.get();
     }
 
     public double getTargetSkew(){
+        if(ts == null) ts = dSub("ts");
         return ts.get();
     }
 
     public double getFittedShortSideLength(){
+        if(tshort == null) tshort = dSub("tshort");
         return tshort.get();
     }
 
     public double getFittedLongSideLength(){
+        if(tlong == null) tlong = dSub("tlong");
         return tlong.get();
     }
 
     public double getRoughWidth(){
+        if(thor == null) thor = dSub("thor");
         return thor.get();
     }
 
     public double getRoughHeight(){
+        if(tvert == null) tvert = dSub("tvert");
         return tvert.get();
     }
 
     public double getPipeline(){
+        if(getpipe == null) getpipe = iSub("getpipe");
         return getpipe.get();
     }
 
+    public double getLatency(){
+        if(tl == null) tl = dSub("tl");
+        return tl.get() / 1000;
+    }
+
     public double[] getCameraTranslation(){
+        if(camtran == null) camtran = daSub("camtran");
         return camtran.get();
     }
 
     public double getApriltagID(){
+        if(tid == null) tid = iSub("tid");
         return tid.get();
     }
 
     public double[] getCorners(){
+        if(tcornxy == null) tcornxy = daSub("tcornxy");
         return tcornxy.get();
     }
 
     public double[] getCrosshairColor(){
+        if(tc == null) tc = daSub("tc");
         return tc.get();
     }
 
-    public enum LEDMode{
-        PIPELINE,
-        OFF,
-        BLINK,
-        ON
-    }
-
     public void setLedMode(LEDMode mode){
+        if(ledMode == null) ledMode = iPub("ledMode");
         ledMode.set(mode.ordinal());
     }
 
-    public enum CamMode{
-        VISION,
-        DRIVER
-    }
-
     public void setCamMode(CamMode mode){
+        if(camMode == null) camMode = iPub("camMode");
         camMode.set(mode.ordinal());
     }
 
-    public enum StreamMode{
-        SIDE_BY_SIDE,
-        PIP_MAIN,
-        PIP_SECONDARY
-    }
-
     public void setSecondaryCameraMode(StreamMode mode) {
+        if(stream == null) stream = iPub("stream");
         stream.set(mode.ordinal());
     }
 
     public void setCrop(double x1, double x2,  double y1, double y2){
+        if(crop == null) crop = daPub("crop");
         double[] cropArray = {x1, x2, y1, y2};
         crop.set(cropArray);
     }
 
     public void setPipeline(int pipeline){
+        if(this.pipeline == null) this.pipeline = iPub("pipeline");
         this.pipeline.set(pipeline);
     }
+
+    //GAMEPIECES:
 
     /**
      * get the distance to an irregular object (e.g. cone or cube)
@@ -163,26 +170,27 @@ public class LimelightHelper {
      * get the equivalent of the yellow box in limelight software
      */
     public BoundingBox getBoundingBox(){
-        var corns = tcornxy.get();
-        double minX = 0, minY = 0, maxX = 0, maxY = 0;
-        for(int i = 0; i < corns.length; i+=2){
-            var x = corns[i];
-            var y = corns[i+1];
+        var corners = tcornxy.get();
+        if(corners.length < 2) return new BoundingBox(0,0,0,0);
+        double minX = corners[0],
+                minY = corners[1],
+                maxX = corners[0],
+                maxY = corners[1];
+
+        for(int i = 2; i < corners.length; i+=2){
+            var x = corners[i];
+            var y = corners[i+1];
             if(x < minX) minX = x;
             if(x > maxX) maxX = x;
             if(y < minY) minY = y;
             if(y > maxY) maxY = y;
         }
+
         return new BoundingBox(minX, minY, maxX, maxY);
     }
 
 
-    /**
-     * get limelight reported latency in seconds
-     */
-    public double getLatency(){
-        return tl.get() / 1000;
-    }
+    //APRILTAGS:
 
     double halfFieldWidth = 16.48/2;
     double halfFieldHeight = 8.1/2;
@@ -238,5 +246,21 @@ public class LimelightHelper {
         public double getArea(){
             return getWidth()*getHeight();
         }
+    }
+
+    public enum LEDMode{
+        PIPELINE,
+        OFF,
+        BLINK,
+        ON
+    }
+    public enum CamMode{
+        VISION,
+        DRIVER
+    }
+    public enum StreamMode{
+        SIDE_BY_SIDE,
+        PIP_MAIN,
+        PIP_SECONDARY
     }
 }

@@ -1,5 +1,8 @@
 package frc.lib.util;
 
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.util.Units;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,5 +107,85 @@ public class Util {
     public static double handleDeadband(double joystickPosition, double deadband) {
         if(inRange(joystickPosition, deadband)) return 0;
         return joystickPosition;
+    }
+
+    public static Pose3d toPose3d(Translation2d translation) {
+        return toPose3d(new Pose2d(translation, new Rotation2d()));
+    }
+
+    public static Pose3d toPose3d(Pose2d pose){
+        return toPose3d(pose, 0,0,0);
+    }
+
+    public static Pose3d toPose3d(Pose2d pose, double z, double roll, double pitch){
+        return new Pose3d(
+                pose.getX(),
+                pose.getY(),
+                0,
+                new Rotation3d(roll, pitch, pose.getRotation().getRadians())
+        );
+    }
+
+    /**
+     * convert a pose from one coordinate system to another, where the origin of
+     * the local coordinate system is known
+     * @param localOrigin the pose of the base of the local coordinate system relative to the global origin
+     * @param localPoint the local pose to convert
+     * @return the pose relative to the global origin
+     */
+    public static Pose3d localToGlobalPose(Pose3d localOrigin, Pose3d localPoint) {
+        Translation3d rotatedTranslation;
+        Rotation3d rotatedRotation;
+
+        rotatedTranslation = rotateBy(localPoint.getTranslation(), localOrigin.getRotation());
+        rotatedRotation = localPoint.getRotation().plus(localOrigin.getRotation()); //TODO plus or mines
+
+        return new Pose3d(
+                localOrigin.getTranslation().plus(rotatedTranslation),
+                rotatedRotation
+        );
+    }
+
+    //https://stackoverflow.com/questions/34050929/3d-point-rotation-algorithm
+    public static Translation3d rotateBy(Translation3d point, Rotation3d rotation){
+        double cosa = Math.cos(rotation.getZ());
+        double sina = Math.sin(rotation.getZ());
+
+        double cosb = Math.cos(rotation.getY());
+        double sinb = Math.sin(rotation.getY());
+
+        double cosc = Math.cos(rotation.getX());
+        double sinc = Math.sin(rotation.getX());
+
+        var Axx = cosa*cosb;
+        var Axy = cosa*sinb*sinc - sina*cosc;
+        var Axz = cosa*sinb*cosc + sina*sinc;
+
+        var Ayx = sina*cosb;
+        var Ayy = sina*sinb*sinc + cosa*cosc;
+        var Ayz = sina*sinb*cosc - cosa*sinc;
+
+        var Azx = -sinb;
+        var Azy = cosb*sinc;
+        var Azz = cosb*cosc;
+
+        return new Translation3d(
+                Axx*point.getX() + Axy*point.getY() + Axz*point.getZ(),
+                Ayx*point.getX() + Ayy*point.getY() + Ayz*point.getZ(),
+                Azx*point.getX() + Azy*point.getY() + Azz*point.getZ()
+        );
+    }
+
+    public static void main(String args[]){
+        System.out.println(localToGlobalPose(
+                new Pose3d(
+                        1,0,0,
+                        new Rotation3d(0,0, Units.degreesToRadians(90))
+                ),
+                new Pose3d(
+                        1,0,0,
+                        new Rotation3d(0,0,0)
+                )
+        ));
     }
 }

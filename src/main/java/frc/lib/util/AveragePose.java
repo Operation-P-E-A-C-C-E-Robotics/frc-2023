@@ -11,85 +11,87 @@ public class AveragePose {
     SlewRateLimiter pitchFilter = new SlewRateLimiter(0.5);
     SlewRateLimiter yawFilter = new SlewRateLimiter(0.5);
     SlewRateLimiter rollFilter = new SlewRateLimiter(0.5);
-    // SlewRateLimiter totalFilter = SlewRateLimiter.movingAverage(6);
-    
-    public double calculateX(double input) {
+    Pose3d prev;
+    public static double RESET_THRESHOLD = 0.1;
+
+    private double calculateX(double input) {
         if (Double.isNaN(input)) {
-            reset();
+            return input;
         }
         return xFilter.calculate(input);
     }
     
-    public double calculateY(double input) {
+    private double calculateY(double input) {
         if (Double.isNaN(input)) {
-            reset();
+            return input;
         }
 
         return yFilter.calculate(input);
     }
     
-    public double calculateZ(double input) {
+    private double calculateZ(double input) {
         if (Double.isNaN(input)) {
-            reset();
+            return input;
         }
 
         return zFilter.calculate(input);
     }
 
-    public double calculatePitch(double input) {
+    private double calculatePitch(double input) {
         if (Double.isNaN(input)) {
-            reset();
+            return input;
         }
 
         return pitchFilter.calculate(input);
     }
 
-    public double calculateYaw(double input) {
+    private double calculateYaw(double input) {
         if (Double.isNaN(input)) {
-            reset();
+            return input;
         }
         return yawFilter.calculate(input);
     }
 
-    public double calculateRoll(double input) {
+    private double calculateRoll(double input) {
         if (Double.isNaN(input)) {
-           reset();
+           return input;
         }
 
         return rollFilter.calculate(input);
     }
 
 
-    // public SlewRateLimiter getFilter() {
-    //     return totalFilter;
-    // }
-
     public Pose3d calculate(Pose3d unfilteredPose3d) {
-        Pose3d smoothedPose = new Pose3d(
-            calculateX(unfilteredPose3d.getTranslation().getX()), 
-            calculateY(unfilteredPose3d.getTranslation().getY()), 
-            calculateZ(unfilteredPose3d.getTranslation().getZ()), 
+        if(prev == null){
+            reset(unfilteredPose3d);
+            return unfilteredPose3d;
+        }
+        var delta = prev.minus(unfilteredPose3d);
+        if(Math.max(Math.abs(delta.getX()), Math.abs(delta.getY())) > RESET_THRESHOLD){
+            reset(unfilteredPose3d);
+            return unfilteredPose3d;
+        }
+
+        prev = unfilteredPose3d;
+        return new Pose3d(
+            calculateX(unfilteredPose3d.getTranslation().getX()),
+            calculateY(unfilteredPose3d.getTranslation().getY()),
+            calculateZ(unfilteredPose3d.getTranslation().getZ()),
             new Rotation3d(
-                calculatePitch(unfilteredPose3d.getRotation().getX()), 
-                calculateYaw(unfilteredPose3d.getRotation().getY()), 
-                calculateRoll(unfilteredPose3d.getRotation().getZ())
+                calculateRoll(unfilteredPose3d.getRotation().getX()),
+                calculatePitch(unfilteredPose3d.getRotation().getY()),
+                calculateYaw(unfilteredPose3d.getRotation().getZ())
             )
         );
-        // System.out.println("=====Incoming Data=====");
-        // System.out.println(unfilteredPose3d);
-        // System.out.println("=====Outgoing Data=====");
-        // System.out.println(smoothedPose);
-        // System.out.println("========================");
-        return smoothedPose;
     }
 
-    public void reset() {
-        xFilter.reset(0);
-        yFilter.reset(0);
-        zFilter.reset(0);
-        pitchFilter.reset(0);
-        yawFilter.reset(0);
-        rollFilter.reset(0);
+    public void reset(Pose3d position) {
+        xFilter.reset(position.getX());
+        yFilter.reset(position.getY());
+        zFilter.reset(position.getZ());
+        rollFilter.reset(position.getRotation().getX());
+        pitchFilter.reset(position.getRotation().getY());
+        yawFilter.reset(position.getRotation().getZ());
     }
 
 }
