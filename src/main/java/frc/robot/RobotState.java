@@ -41,9 +41,9 @@ public class RobotState {
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
-                new Pose2d(10, 5, new Rotation2d()), //TODO starting pose
+                new Pose2d(3, 3, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.02)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(1, 1, 0.5)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
@@ -71,7 +71,7 @@ public class RobotState {
             // driveTrain.driveSim.setPose(getOdometryPose());
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
-        DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
+        //DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
         var conePose = getConePose();
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
@@ -181,10 +181,14 @@ public class RobotState {
      * @return the pose offset to account for the camera position
      */
     public Pose3d apriltagCameraToDriveTrain(Pose3d apriltagCameraPoint){
-        return apriltagCameraPoint.relativeTo(new Pose3d(
-                new Translation3d(0,0,0), //TODO camera center in robot
-                new Rotation3d(0,0,Units.degreesToRadians(180)) //TODO camera rotation in robot
-        ));
+        // return apriltagCameraPoint.relativeTo(new Pose3d(
+        //         new Translation3d(0,0,0), //TODO camera center in robot
+        //         new Rotation3d(0,0,Units.degreesToRadians(180)) //TODO camera rotation in robot
+            return Util.localToGlobalPose(
+                new Pose3d(0,0,0,
+                    new Rotation3d(0,0,Units.degreesToRadians(180))
+                ), apriltagCameraPoint
+            );
     }
 
     /**

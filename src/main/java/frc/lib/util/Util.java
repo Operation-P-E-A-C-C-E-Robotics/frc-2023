@@ -126,6 +126,10 @@ public class Util {
         );
     }
 
+    public static Pose2d toPose2d(Pose3d pose){
+        return new Pose2d(pose.getX(), pose.getY(), new Rotation2d(pose.getRotation().getZ()));
+    }
+
     /**
      * convert a pose from one coordinate system to another, where the origin of
      * the local coordinate system is known

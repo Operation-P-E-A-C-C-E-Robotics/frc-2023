@@ -3,15 +3,21 @@ package frc.robot.commands.auto.paths;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.util.Util;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import static frc.robot.Constants.DriveTrain.*;
@@ -41,6 +47,17 @@ public class Paths {
         ).setKinematics(DRIVE_KINEMATICS).addConstraint(constraint);
     }
 
+    public Command ohshitpath(RobotState robotState) { //TODO Refactor Name
+        Trajectory ohshit = new Trajectory();
+        try{
+            Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("paths/Unnamed.wpilib.json");
+            ohshit = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
+        } catch (IOException e){
+            System.out.println("OHHHH SHIT.");
+        }
+        return createPathCommand(ohshit, robotState);
+    }
+
     public Command testPath(RobotState robotState){
         // An example trajectory to follow.  All units in meters.
         Trajectory exampleTrajectory =
@@ -54,6 +71,23 @@ public class Paths {
             // Pass config
             config);
         return createPathCommand(exampleTrajectory, robotState);
+    }
+
+    private Pose2d current = new Pose2d();
+    private Pose2d target = new Pose2d();
+    private Transform2d middle = new Transform2d();
+
+    public PathFollower driveToConeCommand(RobotState state, DriveTrain driveTrain){
+        current = state.getOdometryPose();
+        target = Util.toPose2d(state.getConePose());
+        middle = target.minus(current).div(2);
+        return new PathFollower(driveTrain, TrajectoryGenerator.generateTrajectory(
+            current,
+            List.of(/*middle.getTranslation()*/),
+            target.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(180))),  
+            config.setReversed(true)
+            ),
+        state);
     }
 
     /**

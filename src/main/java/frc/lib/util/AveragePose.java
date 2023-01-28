@@ -3,10 +3,9 @@ package frc.lib.util;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AveragePose {
-    public static final double TRANSLATION_RATE_LIMIT = 0.01;
+    public static final double TRANSLATION_RATE_LIMIT = 0.001;
     public static final double ROTATION_RATE_LIMIT = 0.1;
     public static double RESET_THRESHOLD = 1;
 

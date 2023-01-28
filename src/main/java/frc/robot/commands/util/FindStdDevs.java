@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class FindStdDevs extends CommandBase {
     private final RobotState state;

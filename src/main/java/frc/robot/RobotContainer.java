@@ -13,10 +13,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.PeaccyDrive;
+import frc.robot.commands.util.FindStdDevs;
 
 
 /**
@@ -71,7 +74,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    
+    new JoystickButton(driverJoystick, 11).toggleOnTrue(new FindStdDevs(robotState));
+    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> testPaths.driveToConeCommand(robotState, driveTrain).schedule(), driveTrain));
   }
 
   /**
@@ -81,7 +85,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return testPaths.testPath(robotState);
+    return testPaths.driveToConeCommand(robotState, driveTrain);
   }
   public Command teleCommand() {
     return teleopDriveMode.getSelected();
