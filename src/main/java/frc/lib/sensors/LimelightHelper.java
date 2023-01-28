@@ -7,7 +7,7 @@ import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 
 public class LimelightHelper {
-    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //TODO 183 px = 0.21 meters
+    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters
     NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
     NetworkTable limelight;
 
@@ -206,7 +206,7 @@ public class LimelightHelper {
     public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator){
         TimestampedDoubleArray[] visionMeasurements = botpose.readQueue();
         for(TimestampedDoubleArray i : visionMeasurements){
-            double time = Timer.getFPGATimestamp() - 1;// - getLatency();
+            double time = Timer.getFPGATimestamp() - 1;
             double[] val = i.value;
             if(val.length == 6) {
                 estimator.addVisionMeasurement(new Pose2d(

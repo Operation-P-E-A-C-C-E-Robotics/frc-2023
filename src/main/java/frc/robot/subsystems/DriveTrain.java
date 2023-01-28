@@ -55,8 +55,6 @@ public class DriveTrain extends SubsystemBase {
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
-
-    differentialDrive.setDeadband(0.05);
   }
 
   public DifferentialDrive getDifferentialDrive(){

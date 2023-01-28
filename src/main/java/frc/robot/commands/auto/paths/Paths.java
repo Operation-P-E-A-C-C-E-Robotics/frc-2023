@@ -75,12 +75,10 @@ public class Paths {
 
     private Pose2d current = new Pose2d();
     private Pose2d target = new Pose2d();
-    private Transform2d middle = new Transform2d();
 
     public PathFollower driveToConeCommand(RobotState state, DriveTrain driveTrain){
         current = state.getOdometryPose();
         target = Util.toPose2d(state.getConePose());
-        middle = target.minus(current).div(2);
         return new PathFollower(driveTrain, TrajectoryGenerator.generateTrajectory(
             current,
             List.of(/*middle.getTranslation()*/),
@@ -96,21 +94,6 @@ public class Paths {
     * @return a ramsete command to follow the path
     */
     private Command createPathCommand(Trajectory trajectory, RobotState robotState){
-        //LTVUnicycleController what = new LTVUnicycleController
-        // RamseteCommand ramseteCommand = new RamseteCommand(
-        //     trajectory,
-        //     robotState::getOdometryPose,
-        //     new RamseteController(RAMSETE_B, RAMSETE_ZETA),
-        //     new SimpleMotorFeedforward(kS, kV, kA),
-        //     robotState.getDriveKinematics(),
-        //     driveTrain::getWheelSpeeds,
-        //     new PIDController(kP, kI, kD),
-        //     new PIDController(kP, kI, kD),
-        //     driveTrain::tankDriveVolts,
-        //     driveTrain
-        // );
-        System.out.println(trajectory);
-        //robotState.resetOdometry(trajectory.getInitialPose());
         return new PathFollower(driveTrain, trajectory, robotState);
     }
 }
