@@ -146,9 +146,8 @@ public class RobotState {
      * @return the pose relative to the bottom left field corner
      */
     public Pose3d drivetrainToField(Pose3d drivetrainPoint){
-        Pose2d fieldToRobot = fieldToDrivetrainEstimator.getEstimatedPosition();
-        Pose3d fieldToRobot3d = Util.toPose3d(fieldToRobot,0,0,0);
-        return Util.localToGlobalPose(fieldToRobot3d, drivetrainPoint);
+        Pose3d fieldToRobot = getRobotPose();
+        return Util.localToGlobalPose(fieldToRobot, drivetrainPoint);
     }
 
     /**
@@ -229,7 +228,10 @@ public class RobotState {
                 .getEndEffectorPosition()
                 .getEndPosition();
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
-        return endEffectorPoint.plus(new Transform3d(endEffectorPosition, new Rotation3d(0, endEffectorAngle, 0)));
+        return Util.globalToLocalPose(
+                new Pose3d(endEffectorPosition, new Rotation3d(0,endEffectorAngle,0)),
+                endEffectorPoint
+        );
     }
 
     /**
@@ -240,10 +242,11 @@ public class RobotState {
      * @return the pose offset to account for where the game piece is held.
      */
     public Pose3d endEffectorToPlacePoint(Pose3d endEffectorPoint){
-        return endEffectorPoint.relativeTo(new Pose3d(
-                -0.1,0,0, //TODO offset
+        var placePointOrigin = new Pose3d(
+                -0.1,0,0, //TODO
                 new Rotation3d()
-        ));
+        );
+        return Util.globalToLocalPose(placePointOrigin, endEffectorPoint);
     }
 
     /**
@@ -254,10 +257,11 @@ public class RobotState {
      * @return the pose offset to account for where the game piece is held
      */
     public Pose3d placePointToEndEffector(Pose3d placePointPoint){
-        return placePointPoint.plus(new Transform3d(
-                new Translation3d(-0.1,0,0),
+        var placePointOrigin = new Pose3d(
+                -0.1,0,0, //TODO
                 new Rotation3d()
-        )); //TODO offset and check math
+        );
+        return Util.localToGlobalPose(placePointOrigin, placePointPoint); //TODO offset and check math
     }
 
     /**
@@ -267,22 +271,18 @@ public class RobotState {
      * @return pose offset to account for camera position
      */
     public Pose3d endEffectorToEndEffectorCamera(Pose3d endEffectorPoint){
-        return endEffectorPoint.relativeTo(new Pose3d(
-                0,0,0, //TODO camera position
-                new Rotation3d(0,0,0)
-        ));
+        var endEffectorCameraOrigin = new Pose3d();
+        return Util.globalToLocalPose(endEffectorCameraOrigin, endEffectorPoint); //todo globaltolocal or localtoglobal?
     }
 
     /**
      * convert from a pose relative to the end effector camera to a pose
      * relative to the end effector
-     * @param endEffectorPoint pose relative to the end effector
+     * @param endEffectorCameraPoint pose relative to the end effector
      * @return pose with offset to account for camera position
      */
-    public Pose3d endEffectorCameraToEndEffector(Pose3d endEffectorPoint){
-        return endEffectorPoint.plus(new Transform3d(
-                new Translation3d(0,0,0), //TODO camera position
-                new Rotation3d(0,0,0)
-        ));
+    public Pose3d endEffectorCameraToEndEffector(Pose3d endEffectorCameraPoint){
+        var endEffectorCameraOrigin = new Pose3d();
+        return Util.localToGlobalPose(endEffectorCameraOrigin, endEffectorCameraPoint); //todo globaltolocal or localtoglobal?
     }
 }
