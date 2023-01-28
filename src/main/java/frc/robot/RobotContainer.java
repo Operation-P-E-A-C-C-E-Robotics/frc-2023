@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.drive.TestVelocity;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -49,6 +50,7 @@ public class RobotContainer {
 
   //commands
   private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick::getY, driverJoystick::getX, () -> driverJoystick.getRawButton(1));
+  private final TestVelocity velocityDrive = new TestVelocity(driveTrain, driverJoystick, Constants.DriveTrain.DRIVE_KINEMATICS);
   private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick::getY, driverJoystick::getX);
 
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
@@ -57,8 +59,9 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     configureBindings();
-    teleopDriveMode.setDefaultOption("Arcade Drive", arcadeDrive);
-    teleopDriveMode.addOption("Cheezy Drive",peaccyDrive);
+    teleopDriveMode.addOption("Arcade Drive", peaccyDrive);
+    teleopDriveMode.addOption("Velocity Drive", velocityDrive);
+    teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
   }
 
@@ -87,12 +90,9 @@ public class RobotContainer {
     // An example command will be run in autonomous
     return testPaths.driveToConeCommand(robotState, driveTrain);
   }
-  public Command teleCommand() {
-    return teleopDriveMode.getSelected();
-  }
 
   public void setDriveTrainCommand() {
-    driveTrain.setDefaultCommand(teleCommand());
+    driveTrain.setDefaultCommand(teleopDriveMode.getSelected());
   }
 
 }

@@ -69,11 +69,4 @@ public final class Constants {
     public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0;
     }
-
-    public static final class ApriltagStdDevs{
-        public static final double[] xDev = {0.03394163197508, 1.055800729975908, 1.053986386384851, 0.218665008653696, 0.24929924575445};
-        public static final double[] yDev = {0.055050969821559, 0.36577180879976, 0.368797899856686, 0.359370523837888, 0.439725872370465};
-        public static final double[] yawDev = {0.173170027441242, 1.8543212404811, 0.396519970353792, 1.917647725592118, 1.953411408001835};
-        public static final double[] distance = {-0.665, -1.41, -2.22, -3.8, -5.27};
-    }
 }

@@ -4,13 +4,16 @@
 
 package frc.robot.commands.drive;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.CheesyDriveHelper;
 import frc.robot.Constraints;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
@@ -19,24 +22,20 @@ public class TestVelocity extends CommandBase {
   private final DriveTrain driveTrain;
   private final Joystick driverJoystick;
   private final DifferentialDriveKinematics kinematics;
-  private final RobotState robotState;
-  private final Constraints constraints;
   private double prevTime;
   private DifferentialDriveWheelSpeeds prevSpeeds;
+  private final CheesyDriveHelper driveHelper = new CheesyDriveHelper();
+  private final SlewRateLimiter fwdLimiter = new SlewRateLimiter(0.5);
 
   private static final double FORWARD_SENSITIVITY = 2,
                               TURN_SENSITIVITY = 1;
 
   public TestVelocity(DriveTrain driveTrain,
                       Joystick driverJoystick,
-                      DifferentialDriveKinematics kinematics,
-                      RobotState robotState,
-                      Constraints constraints) {
+                      DifferentialDriveKinematics kinematics) {
     this.driverJoystick = driverJoystick;
     this.driveTrain = driveTrain;
     this.kinematics = kinematics;
-    this.robotState = robotState;
-    this.constraints = constraints;
     addRequirements(driveTrain);
   }
 
@@ -51,16 +50,18 @@ public class TestVelocity extends CommandBase {
     double time = Timer.getFPGATimestamp();
     double dt = time - prevTime;
 
-    double fwd = constraints.constrainJoystickFwdJerk(-driverJoystick.getY()),
+    double fwd = fwdLimiter.calculate(-driverJoystick.getY()),
            rot = -driverJoystick.getX();
 
-    var wheelSpeeds = kinematics.toWheelSpeeds(
-        new ChassisSpeeds(fwd * TURN_SENSITIVITY, 0, rot * TURN_SENSITIVITY)
-    );
+    var driveSignal = driveHelper.cheesyDrive(fwd, rot, false, true);
+
+//    var wheelSpeeds = kinematics.toWheelSpeeds(
+//        new ChassisSpeeds(fwd * TURN_SENSITIVITY, 0, rot * TURN_SENSITIVITY)
+//    );
+    var wheelSpeeds = new DifferentialDriveWheelSpeeds(driveSignal.getLeft() * FORWARD_SENSITIVITY, driveSignal.getRight() * FORWARD_SENSITIVITY);
 
     if(driverJoystick.getRawButton(3)){
       driveTrain.resetVelocityDrive();
-      robotState.resetOdometry(new Pose2d());
     }
 
     driveTrain.velocityDrive(wheelSpeeds, prevSpeeds, dt);
