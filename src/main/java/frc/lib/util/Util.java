@@ -138,14 +138,22 @@ public class Util {
      * @return the pose relative to the global origin
      */
     public static Pose3d localToGlobalPose(Pose3d localOrigin, Pose3d localPoint) {
-        Translation3d rotatedTranslation;
-        Rotation3d rotatedRotation;
-
-        rotatedTranslation = rotateBy(localPoint.getTranslation(), localOrigin.getRotation());
-        rotatedRotation = localPoint.getRotation().plus(localOrigin.getRotation()); //TODO plus or mines
+        Translation3d rotatedTranslation = rotateBy(localPoint.getTranslation(), localOrigin.getRotation());
+        Rotation3d rotatedRotation = localPoint.getRotation().plus(localOrigin.getRotation()); //TODO plus or mines
 
         return new Pose3d(
                 localOrigin.getTranslation().plus(rotatedTranslation),
+                rotatedRotation
+        );
+    }
+
+    public static Pose3d globalToLocalPose(Pose3d localOrigin, Pose3d globalPoint) {
+        Translation3d localTranslation = globalPoint.getTranslation().minus(localOrigin.getTranslation());
+        Translation3d rotatedTranslation = rotateBy(localTranslation, new Rotation3d().minus(localOrigin.getRotation()));
+        Rotation3d rotatedRotation = globalPoint.getRotation().minus(localOrigin.getRotation()); //TODO plis or munesz
+
+        return new Pose3d(
+                rotatedTranslation,
                 rotatedRotation
         );
     }
@@ -181,15 +189,21 @@ public class Util {
     }
 
     public static void main(String args[]){
+        var localOrigin = new Pose3d(
+                1,0,0,
+                new Rotation3d(0.4,0, Units.degreesToRadians(130))
+        );
+        var pt = new Pose3d(
+                1,0,0,
+                new Rotation3d(0,0,0)
+        );
+        System.out.println(globalToLocalPose(localOrigin,localToGlobalPose(
+                localOrigin,
+                pt
+        )));
         System.out.println(localToGlobalPose(
-                new Pose3d(
-                        1,0,0,
-                        new Rotation3d(0,0, Units.degreesToRadians(90))
-                ),
-                new Pose3d(
-                        1,0,0,
-                        new Rotation3d(0,0,0)
-                )
+                localOrigin,
+                pt
         ));
     }
 }

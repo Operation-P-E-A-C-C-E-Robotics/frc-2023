@@ -58,6 +58,16 @@ public class RobotState {
         return pose;
     }
 
+    public Pose3d getCubePose(){
+        var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera)));
+
+        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+
+        return pose;
+    }
+
     /**
      * update drivetrain odometry
      */
@@ -93,6 +103,21 @@ public class RobotState {
         return fieldToDrivetrainEstimator.getEstimatedPosition();
     }
 
+    public Pose3d getRobotPose(){
+        Pose2d odometryPose = getOdometryPose();
+        Pose3d botpose = apriltagCamera.getBotpose();
+        return new Pose3d(
+                odometryPose.getX(),
+                odometryPose.getY(),
+                botpose.getZ(),
+                new Rotation3d(
+                        imu.getRoll(),
+                        imu.getPitch(),
+                        odometryPose.getRotation().getRadians()
+                )
+        );
+    }
+
     /**
      * reset drivetrain odometry
      * @param pose the robots current pose on the field
@@ -107,17 +132,8 @@ public class RobotState {
      * @return the pose relative to the center of the drivetrain
      */
     public Pose3d fieldToDrivetrain(Pose3d fieldPoint){
-        Pose2d fieldToRobot = fieldToDrivetrainEstimator.getEstimatedPosition();
-        return fieldPoint.relativeTo(new Pose3d(
-                fieldToRobot.getX(),
-                fieldToRobot.getY(),
-                0, //TODO apriltag z
-                new Rotation3d(
-                        Units.degreesToRadians(imu.getRoll()),
-                        Units.degreesToRadians(imu.getPitch()),
-                        imu.getRotation().getRadians()
-                )
-        ));
+        Pose3d fieldToRobot = getRobotPose();
+        return Util.globalToLocalPose(fieldToRobot, fieldPoint);
     }
 
     // public Pose3d fieldOriginFromDrivetrain(){
@@ -142,10 +158,9 @@ public class RobotState {
      * @return the same pose, rotated to account for turret position
      */
     public Pose3d drivetrainToTurret(Pose3d drivetrainPoint){
-        return drivetrainPoint.relativeTo(new Pose3d(
-                0,0,0, //turret center in robot
-                new Rotation3d(0,0,supersystem.getSupersystemState().getTurretAngle())
-        ));
+        var turretOrigin = new Pose3d(new Translation3d(),
+                new Rotation3d(0,0,supersystem.getSupersystemState().getTurretAngle()));
+        return Util.globalToLocalPose(turretOrigin, drivetrainPoint);
     }
 
     /**
@@ -155,10 +170,9 @@ public class RobotState {
      * @return the same pose rotated to account for turret position
      */
     public Pose3d turretToDrivetrain(Pose3d turretPoint){
-        return turretPoint.plus(new Transform3d(
-                new Translation3d(0,0,0), //turret center in robot
-                new Rotation3d(0,0,supersystem.getSupersystemState().getTurretAngle())
-        ));
+        var turretOrigin = new Pose3d(new Translation3d(),
+                new Rotation3d(0,0,supersystem.getSupersystemState().getTurretAngle()));
+        return Util.localToGlobalPose(turretOrigin, turretPoint);
     }
 
     /**
@@ -168,10 +182,10 @@ public class RobotState {
      * @return the same pose, offset to account for the camera position
      */
     public Pose3d drivetrainToApriltagCamera(Pose3d drivetrainPoint){
-        return drivetrainPoint.relativeTo(new Pose3d(
-                0,0,0, //TODO camera center in robot
-                new Rotation3d(0,0,0) //TODO camera rotation in robot
-        ));
+        var apriltagOrigin =  new Pose3d(0,0,0,
+                new Rotation3d(0,0,Units.degreesToRadians(180)) //todo fix 180
+        );
+        return Util.globalToLocalPose(apriltagOrigin, drivetrainPoint);
     }
 
     /**
@@ -181,14 +195,10 @@ public class RobotState {
      * @return the pose offset to account for the camera position
      */
     public Pose3d apriltagCameraToDriveTrain(Pose3d apriltagCameraPoint){
-        // return apriltagCameraPoint.relativeTo(new Pose3d(
-        //         new Translation3d(0,0,0), //TODO camera center in robot
-        //         new Rotation3d(0,0,Units.degreesToRadians(180)) //TODO camera rotation in robot
-            return Util.localToGlobalPose(
-                new Pose3d(0,0,0,
-                    new Rotation3d(0,0,Units.degreesToRadians(180))
-                ), apriltagCameraPoint
-            );
+        var apriltagOrigin =  new Pose3d(0,0,0,
+                new Rotation3d(0,0,Units.degreesToRadians(180))
+        );
+        return Util.localToGlobalPose(apriltagOrigin, apriltagCameraPoint);
     }
 
     /**
@@ -202,10 +212,10 @@ public class RobotState {
                 .getEndEffectorPosition()
                 .getEndPosition();
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
-        return turretPoint.relativeTo(new Pose3d(
+        return Util.localToGlobalPose(new Pose3d(
                 endEffectorPosition,
                 new Rotation3d(0,endEffectorAngle,0)
-        ));
+        ), turretPoint);
     }
 
     /**
@@ -217,7 +227,6 @@ public class RobotState {
     public Pose3d endEffectorToTurret(Pose3d endEffectorPoint){
         Translation3d endEffectorPosition = supersystem.getKinematics()
                 .getEndEffectorPosition()
-
                 .getEndPosition();
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
         return endEffectorPoint.plus(new Transform3d(endEffectorPosition, new Rotation3d(0, endEffectorAngle, 0)));
