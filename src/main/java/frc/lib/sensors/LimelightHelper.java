@@ -1,6 +1,7 @@
 package frc.lib.sensors;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -17,6 +18,7 @@ public class LimelightHelper {
     private IntegerSubscriber getpipe, tid;
     private IntegerPublisher ledMode, camMode, stream, snapshot, pipeline;
     private DoubleArrayPublisher crop;
+    private MedianFilter xFilter = new MedianFilter(10);
 
     private DoubleSubscriber dSub(String name){
         return limelight.getDoubleTopic(name).subscribe(0);
@@ -153,6 +155,10 @@ public class LimelightHelper {
         this.pipeline.set(pipeline);
     }
 
+    public double getFilteredX(){
+        return xFilter.calculate(getTargetX());
+    }
+
     //GAMEPIECES:
 
     /**
@@ -170,7 +176,7 @@ public class LimelightHelper {
      * get the equivalent of the yellow box in limelight software
      */
     public BoundingBox getBoundingBox(){
-        var corners = tcornxy.get();
+        var corners = getCorners();
         if(corners.length < 2) return new BoundingBox(0,0,0,0);
         double minX = corners[0],
                 minY = corners[1],

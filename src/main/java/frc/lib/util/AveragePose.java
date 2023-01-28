@@ -3,16 +3,21 @@ package frc.lib.util;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AveragePose {
-    SlewRateLimiter xFilter = new SlewRateLimiter(0.5);
-    SlewRateLimiter yFilter = new SlewRateLimiter(0.5);
-    SlewRateLimiter zFilter = new SlewRateLimiter(0.5);
-    SlewRateLimiter pitchFilter = new SlewRateLimiter(0.5);
-    SlewRateLimiter yawFilter = new SlewRateLimiter(0.5);
-    SlewRateLimiter rollFilter = new SlewRateLimiter(0.5);
+    public static final double TRANSLATION_RATE_LIMIT = 0.01;
+    public static final double ROTATION_RATE_LIMIT = 0.1;
+    public static double RESET_THRESHOLD = 1;
+
+    SlewRateLimiter xFilter = new SlewRateLimiter(TRANSLATION_RATE_LIMIT);
+    SlewRateLimiter yFilter = new SlewRateLimiter(TRANSLATION_RATE_LIMIT);
+    SlewRateLimiter zFilter = new SlewRateLimiter(TRANSLATION_RATE_LIMIT);
+    SlewRateLimiter pitchFilter = new SlewRateLimiter(ROTATION_RATE_LIMIT);
+    SlewRateLimiter yawFilter = new SlewRateLimiter(ROTATION_RATE_LIMIT);
+    SlewRateLimiter rollFilter = new SlewRateLimiter(ROTATION_RATE_LIMIT);
     Pose3d prev;
-    public static double RESET_THRESHOLD = 0.1;
+    
 
     private double calculateX(double input) {
         if (Double.isNaN(input)) {
@@ -73,6 +78,7 @@ public class AveragePose {
         }
 
         prev = unfilteredPose3d;
+        
         return new Pose3d(
             calculateX(unfilteredPose3d.getTranslation().getX()),
             calculateY(unfilteredPose3d.getTranslation().getY()),

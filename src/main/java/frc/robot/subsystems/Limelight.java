@@ -20,10 +20,9 @@ public class Limelight extends LimelightHelper {
 
     public Translation2d getConePoseRelativeToCamera(){
         setPipeline(CONE_PIPELINE);
-        Pose2d test = new Pose2d();
         var boundingBox = getBoundingBox();
         double distance = getDistance(CONE_HEIGHT, CONE_WIDTH, boundingBox);
-        double angle = Units.degreesToRadians(getTargetX()); //TODO is it x or y
+        double angle = Units.degreesToRadians(-getFilteredX()); //TODO is it x or y
         return new Translation2d(distance * Math.cos(angle), distance * Math.sin(angle)); //TODO coordinate systems
     }
 

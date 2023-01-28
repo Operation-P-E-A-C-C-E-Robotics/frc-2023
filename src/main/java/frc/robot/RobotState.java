@@ -21,6 +21,7 @@ public class RobotState {
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private Limelight apriltagCamera, armCamera;
+    private Pose2d prevRobotPose;
 
 
 
@@ -44,6 +45,7 @@ public class RobotState {
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.02)
         );
+        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
 
     public Pose3d getConePose(){
@@ -60,6 +62,7 @@ public class RobotState {
      * update drivetrain odometry
      */
     public void update(){
+        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
         if (Robot.isReal()) {
@@ -71,6 +74,11 @@ public class RobotState {
         DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
         var conePose = getConePose();
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
+    }
+
+    public Transform3d getRobotVelocity(){
+        var t2d = getOdometryPose().minus(prevRobotPose);
+        return new Transform3d(new Translation3d(t2d.getX(), t2d.getY(), 0.0), new Rotation3d(0,0,t2d.getRotation().getRadians()));
     }
 
     /**
