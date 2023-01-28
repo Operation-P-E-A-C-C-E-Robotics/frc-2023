@@ -81,6 +81,10 @@ public class RobotState {
         return new Transform3d(new Translation3d(t2d.getX(), t2d.getY(), 0.0), new Rotation3d(0,0,t2d.getRotation().getRadians()));
     }
 
+    public Pose3d getRawApriltagBotpose(){
+        return apriltagCamera.getBotpose();
+    }
+
     /**
      * get pose from odometry
      * @return robot's position, relative to the field

@@ -2,9 +2,7 @@ package frc.lib.sensors;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -219,6 +217,21 @@ public class LimelightHelper {
                 ,time);
             }
         }
+    }
+
+    public Pose3d getBotpose(){
+        var pose = botpose.get();
+        if(pose.length < 6) return new Pose3d();
+        return new Pose3d(
+                pose[0],
+                pose[1],
+                pose[2],
+                new Rotation3d(
+                        pose[3],
+                        pose[4],
+                        pose[5]
+                )
+        );
     }
 
     /**
