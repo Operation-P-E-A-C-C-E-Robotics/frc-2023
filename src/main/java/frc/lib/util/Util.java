@@ -2,6 +2,7 @@ package frc.lib.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +152,8 @@ public class Util {
         Translation3d localTranslation = globalPoint.getTranslation().minus(localOrigin.getTranslation());
         Translation3d rotatedTranslation = rotateBy(localTranslation, new Rotation3d().minus(localOrigin.getRotation()));
         Rotation3d rotatedRotation = globalPoint.getRotation().minus(localOrigin.getRotation()); //TODO plis or munesz
-
+        ADIS16470_IMU gyro = new ADIS16470_IMU();
+        gyro.getXComplementaryAngle();
         return new Pose3d(
                 rotatedTranslation,
                 rotatedRotation
