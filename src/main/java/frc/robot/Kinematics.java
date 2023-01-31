@@ -215,11 +215,7 @@ public class Kinematics {
         );
     }
 
-    //testing
-    public static void main(String[] args){
-        Translation3d testPose = new Translation3d(-1, 1, 1);
-        System.out.println(testPose);
-        System.out.println(Kinematics.inverseKinematics(testPose, 0));
+    public static void main(String args[]) {
     }
 
     public static class EndEffectorPosition {

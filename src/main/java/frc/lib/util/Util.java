@@ -190,6 +190,94 @@ public class Util {
         );
     }
 
+    //functions to convert from encoder counts to rotations and back
+    /**
+     * convert encoder counts to rotations
+     * @param counts encoder counts
+     * @param cpr counts per rotation
+     * @param gearRatio gear ratio
+     * @return rotations
+     */
+    public static double countsToRotations(double counts, double cpr, double gearRatio){
+        return counts / (cpr * gearRatio);
+    }
+
+    /**
+     * convert encoder counts to rotations
+     * assuming 2048 counts per rotation and a gear ratio of 1
+     * @param counts encoder counts
+     * @return rotations
+     */
+    public static double countsToRotations(double counts){
+        return countsToRotations(counts, 2048, 1);
+    }
+
+    /**
+     * convert encoder counts to rotations
+     * @param counts encoder counts
+     * @param cpr counts per rotation
+     * @return rotations
+     */
+    public static double countsToRotations(double counts, double cpr){
+        return countsToRotations(counts, cpr, 1);
+    }
+
+    /**
+     * convert encoder counts to rotations
+     * @param counts encoder counts
+     * @param cpr counts per rotation
+     * @param gearRatio gear ratio
+     * @param wheelDiameter diameter of the wheel
+     * @return distance traveled
+     */
+    public static double countsToRotations(double counts, double cpr, double gearRatio, double wheelDiameter){
+        return countsToRotations(counts, cpr, gearRatio) * wheelDiameter * Math.PI;
+    }
+
+    /**
+     * convert rotations to encoder counts
+     * @param rotations rotations
+     * @param cpr counts per rotation
+     * @param gearRatio gear ratio
+     * @return encoder counts
+     */
+    public static double rotationsToCounts(double rotations, double cpr, double gearRatio){
+        return rotations * cpr * gearRatio;
+    }
+
+    /**
+     * convert rotations to encoder counts
+     * assuming 2048 counts per rotation and a gear ratio of 1
+     * @param rotations rotations
+     * @return encoder counts
+     */
+    public static double rotationsToCounts(double rotations){
+        return rotationsToCounts(rotations, 2048, 1);
+    }
+
+    /**
+     * convert rotations to encoder counts
+     * assuming a gear ratio of 1
+     * @param rotations rotations
+     * @param cpr counts per rotation
+     * @return encoder counts
+     */
+    public static double rotationsToCounts(double rotations, double cpr){
+        return rotationsToCounts(rotations, cpr, 1);
+    }
+
+    /**
+     * convert rotations to encoder counts
+     * @param rotations rotations
+     * @param cpr counts per rotation
+     * @param gearRatio gear ratio
+     * @param wheelDiameter diameter of the wheel
+     * @return encoder counts
+     */
+    public static double rotationsToCounts(double rotations, double cpr, double gearRatio, double wheelDiameter){
+        return rotationsToCounts(rotations, cpr, gearRatio) / (wheelDiameter * Math.PI);
+    }
+
     public static void main(String args[]){
         var localOrigin = new Pose3d(
                 1,0,0,

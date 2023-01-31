@@ -7,7 +7,13 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.Pivot.*;
 
@@ -27,11 +33,9 @@ public class Pivot extends SubsystemBase {
   }
 
   public void setAnglePID(Rotation2d angle){
-    //todo
   }
 
   public void setAngle(Rotation2d angle){
-    //todo
   }
 
   public boolean finishedMotion(){
