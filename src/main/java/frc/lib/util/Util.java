@@ -27,15 +27,34 @@ public class Util {
         return limit(v, -maxMagnitude, maxMagnitude);
     }
 
+    /**
+     * Limits the given input to the given range.
+     * @param v the value to limit
+     * @param min the minimum value
+     * @param max the maximum value
+     */
     public static double limit(double v, double min, double max) {
         return Math.min(max, Math.max(min, v));
     }
 
+    /**
+     * interpolate between two values
+     * @param a start value
+     * @param b end value
+     * @param x interpolation value (0.0 - 1.0)
+     * @return interpolated value
+     */
     public static double interpolate(double a, double b, double x) {
         x = limit(x, 0.0, 1.0);
         return a + (b - a) * x;
     }
 
+    /**
+     * join a list of strings with a delimiter
+     * @param delim delimiter
+     * @param strings list of strings
+     * @return joined string
+     */
     public static String joinStrings(final String delim, final List<?> strings) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < strings.size(); ++i) {
@@ -47,18 +66,47 @@ public class Util {
         return sb.toString();
     }
 
+    /**
+     * determine if two doubles are equal within a given epsilon
+     * @param a first double
+     * @param b second double
+     * @param epsilon epsilon - how close to be considered equal
+     * @return true if equal
+     */
     public static boolean epsilonEquals(double a, double b, double epsilon) {
         return (a - epsilon <= b) && (a + epsilon >= b);
     }
 
+    /**
+     * determine if two doubles are equal within the default epsilon
+     * of 1e-12
+     * @param a first double
+     * @param b second double
+     * @return true if equal
+     */
     public static boolean epsilonEquals(double a, double b) {
         return epsilonEquals(a, b, EPSILON);
     }
 
+    /**
+     * determine if two ints are equal within a given epsilon
+     * @param a first int
+     * @param b second int
+     * @param epsilon epsilon - how close to be considered equal
+     * @return true if equal
+     */
     public static boolean epsilonEquals(int a, int b, int epsilon) {
         return (a - epsilon <= b) && (a + epsilon >= b);
     }
 
+    /**
+     * determine if all values in a list are within a given epsilon
+     * to a given value
+     * @param list list of doubles
+     * @param value value to compare to
+     * @param epsilon epsilon - how close to be considered equal
+     * @return true if all values are within epsilon of value
+     */
     public static boolean allCloseTo(final List<Double> list, double value, double epsilon) {
         boolean result = true;
         for (Double value_in : list) {
@@ -67,6 +115,13 @@ public class Util {
         return result;
     }
 
+    /**
+     * get a sublist of a list
+     * @param list list to get sublist from
+     * @param start start index
+     * @param end end index
+     * @return sublist
+     */
     public static List<Double> subList(List<Double> list, int start, int end){
         ArrayList<Double> newList = new ArrayList<>();
         for(int i = start; i <= end; i++){
@@ -75,10 +130,22 @@ public class Util {
         return newList;
     }
 
+    /**
+     * determine if a value is within a given range
+     * @param in value to check
+     * @param range range to check
+     * @return true if in is within range
+     */
     public static boolean inRange(double in, double range){
         return (Math.abs(in) < Math.abs(range));
     }
 
+    /**
+     * index a double list from the end
+     * @param ar double list
+     * @param i index from back of list
+     * @return list element
+     */
     public static Double last(List<Double> ar, int i){
         return ar.get(ar.size() - 1 - i);
     }
@@ -105,19 +172,46 @@ public class Util {
         return ar;
     }
 
+    /**
+     * handle deadband on a joystick
+     * by setting the value to zero if it is within the deadband
+     * @param joystickPosition joystick position
+     * @param deadband deadband
+     * @return joystick position or zero if within deadband
+     */
     public static double handleDeadband(double joystickPosition, double deadband) {
         if(inRange(joystickPosition, deadband)) return 0;
         return joystickPosition;
     }
 
+    /**
+     * convert a Translation2d to a Pose3d
+     * by setting the z, roll, pitch, and yaw to zero
+     * @param translation translation to convert
+     * @return pose3d
+     */
     public static Pose3d toPose3d(Translation2d translation) {
         return toPose3d(new Pose2d(translation, new Rotation2d()));
     }
 
+    /**
+     * convert a Pose2d to a Pose3d
+     * by setting the z, roll, and pitch to zero
+     * @param pose pose to convert
+     * @return pose3d
+     */
     public static Pose3d toPose3d(Pose2d pose){
         return toPose3d(pose, 0,0,0);
     }
 
+    /**
+     * convert a Pose2d to a Pose3d, with the option to set the z, roll, and pitch
+     * @param pose pose to convert
+     * @param z z
+     * @param roll roll
+     * @param pitch pitch
+     * @return pose3d
+     */
     public static Pose3d toPose3d(Pose2d pose, double z, double roll, double pitch){
         return new Pose3d(
                 pose.getX(),
@@ -127,6 +221,12 @@ public class Util {
         );
     }
 
+    /**
+     * convert a Pose3d to a Pose2d
+     * by ignoring the z, roll, and pitch
+     * @param pose pose to convert
+     * @return pose2d
+     */
     public static Pose2d toPose2d(Pose3d pose){
         return new Pose2d(pose.getX(), pose.getY(), new Rotation2d(pose.getRotation().getZ()));
     }
@@ -148,12 +248,17 @@ public class Util {
         );
     }
 
+    /**
+     * convert a pose from a global coordinate system to a local coordinate system, where the origin of
+     * the local coordinate system is known
+     * @param localOrigin the pose of the base of the local coordinate system relative to the global origin
+     * @param globalPoint the global pose to convert
+     * @return the pose relative to the local origin
+     */
     public static Pose3d globalToLocalPose(Pose3d localOrigin, Pose3d globalPoint) {
         Translation3d localTranslation = globalPoint.getTranslation().minus(localOrigin.getTranslation());
         Translation3d rotatedTranslation = rotateBy(localTranslation, new Rotation3d().minus(localOrigin.getRotation()));
         Rotation3d rotatedRotation = globalPoint.getRotation().minus(localOrigin.getRotation()); //TODO plis or munesz
-        ADIS16470_IMU gyro = new ADIS16470_IMU();
-        gyro.getXComplementaryAngle();
         return new Pose3d(
                 rotatedTranslation,
                 rotatedRotation
@@ -161,6 +266,12 @@ public class Util {
     }
 
     //https://stackoverflow.com/questions/34050929/3d-point-rotation-algorithm
+    /**
+     * rotate a point by a rotation
+     * @param point point to rotate
+     * @param rotation rotation to rotate by
+     * @return rotated point
+     */
     public static Translation3d rotateBy(Translation3d point, Rotation3d rotation){
         double cosa = Math.cos(rotation.getZ());
         double sina = Math.sin(rotation.getZ());
