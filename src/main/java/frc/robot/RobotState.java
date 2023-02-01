@@ -73,7 +73,7 @@ public class RobotState {
      */
     public void update(){
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
-        apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator);
+        apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());

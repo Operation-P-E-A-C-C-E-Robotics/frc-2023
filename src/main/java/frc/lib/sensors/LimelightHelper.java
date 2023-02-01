@@ -1,10 +1,17 @@
 package frc.lib.sensors;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.subsystems.DriveTrain;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class LimelightHelper {
     private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters
@@ -199,22 +206,40 @@ public class LimelightHelper {
     double halfFieldWidth = 16.48/2;
     double halfFieldHeight = 8.1/2;
 
+    int divergentVisionReadings = 0;
+    static final double ERRONIOUS_VISION_THRESHOLD = 1; //meters
+    static final double RESET_VISION_THRESHOLD = 10; //divergent readings
+
     /**
      * update a pose estimator from vision measurements
      * @param estimator the pose estimator to update
      */
-    public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator){
-        TimestampedDoubleArray[] visionMeasurements = botpose.readQueue();
+    public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator, DoubleSupplier drivetrainLeft, DoubleSupplier drivetrainRight, Supplier<Rotation2d> imuHeading){
+        var visionMeasurements = botpose.readQueue();
+        var currentPose = estimator.getEstimatedPosition();
+
+        //add vision measurements to the estimator
         for(TimestampedDoubleArray i : visionMeasurements){
-            double time = Timer.getFPGATimestamp() - 1;
+            var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
             double[] val = i.value;
             if(val.length == 6) {
-                estimator.addVisionMeasurement(new Pose2d(
+                var visionPose = new Pose2d(
                         val[0] + halfFieldWidth,
                         val[1] + halfFieldHeight,
                         Rotation2d.fromDegrees(val[5])
-                )
-                ,time);
+                );
+                //if the vision measurement is too far off, add to the divergent vision readings and don't add it to the estimator
+                if(visionPose.getTranslation().getDistance(currentPose.getTranslation()) > ERRONIOUS_VISION_THRESHOLD){
+                    divergentVisionReadings++;
+                } else {
+                    estimator.addVisionMeasurement(visionPose, time);
+                    divergentVisionReadings--;
+                }
+                //if there are too many divergent vision readings, reset the estimator to the vision pose
+                if(divergentVisionReadings > RESET_VISION_THRESHOLD){
+                    divergentVisionReadings = 0;
+                    estimator.resetPosition(imuHeading.get(), drivetrainLeft.getAsDouble(), drivetrainRight.getAsDouble(), visionPose);
+                }
             }
         }
     }
