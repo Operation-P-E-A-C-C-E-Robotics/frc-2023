@@ -24,7 +24,6 @@ public class RobotState {
     private Pose2d prevRobotPose;
 
 
-
     /**
      * A class to keep track of the position of different robot elements on the field.
      * @param driveTrain DriveTrain (for encoder values)
