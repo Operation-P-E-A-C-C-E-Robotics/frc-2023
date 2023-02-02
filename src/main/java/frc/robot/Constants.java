@@ -23,7 +23,22 @@ public final class Constants {
     }
 
     public static final class Turret {
-        public static final int TURRET_MOTOR = 90; //TODO Arbitrary number to not conflict
+        public static final int MOTOR_PORT = 90; //TODO Arbitrary number to not conflict
+        public static final double  INERTIA = 0,
+                GEARING = 0,
+                ENCODER_CPR = 0,
+                MAX_ANGULAR_VELOCITY = 0,
+                MAX_ANGULAR_ACCELERATION = 0,
+                KALMAN_MODEL_ACCURACY_POSITION = 3.0,
+                KALMAN_MODEL_ACCURACY_VELOCITY = 3.0,
+                KALMAN_SENSOR_ACCURACY_POSITION = 0.01,
+                KALMAN_SENSOR_ACCURACY_VELOCITY = 0.01,
+                KALMAN_SENSOR_DELAY = 0,
+                LQR_VELOCITY_TOLERANCE = 8.0,
+                LQR_POSITION_TOLERANCE = 8.0,
+                LQR_VOLTAGE_EFFORT = 12,
+                MAX_VOLTAGE = 12,
+                DT = 0.02;
 
     }
 
