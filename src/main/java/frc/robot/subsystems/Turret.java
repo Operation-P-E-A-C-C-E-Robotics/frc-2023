@@ -6,8 +6,14 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.Util;
 
+import static frc.robot.Constants.Turret.*;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 public class Turret extends SubsystemBase {
+  private final WPI_TalonFX turretMaster = new WPI_TalonFX(TURRET_MOTOR);
+
+
   /** Creates a new Turret. */
   public Turret() {
 
@@ -21,7 +27,8 @@ public class Turret extends SubsystemBase {
   /**
    * set the turret speed, Positive Values should be Counter Clock Wise
    */
-  public void setTurretPercent(double speed) {
+  public void setPercent(double speed) {
+    turretMaster.set(speed);
   }
 
   /**
@@ -47,6 +54,8 @@ public class Turret extends SubsystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-    return new Rotation2d(); //todo
+    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), 2048, 0); //todo  Gear Ratiow
+    return Rotation2d.fromDegrees(rotation*360);
+
   }
 }

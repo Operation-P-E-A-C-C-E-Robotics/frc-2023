@@ -52,10 +52,11 @@ public class Supersystem extends SubsystemBase {
 
     //TODO change to tolerance based thing
     public boolean finishedMotion(){
-        return arm.finishedMotion()
-            && pivot.finishedMotion()
-            && turret.finishedMotion()
-            && wrist.finishedMotion();
+        return false;
+        // return arm.finishedMotion()
+        //     && pivot.finishedMotion()
+        //     && turret.finishedMotion()
+        //     && wrist.withinTolerance()
     }
 
     /**

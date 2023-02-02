@@ -244,6 +244,10 @@ public class LimelightHelper {
         }
     }
 
+    /**
+     * get the pose of the robot from apriltags
+     * @return the pose of the robot
+     */
     public Pose3d getBotpose(){
         var pose = botpose.get();
         if(pose.length < 6) return new Pose3d();

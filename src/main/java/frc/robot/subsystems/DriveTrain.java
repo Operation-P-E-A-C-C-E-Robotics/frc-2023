@@ -63,7 +63,7 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    
+
   }
 
   public double countsToMeters(double encoderCounts){
@@ -264,7 +264,7 @@ public class DriveTrain extends SubsystemBase {
     pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
 
 
-    
+
   }
 
 

@@ -22,12 +22,23 @@ public final class Constants {
                                 PIVOT_SLAVE  = 51;
     }
 
+    public static final class Turret {
+        public static final int TURRET_MOTOR = 90; //TODO Arbitrary number to not conflict
+
+    }
+
     public static final class Kinematics {
         public static final double   PIVOT_HEIGHT = 0,
                                     END_EFFECTOR_LENGTH = 0.1,
                                     END_EFFECTOR_LENGTH_TO_PLACE = 0;
     }
-    
+
+    public static final class Wrist {
+        public static final int WRIST_MOTOR          = 70, //TODO Arbitrary number to not conflict
+                                WRIST_FLIP_FORWARD   = 0,
+                                WRIST_FLIP_REVERSE   = 1;
+        public static final double WRIST_FLIP_TIME = 0.5;
+    }
 
     public static final class DriveTrain {
         public static final int  LEFT_MASTER  = 0,
@@ -58,6 +69,11 @@ public final class Constants {
                                     AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
 
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH);
+    }
+
+    public static final class Arm {
+        public static final int ARM_MASTER = 95, //TODO Arbitrary number to not conflict
+                                ARM_SLAVE  = 97;
     }
 
     public static final class Constraints{

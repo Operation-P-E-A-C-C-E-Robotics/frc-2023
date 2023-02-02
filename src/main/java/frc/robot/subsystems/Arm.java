@@ -4,9 +4,16 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.Util;
+
+import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(ARM_MASTER); //todo port number
+    // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm() {
     }
@@ -17,7 +24,7 @@ public class Arm extends SubsystemBase {
      * @param speed the percentage, positive drives out
      */
     public void setPercent(double speed){
-        //todo
+        armMaster.set(speed);
     }
 
     /**
@@ -26,7 +33,8 @@ public class Arm extends SubsystemBase {
      * @return lift extension meters
      */
     public double getExtension(){
-        return 0; //todo
+       var extension = Util.countsToRotations(armMaster.getSelectedSensorPosition(), 2048, 0);  //todo  Gear Ratio
+        return extension;
     }
 
     /**
@@ -37,9 +45,7 @@ public class Arm extends SubsystemBase {
         //todo
     }
 
-    public boolean finishedMotion(){
-        return false; //todo
-    }
+
 
     @Override
     public void periodic() {
