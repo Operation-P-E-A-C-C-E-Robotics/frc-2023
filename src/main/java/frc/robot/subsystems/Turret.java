@@ -25,6 +25,10 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 public class Turret extends SubsystemBase {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
+
+  //STATES: [angular position rads, angular velocity rads/s]
+  //INPUTS: [voltage]
+  //OUTPUTS: [angular position rads, angular velocity rads/s]
   private final LinearSystem<N2, N1, N2> turretPlant = LinearSystemId.createDCMotorSystem(
           DCMotor.getFalcon500(1),
           INERTIA, //TODO inertia of turret
@@ -41,7 +45,7 @@ public class Turret extends SubsystemBase {
   private final LinearQuadraticRegulator<N2, N1, N2> turretLQR = new LinearQuadraticRegulator<>(
           turretPlant,
           VecBuilder.fill(LQR_POSITION_TOLERANCE, LQR_VELOCITY_TOLERANCE), //TODO position/velocity error tolerance
-          VecBuilder.fill(LQR_VOLTAGE_EFFORT), //voltage control effort
+          VecBuilder.fill(LQR_CONTROL_EFFORT), //voltage control effort
           DT
   );
   private final LinearSystemLoop<N2, N1, N2> turretLoop = new LinearSystemLoop<>(

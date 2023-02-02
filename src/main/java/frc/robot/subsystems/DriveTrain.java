@@ -9,11 +9,19 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.KalmanFilter;
+import edu.wpi.first.math.estimator.KalmanFilterLatencyCompensator;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -34,6 +42,33 @@ public class DriveTrain extends SubsystemBase {
   private final PIDController leftController;
   private final PIDController rightController;
   private final PigeonHelper pigeon;
+
+  //STATES: [left velocity, right velocity]
+  //INPUTS: [left voltage, right voltage]
+  //OUTPUTS: [left velocity, right velocity]
+  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, kV, kA, TRACK_WIDTH); //TODO angular kV and kA
+  private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
+          drivePlant,
+          VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
+          VecBuilder.fill(LQR_EFFORT, LQR_EFFORT),
+          DT
+  );
+  private final KalmanFilter<N2, N2, N2> kalmanFilter = new KalmanFilter<>(
+          Nat.N2(),
+          Nat.N2(),
+          drivePlant,
+          VecBuilder.fill(KALMAN_MODEL_ACCURACY, KALMAN_MODEL_ACCURACY),
+          VecBuilder.fill(KALMAN_SENSOR_ACCURACY, KALMAN_SENSOR_ACCURACY),
+          DT
+  );
+  private final LinearSystemLoop<N2, N2, N2> loop = new LinearSystemLoop<>(
+          drivePlant,
+          driveLQR,
+          kalmanFilter,
+          12, //todo
+          DT
+  );
+
 
 //TODO  low gear make the robot go backwards so like, do something about it
 
@@ -131,6 +166,15 @@ public class DriveTrain extends SubsystemBase {
 
   double dt = 0;
   //EXPERIMENTAL
+  public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
+    //use the LQR to calculate the voltages needed to get to the desired speeds
+    loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
+    loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
+    loop.predict(dt);
+    //set the voltages
+    tankDriveVolts(loop.getU(0), loop.getU(1));
+  }
+
   public void velocityDrive(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt){
     double leftFeedforward, rightFeedforward, left, right;
 

@@ -36,7 +36,7 @@ public final class Constants {
                 KALMAN_SENSOR_DELAY = 0,
                 LQR_VELOCITY_TOLERANCE = 8.0,
                 LQR_POSITION_TOLERANCE = 8.0,
-                LQR_VOLTAGE_EFFORT = 12,
+                LQR_CONTROL_EFFORT = 12,
                 MAX_VOLTAGE = 12,
                 DT = 0.02;
 
@@ -67,6 +67,13 @@ public final class Constants {
                                     MOMENT_OF_INERTIA = 7.5, //TODO
                                     MASS = 60.0, //TODO
                                     TRACK_WIDTH = 0.6; //TODO Configure
+
+        public static final double LQR_ERROR_TOLERANCE = 0.1,
+        LQR_EFFORT = 12.0,
+        KALMAN_MODEL_ACCURACY = 0.1,
+        KALMAN_SENSOR_ACCURACY = 0.1;
+
+        public static final double DT = 0.02;
 
         public static final int PIGEON_IMU  = 20;
 
