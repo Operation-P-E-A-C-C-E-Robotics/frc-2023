@@ -94,8 +94,10 @@ public final class Constants {
     }
 
     public static final class Arm {
-        public static final int ARM_MASTER = 95, //TODO Arbitrary number to not conflict
+        public static final int MASTER_PORT = 95, //TODO Arbitrary number to not conflict
                                 ARM_SLAVE  = 97;
+        public static final double INERTIA = 0,
+                                    GEARING = 0;
     }
 
     public static final class Constraints{

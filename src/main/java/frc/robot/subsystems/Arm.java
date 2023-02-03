@@ -6,13 +6,23 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
 
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
-    private final WPI_TalonFX armMaster = new WPI_TalonFX(ARM_MASTER); //todo port number
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
+    private final LinearSystem <N2, N1, N2> armPlant = LinearSystemId.createDCMotorSystem(
+            DCMotor.getFalcon500(1),
+            INERTIA, //todo inertia of arm
+            GEARING //todo gearing of arm
+    );
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm() {
