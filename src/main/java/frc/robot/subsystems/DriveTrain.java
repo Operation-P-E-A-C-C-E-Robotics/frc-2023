@@ -90,6 +90,8 @@ public class DriveTrain extends SubsystemBase {
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
+
+    driveLQR.latencyCompensate(drivePlant, 0.02, 0);
   }
 
   public DifferentialDrive getDifferentialDrive(){
@@ -170,7 +172,7 @@ public class DriveTrain extends SubsystemBase {
     //use the LQR to calculate the voltages needed to get to the desired speeds
     loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
     loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
-    loop.predict(dt);
+    loop.predict(0.02);
     //set the voltages
     tankDriveVolts(loop.getU(0), loop.getU(1));
   }
@@ -287,13 +289,11 @@ public class DriveTrain extends SubsystemBase {
   private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
 
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
-    DCMotor.getFalcon500(2),
+    drivePlant,
+    DCMotor.getFalcon500(4),
     GEARBOX_RATIO_HIGH,
-    MOMENT_OF_INERTIA,
-    MASS,
-    Units.inchesToMeters(3), //wheel radius
     TRACK_WIDTH,
-
+    Units.inchesToMeters(3),
     // The standard deviations for measurement noise:
     //x meters, y meters, heading rad, l velocity m/s, r velocity m/s, l position m, r position m
     VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
@@ -301,11 +301,11 @@ public class DriveTrain extends SubsystemBase {
   public void simulationPeriodic(){
     driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
     driveSim.update(0.02);
-    leftMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
+    leftMasterSim.setIntegratedSensorRawPosition(-(int)metersToCounts(driveSim.getLeftPositionMeters()));
     rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
-    leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
+    leftMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
     rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
-    pigeon.setSimHeading(-driveSim.getHeading().getDegrees());
+    pigeon.setSimHeading(driveSim.getHeading().getDegrees());
 
 
 

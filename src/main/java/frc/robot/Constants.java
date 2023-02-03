@@ -5,6 +5,8 @@
 package frc.robot;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.system.plant.DCMotor;
+import frc.lib.util.DCMotorSystemBase.SystemConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -20,25 +22,48 @@ public final class Constants {
     public static final class Pivot{
         public static final int PIVOT_MASTER = 50, //TODO Arbitrary number to not conflict
                                 PIVOT_SLAVE  = 51;
+
+        public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
+                DCMotor.getFalcon500(2),
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0.1,
+                0,
+                0.1,
+                0.02
+        );
     }
 
     public static final class Turret {
         public static final int MOTOR_PORT = 90; //TODO Arbitrary number to not conflict
-        public static final double  INERTIA = 0,
-                GEARING = 0,
-                ENCODER_CPR = 0,
-                MAX_ANGULAR_VELOCITY = 0,
-                MAX_ANGULAR_ACCELERATION = 0,
-                KALMAN_MODEL_ACCURACY_POSITION = 3.0,
-                KALMAN_MODEL_ACCURACY_VELOCITY = 3.0,
-                KALMAN_SENSOR_ACCURACY_POSITION = 0.01,
-                KALMAN_SENSOR_ACCURACY_VELOCITY = 0.01,
-                KALMAN_SENSOR_DELAY = 0,
-                LQR_VELOCITY_TOLERANCE = 8.0,
-                LQR_POSITION_TOLERANCE = 8.0,
-                LQR_CONTROL_EFFORT = 12,
-                MAX_VOLTAGE = 12,
-                DT = 0.02;
+
+        public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
+                DCMotor.getFalcon500(1),
+                1,
+                1,
+                2048,
+                Math.PI,
+                Math.PI,
+                3.0,
+                3.0,
+                0.01,
+                0.01,
+                8.0,
+                8.0,
+                12,
+                0,
+                12,
+                0.02
+        );
 
     }
 
@@ -70,7 +95,7 @@ public final class Constants {
 
         public static final double LQR_ERROR_TOLERANCE = 0.1,
         LQR_EFFORT = 12.0,
-        KALMAN_MODEL_ACCURACY = 0.1,
+        KALMAN_MODEL_ACCURACY = 3,
         KALMAN_SENSOR_ACCURACY = 0.1;
 
         public static final double DT = 0.02;

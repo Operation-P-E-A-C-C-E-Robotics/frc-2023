@@ -12,14 +12,13 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.Turret.DT;
-
-public class LQRMotorControllerBase extends SubsystemBase {
+public class DCMotorSystemBase extends SubsystemBase {
     private final LinearSystem<N2, N1, N2> plant;
     private final KalmanFilter<N2, N1, N2> observer;
     private final LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator;
@@ -39,7 +38,7 @@ public class LQRMotorControllerBase extends SubsystemBase {
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
      * @param constants The constants for the system
      */
-    public LQRMotorControllerBase(SystemConstants constants) {
+    public DCMotorSystemBase(SystemConstants constants) {
         this.constants = constants;
         plant = LinearSystemId.createDCMotorSystem(
                 constants.motor,
@@ -67,6 +66,10 @@ public class LQRMotorControllerBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
+    }
+
+    public LinearSystem<N2, N1, N2> getSystem(){
+        return plant;
     }
 
     /**
@@ -111,14 +114,6 @@ public class LQRMotorControllerBase extends SubsystemBase {
         followingProfile = false;
     }
 
-    public void setTrajectory(TrapezoidProfile profile, double timeout) {
-        profileTimer.reset();
-        profileTimer.start();
-
-        this.profile = profile;
-        followingProfile = true;
-    }
-
     public void goToState(double position, double velocity) {
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
@@ -153,11 +148,16 @@ public class LQRMotorControllerBase extends SubsystemBase {
         }
         if(followingProfile){
             var output = profile.calculate(time);
+            SmartDashboard.putNumber("setpt position", output.position);
+            SmartDashboard.putNumber("setpt velocity", output.velocity);
             setNextR(output.position, output.velocity);
         }
 
+        SmartDashboard.putNumber("position", getPosition.getAsDouble());
+        SmartDashboard.putNumber("velocity", getVelocity.getAsDouble());
+
         loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
-        loop.predict(DT);
+        loop.predict(constants.dt);
         voltDriveFunction.accept(loop.getU(0));
     }
 
@@ -208,6 +208,7 @@ public class LQRMotorControllerBase extends SubsystemBase {
                                double lqrPositionTolerance,
                                double lqrVelocityTolerance,
                                double lqrControlEffortTolerance,
+                               double systemDelay,
                                double maxVoltage,
                                double dt) {
             this.motor = motor;

@@ -37,7 +37,7 @@ public class Supersystem extends SubsystemBase {
     public SupersystemState getSupersystemState(){
         return new SupersystemState(
             turret.getAngle().getRadians(),
-            pivot.getAngle().getRadians(),
+            pivot.getRotation().getRadians(),
             arm.getExtension(),
             wrist.getAngle().getRadians()
         );

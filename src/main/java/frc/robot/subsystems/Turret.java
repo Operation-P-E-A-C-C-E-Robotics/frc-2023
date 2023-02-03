@@ -4,132 +4,112 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.Nat;
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.LinearQuadraticRegulator;
-import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.LinearSystemLoop;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 
-import static frc.robot.Constants.Turret.*;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import static frc.robot.Constants.Turret.MOTOR_PORT;
+import static frc.robot.Constants.Turret.SYSTEM_CONSTANTS;
 
-public class Turret extends SubsystemBase {
+public class Turret extends DCMotorSystemBase {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
-
-  //STATES: [angular position rads, angular velocity rads/s]
-  //INPUTS: [voltage]
-  //OUTPUTS: [angular position rads, angular velocity rads/s]
-  private final LinearSystem<N2, N1, N2> turretPlant = LinearSystemId.createDCMotorSystem(
-          DCMotor.getFalcon500(1),
-          INERTIA, //TODO inertia of turret
-          GEARING //TODO gearing of turret
-  );
-  private final KalmanFilter<N2, N1, N2> turretKalmanFilter = new KalmanFilter<>(
-          Nat.N2(),
-          Nat.N2(),
-          turretPlant,
-          VecBuilder.fill(KALMAN_MODEL_ACCURACY_POSITION, KALMAN_MODEL_ACCURACY_VELOCITY), //TODO model accuracy
-          VecBuilder.fill(KALMAN_SENSOR_ACCURACY_POSITION, KALMAN_SENSOR_ACCURACY_VELOCITY), //TODO sensor accuracy
-          DT
-  );
-  private final LinearQuadraticRegulator<N2, N1, N2> turretLQR = new LinearQuadraticRegulator<>(
-          turretPlant,
-          VecBuilder.fill(LQR_POSITION_TOLERANCE, LQR_VELOCITY_TOLERANCE), //TODO position/velocity error tolerance
-          VecBuilder.fill(LQR_CONTROL_EFFORT), //voltage control effort
-          DT
-  );
-  private final LinearSystemLoop<N2, N1, N2> turretLoop = new LinearSystemLoop<>(
-          turretPlant,
-          turretLQR,
-          turretKalmanFilter,
-          MAX_VOLTAGE,
-          DT
-  );
-  private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(MAX_ANGULAR_VELOCITY, MAX_ANGULAR_ACCELERATION); //TODO
-  private TrapezoidProfile profile = new TrapezoidProfile(
-            constraints,
-          new TrapezoidProfile.State(0, 0)
-  );
-  private boolean followingProfile = false;
-  private final Timer profileTimer = new Timer();
 
   /** Creates a new Turret. */
   public Turret() {
-    profileTimer.reset();
+    super(SYSTEM_CONSTANTS);
     turretMaster.setInverted(false);
-  }
-
-  @Override
-  public void periodic() {
-    //start the profile timer if the turret just started following a profile, otherwise, reset it
-    if(followingProfile && profileTimer.get() == 0){
-      profileTimer.start();
-    } else if(!followingProfile){
-      profileTimer.reset();
-    }
-    if(followingProfile){
-      var time = profileTimer.get();
-      var output = profile.calculate(time);
-      turretLoop.setNextR(VecBuilder.fill(output.position, output.velocity));
-      turretLoop.correct(VecBuilder.fill(getAngle().getRadians(), getAngularVelocity().getRadians()));
-      turretLoop.predict(DT);
-      setVoltageWithoutStoppingProfile(turretLoop.getU(0));
-    }
+    SmartDashboard.putNumber("turret setpoint", 0);
   }
 
   /**
    * set the turret speed, Positive Values should be Counter Clock Wise
    */
   public void setPercent(double speed) {
-    followingProfile = false;
+    disableLoop();
     turretMaster.set(speed);
   }
 
   public void setVoltage(double volts){
-    followingProfile = false;
+    disableLoop();
     setVoltageWithoutStoppingProfile(volts);
+  }
+
+  public void enableFeedback(){
+    enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRaidans, this::getAngularVelocityRaidans);
+  }
+
+  public void setAngle(Rotation2d angle){
+      enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRaidans, this::getAngularVelocityRaidans);
+      goToState(angle.getRadians(), 0);
   }
   private void setVoltageWithoutStoppingProfile(double volts){
     turretMaster.setVoltage(volts);
   }
 
-  public void setProfile(TrapezoidProfile.State goal){
-    var current = new TrapezoidProfile.State(getAngle().getDegrees(), getAngularVelocity().getDegrees());
-    profile = new TrapezoidProfile(constraints, goal, current);
-    followingProfile = true;
-  }
-
-  /**
-   * set the angle of the turret with a {@link Rotation2d}
-   * 0 is the front of the robot, positive values
-   * turn the turret counterclockwise
-   * @param angle {@link Rotation2d}
-   */
-  public void setAngle(Rotation2d angle){
-    var goal = new TrapezoidProfile.State(angle.getDegrees(), 0);
-    setProfile(goal);
-  }
 
   /**
    * get the current angle of the turret
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), ENCODER_CPR, GEARING); //todo  Gear Ratiow
+    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
     return Rotation2d.fromDegrees(rotation*360);
   }
   public Rotation2d getAngularVelocity(){
-    var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), ENCODER_CPR, GEARING); //todo  Gear Ratiow
+    var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
     return Rotation2d.fromDegrees(velocity*360);
   }
+
+  public double getAngleRaidans(){
+    return getAngle().getRadians();
+  }
+  public double getAngularVelocityRaidans(){
+      return getAngularVelocity().getRadians();
+  }
+
+  //SIMULATION:
+  private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
+  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem(), VecBuilder.fill(0.001, 0.001));
+  private final Mechanism2d turretMechanism = new Mechanism2d(10, 10);
+  private double prevsetpt = 0;
+  @Override
+  public void simulationPeriodic() {
+    turretMotorSim.setIntegratedSensorRawPosition(
+            (int)Util.rotationsToCounts(
+                    Units.radiansToRotations(
+                            turretSim.getOutput().get(0,0)
+                    ),
+                    SYSTEM_CONSTANTS.cpr,
+                    SYSTEM_CONSTANTS.gearing
+            )
+    );
+    turretMotorSim.setIntegratedSensorVelocity(
+            (int)Util.rotationsToCounts(
+              Units.radiansToRotations(
+                      turretSim.getOutput().get(1,0)
+              ),
+            SYSTEM_CONSTANTS.cpr,
+            SYSTEM_CONSTANTS.gearing
+            )
+    );
+    var setpt = SmartDashboard.getNumber("turret setpoint", 0);
+    if(setpt != prevsetpt) setAngle(Rotation2d.fromDegrees(setpt));
+    prevsetpt = setpt;
+    turretSim.setInput(turretMaster.get() * RobotController.getBatteryVoltage());
+    turretSim.update(0.02);
+    //print the turret angle to smartdashboard:
+    SmartDashboard.putNumber("turret angle", getAngle().getDegrees());
+  }
+
 }

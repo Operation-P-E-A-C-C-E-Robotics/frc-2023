@@ -27,7 +27,7 @@ public class TestVelocity extends CommandBase {
   private final CheesyDriveHelper driveHelper = new CheesyDriveHelper();
   private final SlewRateLimiter fwdLimiter = new SlewRateLimiter(0.5);
 
-  private static final double FORWARD_SENSITIVITY = 2,
+  private static final double FORWARD_SENSITIVITY = 5,
                               TURN_SENSITIVITY = 1;
 
   public TestVelocity(DriveTrain driveTrain,
@@ -50,21 +50,21 @@ public class TestVelocity extends CommandBase {
     double time = Timer.getFPGATimestamp();
     double dt = time - prevTime;
 
-    double fwd = fwdLimiter.calculate(-driverJoystick.getY()),
+    double fwd = -driverJoystick.getY(),
            rot = -driverJoystick.getX();
 
     var driveSignal = driveHelper.cheesyDrive(fwd, rot, false, true);
 
-//    var wheelSpeeds = kinematics.toWheelSpeeds(
-//        new ChassisSpeeds(fwd * TURN_SENSITIVITY, 0, rot * TURN_SENSITIVITY)
-//    );
+  //  var wheelSpeeds = kinematics.toWheelSpeeds(
+  //      new ChassisSpeeds(fwd * TURN_SENSITIVITY, 0, rot * TURN_SENSITIVITY)
+  //  );
     var wheelSpeeds = new DifferentialDriveWheelSpeeds(driveSignal.getLeft() * FORWARD_SENSITIVITY, driveSignal.getRight() * FORWARD_SENSITIVITY);
 
     if(driverJoystick.getRawButton(3)){
       driveTrain.resetVelocityDrive();
     }
 
-    driveTrain.velocityDrive(wheelSpeeds, prevSpeeds, dt);
+    driveTrain.velocityDriveLQR(wheelSpeeds);
 
     prevTime = time;
     prevSpeeds = wheelSpeeds;

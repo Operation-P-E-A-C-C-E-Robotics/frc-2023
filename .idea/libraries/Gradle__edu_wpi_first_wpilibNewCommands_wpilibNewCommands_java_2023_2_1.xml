@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2023.2.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/edu.wpi.first.wpilibNewCommands/wpilibNewCommands-java/2023.2.1/33f05c0634d08217560ebcb2212b7e250dcf44f8/wpilibNewCommands-java-2023.2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/edu.wpi.first.wpilibNewCommands/wpilibNewCommands-java/2023.2.1/465b2ba5481011e1a84accea11db2b646565dd2f/wpilibNewCommands-java-2023.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

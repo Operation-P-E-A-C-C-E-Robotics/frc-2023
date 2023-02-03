@@ -38,8 +38,8 @@ public class PathFollower extends CommandBase{
         this.trajectory = trajectory;
         this.robotState = robotState;
         controller = new LTVUnicycleController(
-                VecBuilder.fill(0.1,0.2,2.5), //maximum desired error tolerances (x meters, y meters, rotation rad)
-                VecBuilder.fill(0.3,1.0), //maximum desired control effort (meters/second, rad/second)
+                VecBuilder.fill(0.1,0.2,0.5), //maximum desired error tolerances (x meters, y meters, rotation rad)
+                VecBuilder.fill(0.5,1), //maximum desired control effort (meters/second, rad/second)
                 0.020 //discretion timestep (loop time) seconds
         );
         timer = new Timer();
@@ -90,7 +90,7 @@ public class PathFollower extends CommandBase{
         var speeds = DRIVE_KINEMATICS.toWheelSpeeds(chassis);
 
         //drive
-        driveTrain.velocityDrive(speeds, prevSpeeds, dt);
+        driveTrain.velocityDriveLQR(speeds);
 
         prevSpeeds = speeds;
         prevTime = time;

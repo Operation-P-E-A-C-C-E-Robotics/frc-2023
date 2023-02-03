@@ -60,8 +60,8 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     teleopDriveMode.addOption("Arcade Drive", peaccyDrive);
-    teleopDriveMode.addOption("Velocity Drive", velocityDrive);
-    teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
+    teleopDriveMode.setDefaultOption("Velocity Drive", velocityDrive);
+    teleopDriveMode.addOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
   }
 
@@ -88,7 +88,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return testPaths.driveToConeCommand(robotState, driveTrain);
+    return testPaths.ohshitpath(robotState);
   }
 
   public void setDriveTrainCommand() {

@@ -9,17 +9,20 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.util.Units;
+import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 
 import static frc.robot.Constants.Pivot.*;
 
-public class Pivot extends SubsystemBase {
+public class Pivot extends DCMotorSystemBase {
   private WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
 
   /** Creates a new ExampleSubsystem. */
   public Pivot() {
+    super(SYSTEM_CONSTANTS);
+
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
     pivotMaster.setInverted(false);
@@ -27,26 +30,37 @@ public class Pivot extends SubsystemBase {
   }
 
   public void setPercent(double speed){
+    disableLoop();
     pivotMaster.set(speed);
   }
 
-  public void setAnglePID(Rotation2d angle){
+  private void setVoltage(double volts){
+    pivotMaster.setVoltage(volts);
   }
 
   public void setAngle(Rotation2d angle){
+    enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
+    goToState(angle.getRadians(), 0);
   }
 
   public boolean finishedMotion(){
     return false; //todo
   }
 
-  public Rotation2d getAngle(){
-    var rotation = Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), 2048, 0); //todo  Gear Ratio
-    return Rotation2d.fromDegrees(rotation*360); //todo
+  public Rotation2d getRotation(){
+    var rotation = Units.rotationsToRadians(
+            Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
+    );
+    return new Rotation2d(rotation);
   }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public double getAngleRadians(){
+    return getRotation().getRadians();
+  }
+
+  public double getAngularVelocityRadiansPerSecond(){
+    return Units.rotationsToRadians(
+            Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
+    );
   }
 }
