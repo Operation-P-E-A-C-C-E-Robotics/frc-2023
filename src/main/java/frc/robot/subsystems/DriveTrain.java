@@ -15,7 +15,6 @@ import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.KalmanFilter;
-import edu.wpi.first.math.estimator.KalmanFilterLatencyCompensator;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -291,7 +290,7 @@ public class DriveTrain extends SubsystemBase {
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
     drivePlant,
     DCMotor.getFalcon500(4),
-    GEARBOX_RATIO_HIGH,
+    1/GEARBOX_RATIO_HIGH,
     TRACK_WIDTH,
     Units.inchesToMeters(3),
     // The standard deviations for measurement noise:

@@ -14,15 +14,16 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.DCMotorSystemBase.SystemConstants;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
-public class DCMotorSystemBase extends SubsystemBase {
-    private final LinearSystem<N2, N1, N2> plant;
-    private final KalmanFilter<N2, N1, N2> observer;
-    private final LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator;
-    private final LinearSystemLoop<N2, N1, N2> loop;
+public class ArmSystemBase extends SubsystemBase {
+    private final LinearSystem<N2, N1, N1> plant;
+    private final KalmanFilter<N2, N1, N1> observer;
+    private final LinearQuadraticRegulator<N2, N1, N1> linearQuadraticRegulator;
+    private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
     private TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(0, 0),
@@ -38,28 +39,24 @@ public class DCMotorSystemBase extends SubsystemBase {
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
      * @param constants The constants for the system
      */
-    public DCMotorSystemBase(SystemConstants constants) {
+    public ArmSystemBase(SystemConstants constants) {
         this.constants = constants;
-        plant = LinearSystemId.createDCMotorSystem(
-                constants.motor,
-                constants.inertia,
-                constants.gearing
-        );
-        observer = new KalmanFilter<N2, N1, N2>(
+        plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
+        observer = new KalmanFilter<N2, N1, N1>(
                 Nat.N2(),
-                Nat.N2(),
+                Nat.N1(),
                 plant,
                 VecBuilder.fill(constants.kalmanModelAccuracyPosition, constants.kalmanModelAccuracyVelocity),
-                VecBuilder.fill(constants.kalmanSensorAccuracyPosition, constants.kalmanSensorAccuracyVelocity),
+                VecBuilder.fill(constants.kalmanSensorAccuracyPosition),
                 constants.dt
         );
-        linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N2>(
+        linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N1>(
                 plant,
                 VecBuilder.fill(constants.lqrPositionTolerance, constants.lqrVelocityTolerance),
                 VecBuilder.fill(constants.lqrControlEffortTolerance),
                 constants.dt
         );
-        loop = new LinearSystemLoop<N2, N1, N2>(
+        loop = new LinearSystemLoop<N2, N1, N1>(
                 plant,
                 linearQuadraticRegulator,
                 observer,
@@ -68,7 +65,7 @@ public class DCMotorSystemBase extends SubsystemBase {
         );
     }
 
-    public LinearSystem<N2, N1, N2> getSystem(){
+    public LinearSystem<N2, N1, N1> getSystem(){
         return plant;
     }
 
@@ -156,76 +153,8 @@ public class DCMotorSystemBase extends SubsystemBase {
         SmartDashboard.putNumber("position", getPosition.getAsDouble());
         SmartDashboard.putNumber("velocity", getVelocity.getAsDouble());
 
-        loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
+        loop.correct(VecBuilder.fill(getPosition.getAsDouble()));
         loop.predict(constants.dt);
         voltDriveFunction.accept(loop.getU(0));
-    }
-
-    public static final class SystemConstants {
-        public final double inertia,
-                gearing,
-                cpr,
-                maxVelocity,
-                maxAcceleration,
-                kalmanModelAccuracyPosition,
-                kalmanModelAccuracyVelocity,
-                kalmanSensorAccuracyPosition,
-                kalmanSensorAccuracyVelocity,
-                lqrPositionTolerance,
-                lqrVelocityTolerance,
-                lqrControlEffortTolerance,
-                maxVoltage,
-                dt;
-        public final DCMotor motor;
-
-        /**
-         * @param motor The motor to use
-         * @param inertia The inertia of the system
-         * @param gearing The gearing of the system
-         * @param cpr The counts per revolution of the encoder
-         * @param maxAngularVelocity The maximum angular velocity the system can attain
-         * @param maxAngularAcceleration The maximum angular acceleration the system can attain
-         * @param kalmanModelAccuracyPosition The accuracy of the model for position
-         * @param kalmanModelAccuracyVelocity The accuracy of the model for velocity
-         * @param kalmanSensorAccuracyPosition The accuracy of the sensor for position
-         * @param kalmanSensorAccuracyVelocity The accuracy of the sensor for velocity
-         * @param lqrPositionTolerance How aggressively to correct for position error
-         * @param lqrVelocityTolerance How aggressively to correct for velocity error
-         * @param lqrControlEffortTolerance How aggressively to minimize control effort
-         * @param maxVoltage The maximum voltage to try to attain
-         * @param dt The time between each loop
-         */
-        public SystemConstants(DCMotor motor,
-                               double inertia,
-                               double gearing,
-                               double cpr,
-                               double maxAngularVelocity,
-                               double maxAngularAcceleration,
-                               double kalmanModelAccuracyPosition,
-                               double kalmanModelAccuracyVelocity,
-                               double kalmanSensorAccuracyPosition,
-                               double kalmanSensorAccuracyVelocity,
-                               double lqrPositionTolerance,
-                               double lqrVelocityTolerance,
-                               double lqrControlEffortTolerance,
-                               double systemDelay,
-                               double maxVoltage,
-                               double dt) {
-            this.motor = motor;
-            this.inertia = inertia;
-            this.gearing = gearing;
-            this.cpr = cpr;
-            this.maxVelocity = maxAngularVelocity;
-            this.maxAcceleration = maxAngularAcceleration;
-            this.kalmanModelAccuracyPosition = kalmanModelAccuracyPosition;
-            this.kalmanModelAccuracyVelocity = kalmanModelAccuracyVelocity;
-            this.kalmanSensorAccuracyPosition = kalmanSensorAccuracyPosition;
-            this.kalmanSensorAccuracyVelocity = kalmanSensorAccuracyVelocity;
-            this.lqrPositionTolerance = lqrPositionTolerance;
-            this.lqrVelocityTolerance = lqrVelocityTolerance;
-            this.lqrControlEffortTolerance = lqrControlEffortTolerance;
-            this.maxVoltage = maxVoltage;
-            this.dt = dt;
-        }
     }
 }
