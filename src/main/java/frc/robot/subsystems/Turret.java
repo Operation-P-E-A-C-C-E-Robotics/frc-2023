@@ -15,7 +15,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 
@@ -81,10 +85,15 @@ public class Turret extends DCMotorSystemBase {
   //SIMULATION:
   private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
   private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem(), VecBuilder.fill(0.001, 0.001));
-  private final Mechanism2d turretMechanism = new Mechanism2d(10, 10);
-  private double prevsetpt = 0;
+  private final Mechanism2d turretMechanism = new Mechanism2d(100, 100);
+  private final MechanismRoot2d turretRoot = turretMechanism.getRoot("turret", 50, 50);
+  private final MechanismLigament2d turretLigament = turretRoot.append(
+    new MechanismLigament2d("turrett", 30, 0, 3, new Color8Bit(Color.kPurple))
+  );
+  private  double prevsetpt = 0;
   @Override
   public void simulationPeriodic() {
+    SmartDashboard.putData("turret", turretMechanism);
     turretMotorSim.setIntegratedSensorRawPosition(
             (int)Util.rotationsToCounts(
                     Units.radiansToRotations(
@@ -110,6 +119,7 @@ public class Turret extends DCMotorSystemBase {
     turretSim.update(0.02);
     //print the turret angle to smartdashboard:
     SmartDashboard.putNumber("turret angle", getAngle().getDegrees());
+    turretLigament.setAngle(getAngle());
   }
 
 }

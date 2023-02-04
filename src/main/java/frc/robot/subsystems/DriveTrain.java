@@ -46,7 +46,7 @@ public class DriveTrain extends SubsystemBase {
   //STATES: [left velocity, right velocity]
   //INPUTS: [left voltage, right voltage]
   //OUTPUTS: [left velocity, right velocity]
-  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, kV, kA, TRACK_WIDTH); //TODO angular kV and kA
+  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, 2, 0.2, TRACK_WIDTH); //TODO angular kV and kA
   private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
           drivePlant,
           VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
