@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.AveragePose;
 import frc.lib.util.Util;
-import frc.lib.util.Value;
+import frc.lib.safety.Value;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;

@@ -5,7 +5,7 @@ import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
-import frc.lib.util.Value;
+import frc.lib.safety.Value;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;

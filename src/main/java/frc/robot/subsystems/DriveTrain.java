@@ -26,22 +26,30 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
 import static frc.robot.Constants.DriveTrain.*;
 
 public class DriveTrain extends SubsystemBase {
+  //drive motor controllers:
   private final WPI_TalonFX leftMaster = new WPI_TalonFX(LEFT_MASTER);
   private final WPI_TalonFX rightMaster = new WPI_TalonFX(RIGHT_MASTER);
   private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
-  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
 
+  //fancy redundancy stuff:
+  private final RedundantSystem<Double> leftPosition, rightPosition;
+
+  //velocity drive - TODO if LQR velocity drive works, get rid of pid. also we may not need differential drive
+  //with current auto setup.
+  private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private final SimpleMotorFeedforward feedforward;
   private final PIDController leftController;
   private final PIDController rightController;
   private final PigeonHelper pigeon;
 
+  //LQR velocity drive:
   //STATES: [left velocity, right velocity]
   //INPUTS: [left voltage, right voltage]
   //OUTPUTS: [left velocity, right velocity]
@@ -75,49 +83,40 @@ public class DriveTrain extends SubsystemBase {
   public DriveTrain(PigeonHelper pigeon) {
     this.pigeon = pigeon;
 
+    //configure motor controllers:
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
 
+    leftSlave.setInverted(InvertType.FollowMaster);
+    rightSlave.setInverted(InvertType.FollowMaster);
     leftMaster.setInverted(true);
     rightMaster.setInverted(false);
 
-    leftSlave.setInverted(InvertType.FollowMaster);
-    rightSlave.setInverted(InvertType.FollowMaster);
-
     setNeutralMode(NeutralMode.Brake);
 
+    leftPosition = new RedundantSystem<>(
+            new RedundantSystem.MultiCheck(
+                    new RedundantSystem.SlewRateCheck(10000),
+                    (Double value, boolean failed) -> failed || leftMaster.isAlive()
+            ),
+            leftMaster::getSelectedSensorPosition,
+            leftSlave::getSelectedSensorPosition
+    );
+    rightPosition = new RedundantSystem<>(
+            new RedundantSystem.MultiCheck(
+                    new RedundantSystem.SlewRateCheck(10000),
+                    (Double value, boolean failed) -> failed || rightMaster.isAlive()
+            ),
+            rightMaster::getSelectedSensorPosition,
+            rightSlave::getSelectedSensorPosition
+    );
+
+    //configure PID: TODO get rid of PID
     feedforward = new SimpleMotorFeedforward(kS, kV, kA);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
 
-    driveLQR.latencyCompensate(drivePlant, 0.02, 0);
-  }
-
-  public DifferentialDrive getDifferentialDrive(){
-    return differentialDrive;
-  }
-
-  @Override
-  public void periodic() {
-
-  }
-
-  public double countsToMeters(double encoderCounts){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
-  }
-
-  public double metersToCounts(double meters){
-    return ((meters / METERS_PER_ROTATION) * GEARBOX_RATIO_HIGH) * DRIVE_ENCODER_CPR;
-  }
-
-  /**
-   * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
-   * @param mode com.ctre.phoenix.motorcontrol.NeuteralMode the mode to set the motors to
-   *
-   */
-  public void setNeutralMode(NeutralMode mode) {
-    leftMaster.setNeutralMode(mode);
-    rightMaster.setNeutralMode(mode);
+    driveLQR.latencyCompensate(drivePlant, 0.02, 0); //TODO
   }
 
   /**
@@ -165,7 +164,6 @@ public class DriveTrain extends SubsystemBase {
     rightController.reset();
   }
 
-  double dt = 0;
   //EXPERIMENTAL
   public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
     //use the LQR to calculate the voltages needed to get to the desired speeds
@@ -224,11 +222,19 @@ public class DriveTrain extends SubsystemBase {
 
   //WPILib built in odometry methods from docs
 
-  public double getLeftVelocity(){ //TODO Write Javadoc
+  /**
+   * get the velocity of the left side of the drivetrain
+   * @return the velocity of the left side of the drivetrain in meters per second
+   */
+  public double getLeftVelocity(){
     return countsToMeters(leftMaster.getSelectedSensorVelocity());
   }
 
-  public double getRightVelocity(){ //TODO Write Javadoc
+  /**
+   * get the velocity of the right side of the drivetrain
+   * @return the velocity of the right side of the drivetrain in meters per second
+   */
+  public double getRightVelocity(){
     return countsToMeters(rightMaster.getSelectedSensorVelocity());
   }
 
@@ -242,9 +248,19 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
-    leftMaster.setSelectedSensorPosition(0);
-    rightMaster.setSelectedSensorPosition(0);
+  public void resetEncoders(double left, double right) {
+    leftMaster.setSelectedSensorPosition(left);
+    rightMaster.setSelectedSensorPosition(right);
+  }
+
+  /**
+   * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
+   * @param mode com.ctre.phoenix.motorcontrol.NeuteralMode the mode to set the motors to
+   *
+   */
+  public void setNeutralMode(NeutralMode mode) {
+    leftMaster.setNeutralMode(mode);
+    rightMaster.setNeutralMode(mode);
   }
 
   /**
@@ -262,7 +278,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftMeters() {
-    return countsToMeters(leftMaster.getSelectedSensorPosition());
+    return countsToMeters(leftPosition.get());
   }
 
   /**
@@ -271,7 +287,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightMeters() {
-    return countsToMeters(rightMaster.getSelectedSensorPosition());
+    return countsToMeters(rightPosition.get());
   }
 
   /**
@@ -281,6 +297,18 @@ public class DriveTrain extends SubsystemBase {
    */
   public void setMaxOutput(double maxOutput) {
     differentialDrive.setMaxOutput(maxOutput);
+  }
+
+  public DifferentialDrive getDifferentialDrive(){
+    return differentialDrive;
+  }
+
+  public double countsToMeters(double encoderCounts){
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
+  }
+
+  public double metersToCounts(double meters){
+    return ((meters / METERS_PER_ROTATION) * GEARBOX_RATIO_HIGH) * DRIVE_ENCODER_CPR;
   }
 
   //simulation
@@ -309,9 +337,6 @@ public class DriveTrain extends SubsystemBase {
 
 
   }
-
-
-
 }
 
 

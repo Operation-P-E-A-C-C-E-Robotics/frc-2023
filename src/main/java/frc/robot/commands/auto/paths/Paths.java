@@ -10,7 +10,7 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstrai
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.Util;
-import frc.lib.util.Value;
+import frc.lib.safety.Value;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 

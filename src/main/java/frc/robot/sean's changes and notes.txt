@@ -5,3 +5,5 @@ Started robotState
 
 Started field points
     not finished! needs actual points
+
+DID A LOTTA STUFF

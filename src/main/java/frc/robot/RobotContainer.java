@@ -79,7 +79,10 @@ public class RobotContainer {
    */
   private void configureBindings() {
     new JoystickButton(driverJoystick, 11).toggleOnTrue(new FindStdDevs(robotState));
-    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> testPaths.driveToConeCommand(robotState, driveTrain).get(null).schedule(), driveTrain));
+    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
+      var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
+      if(path != null) path.schedule();
+    }, driveTrain));
   }
 
   /**

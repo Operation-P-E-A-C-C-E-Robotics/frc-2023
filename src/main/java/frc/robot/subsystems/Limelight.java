@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.lib.sensors.LimelightHelper;
-import frc.lib.util.Value;
+import frc.lib.safety.Value;
 
 public class Limelight extends LimelightHelper {
     private static final double CONE_WIDTH = 0.21,

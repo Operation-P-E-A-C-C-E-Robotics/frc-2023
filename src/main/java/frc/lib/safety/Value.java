@@ -1,4 +1,4 @@
-package frc.lib.util;
+package frc.lib.safety;
 
 public class Value <T> {
     private final T value;
