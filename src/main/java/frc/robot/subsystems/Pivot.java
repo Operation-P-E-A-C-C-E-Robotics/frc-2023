@@ -16,12 +16,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
+import frc.robot.Constants;
+import frc.robot.Constants.SupersystemTolerance;
 
 import static frc.robot.Constants.Pivot.*;
 
 public class Pivot extends ArmSystemBase {
-  private WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
-  private WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
+  private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
+  private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
+  private double setpoint = 0;
 
   /** Creates a new ExampleSubsystem. */
   public Pivot() {
@@ -44,12 +47,17 @@ public class Pivot extends ArmSystemBase {
   }
 
   public void setAngle(Rotation2d angle){
+    setpoint = angle.getRadians();
     enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
     goToState(angle.getRadians(), 0);
   }
 
-  public boolean finishedMotion(){
-    return false; //todo
+  public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
+    return Util.epsilonEquals(getAngleRadians(), setpoint, tolerance.pivot);
+  }
+
+  public boolean withinTolerance(SupersystemTolerance tolerance){
+    return withinTolerance(tolerance, setpoint);
   }
 
   public Rotation2d getRotation(){

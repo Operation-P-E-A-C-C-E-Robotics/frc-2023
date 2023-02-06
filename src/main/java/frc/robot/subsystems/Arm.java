@@ -8,11 +8,14 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
+import frc.robot.Constants;
+import frc.robot.Constants.SupersystemTolerance;
 
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
+    private double setpoint = 0;
 
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
@@ -34,8 +37,7 @@ public class Arm extends SubsystemBase {
      * @return lift extension meters
      */
     public double getExtension(){
-       var extension = Util.countsToRotations(armMaster.getSelectedSensorPosition(), 2048, 0);  //todo  Gear Ratio
-        return extension;
+        return Util.countsToRotations(armMaster.getSelectedSensorPosition(), 2048, 0);
     }
 
     /**
@@ -43,10 +45,17 @@ public class Arm extends SubsystemBase {
      * the pivot and the wrist
      */
     public void setExtension(double meters){
+        setpoint = meters;
         //todo
     }
 
+    public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
+        return Util.epsilonEquals(getExtension(), setpoint, tolerance.arm);
+    }
 
+    public boolean withinTolerance(SupersystemTolerance tolerance){
+        return withinTolerance(tolerance, setpoint);
+    }
 
     @Override
     public void periodic() {

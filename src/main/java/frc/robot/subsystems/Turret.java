@@ -22,12 +22,15 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
+import frc.robot.Constants;
+import frc.robot.Constants.SupersystemTolerance;
 
 import static frc.robot.Constants.Turret.MOTOR_PORT;
 import static frc.robot.Constants.Turret.SYSTEM_CONSTANTS;
 
 public class Turret extends DCMotorSystemBase {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
+  private double setpoint = 0;
 
   /** Creates a new Turret. */
   public Turret() {
@@ -54,6 +57,7 @@ public class Turret extends DCMotorSystemBase {
   }
 
   public void setAngle(Rotation2d angle){
+      setpoint = angle.getRadians();
       enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRaidans, this::getAngularVelocityRaidans);
       goToState(angle.getRadians(), 0);
   }
@@ -80,6 +84,14 @@ public class Turret extends DCMotorSystemBase {
   }
   public double getAngularVelocityRaidans(){
       return getAngularVelocity().getRadians();
+  }
+
+  public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
+    return Util.epsilonEquals(getAngleRaidans(), setpoint, tolerance.turret);
+  }
+
+  public boolean withinTolerance(SupersystemTolerance tolerance){
+    return withinTolerance(tolerance, setpoint);
   }
 
   //SIMULATION:

@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
+import frc.robot.Constants;
+import frc.robot.Constants.SupersystemTolerance;
+
 import static frc.robot.Constants.Wrist.*;
 
 public class Wrist extends SubsystemBase{
@@ -34,11 +37,11 @@ public class Wrist extends SubsystemBase{
 
     public void setFlipped(boolean flipped){
        wristFlipping.set(flipped ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-       previousFlipState = flipped;
        if (flipped != previousFlipState){
            wristTimer.reset();
            wristTimer.start();
        }
+        previousFlipState = flipped;
     }
 
     public boolean flipping(){
@@ -49,8 +52,12 @@ public class Wrist extends SubsystemBase{
         return true;
     }
 
-    public boolean withinTolerance(/*something */){
-        return false; //todo
+    public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
+        return Util.epsilonEquals(getAngle().getRadians(), setpoint, tolerance.wrist);
+    }
+
+    public boolean withinTolerance(SupersystemTolerance tolerance){
+        return withinTolerance(tolerance, getAngle().getRadians());
     }
 
     /**

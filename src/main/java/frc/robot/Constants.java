@@ -134,4 +134,20 @@ public final class Constants {
     public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0;
     }
+
+    public static final class SupersystemTolerance{
+        public final double turret, pivot, wrist, arm;
+        public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public SupersystemTolerance(double turret, double pivot, double wrist, double arm){
+            this.turret = turret;
+            this.pivot = pivot;
+            this.wrist = wrist;
+            this.arm = arm;
+        }
+    }
 }
