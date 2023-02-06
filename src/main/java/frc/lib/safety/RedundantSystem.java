@@ -25,7 +25,7 @@ public class RedundantSystem <T> {
     }
 
     public T get(){
-        selfCheck();
+        // selfCheck();
         if(failed) return secondary[currentSecondary].get();
         return primary.get();
     }

@@ -12,7 +12,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
@@ -25,15 +30,21 @@ public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private double setpoint = 0;
+  private static final double MASS = 1;
+  private static final double LENGTH = 0.5;
 
-  /** Creates a new ExampleSubsystem. */
+  /**
+   * Creates a new Pivot.
+    */
   public Pivot() {
-    super(SYSTEM_CONSTANTS);
+    super(SYSTEM_CONSTANTS, LENGTH, MASS); //pass in constants for the arm controller
 
+    //set up the motor controllers
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.FollowMaster);
+
     SmartDashboard.putNumber("pivot setpoint", 0);
   }
 
@@ -83,20 +94,26 @@ public class Pivot extends ArmSystemBase {
           SYSTEM_CONSTANTS.motor,
           SYSTEM_CONSTANTS.gearing,
           SYSTEM_CONSTANTS.inertia,
-          0.5,
-          0,
+          LENGTH,
+          -3,
           3,
-          1,
+          MASS,
           true
   );
 
   double prevsetpt = 0.0;
+  Mechanism2d mech = new Mechanism2d(100, 100);
+  MechanismRoot2d root2d = mech.getRoot("pivot", 50, 50);
+  MechanismLigament2d pivotLigament = root2d.append(
+    new MechanismLigament2d("pivot", 50, 50, 2, new Color8Bit(Color.kRed))
+  );
 
   @Override
   public void simulationPeriodic() {
+    SmartDashboard.putData(mech);
     var setpt = SmartDashboard.getNumber("pivot setpoint", 0);
     if(setpt != prevsetpt){
-      setAngle(new Rotation2d(setpt));
+      setPercent(setpt);
     }
     prevsetpt = setpt;
     SmartDashboard.putNumber("isitchanging", setpt);
@@ -104,8 +121,10 @@ public class Pivot extends ArmSystemBase {
     SmartDashboard.putNumber("pivot motor output", pivotMaster.get());
     pivotSim.setInput(pivotMaster.get() * RobotController.getBatteryVoltage());
     pivotSim.update(0.02);
-    turretMotorSim.setIntegratedSensorRawPosition((int)Util.rotationsToCounts(pivotSim.getAngleRads()/(2*Math.PI), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
-    turretMotorSim.setIntegratedSensorVelocity((int)Util.rotationsToCounts(pivotSim.getVelocityRadPerSec()/(2*Math.PI), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+
+    turretMotorSim.setIntegratedSensorRawPosition((int)Util.rotationsToCounts(pivotSim.getAngleRads(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+    turretMotorSim.setIntegratedSensorVelocity((int)Util.rotationsToCounts(pivotSim.getVelocityRadPerSec(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
     SmartDashboard.putNumber("pivot angle", pivotSim.getAngleRads());
+    pivotLigament.setAngle(getRotation());
   }
 }

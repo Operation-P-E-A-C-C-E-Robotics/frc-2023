@@ -25,17 +25,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(2),
-                10,
-                100,
+                1,
+                50,
                 2048,
                 0.1,
+                0.2,
                 0.1,
                 0.1,
                 0.1,
                 0.1,
-                0.1,
-                0.1,
-                0.1,
+                0.01,
+                0.01,
                 12,
                 0,
                 12,
@@ -150,4 +150,6 @@ public final class Constants {
             this.arm = arm;
         }
     }
+
+    public static final boolean TUNING_MODE = true;
 }

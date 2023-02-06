@@ -2,15 +2,16 @@ package frc.lib.util;
 
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.LinearSystemLoop;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,12 +35,18 @@ public class ArmSystemBase extends SubsystemBase {
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
+    private final double armLength, armMass;
 
+    //TESTING BS:
+    private final TunableNumber kgravity = new TunableNumber("Arm Gravity", 0.0);
+    private ArmFeedforward feedforward = new ArmFeedforward(0, kgravity.get(), 0.0);
     /**
-     * A messy ass helper class to run trajectories on a DC Motor state space controller.
+     * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
+     * @param armLength The length of the arm (m)
+     * @param armMass The mass of the arm (kg)
      */
-    public ArmSystemBase(SystemConstants constants) {
+    public ArmSystemBase(SystemConstants constants, double armLength, double armMass) {
         this.constants = constants;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
         observer = new KalmanFilter<N2, N1, N1>(
@@ -63,6 +70,8 @@ public class ArmSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
+        this.armLength = armLength;
+        this.armMass = armMass;
     }
 
     public LinearSystem<N2, N1, N1> getSystem(){
@@ -89,8 +98,24 @@ public class ArmSystemBase extends SubsystemBase {
         looping = false;
     }
 
+    /**
+     * tell whether the feedback loop is enabled (and thus whether the subsystem has control)
+     * @return whether the loop is enabled
+     */
     public boolean isLooping() {
         return looping;
+    }
+
+    /**
+     * calculate additional feedforward to account for gravity
+     */
+    public double calculateGravityFeedforward(double angle){
+        feedforward = new ArmFeedforward(0, kgravity.get(), 0.0);
+        //calculate newton meters of force on the arm from gravity.
+        // double force = armMass * 9.81 * Math.cos(angle) * (1/constants.gearing);
+        // //calculate voltage needed to counteract force:
+        // return constants.motor.getVoltage(force, getVelocity.getAsDouble());
+        return feedforward.calculate(angle, getVelocity.getAsDouble());
     }
 
     /**
@@ -111,7 +136,13 @@ public class ArmSystemBase extends SubsystemBase {
         followingProfile = false;
     }
 
+    /**
+     * generate and follow a new trajectory from the current state to the given state
+     * @param position The position to go to
+     * @param velocity The velocity to go to
+     */
     public void goToState(double position, double velocity) {
+        //this.positionSetpoint = position; //TODO for testing only
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
         }
@@ -123,10 +154,19 @@ public class ArmSystemBase extends SubsystemBase {
         setTrajectory(profile);
     }
 
+    /**
+     * set the next reference for the feedback loop
+     * @param position The position reference
+     * @param velocity The velocity reference
+     */
     public void setNextR(double position, double velocity) {
         loop.setNextR(VecBuilder.fill(position, velocity));
     }
 
+    /**
+     * allow the subsystem to run a periodic function
+     * @param superPeriodic The function to run - will run before the feedback loop every periodic call
+     */
     public void setPeriodicFunction(Runnable superPeriodic) {
         this.superPeriodic = superPeriodic;
     }
@@ -134,27 +174,38 @@ public class ArmSystemBase extends SubsystemBase {
     @Override
     public final void periodic() {
         if(superPeriodic != null) superPeriodic.run();
-        if(!looping) return;
-        var time = profileTimer.get();
+        if(!looping) return; // don't run the loop if it's not enabled
 
+        var time = profileTimer.get();
+        double feedforward = 0;
+
+        // make sure the timer is running if we're following a profile, reset it if we're not
         if(followingProfile && time == 0){
             profileTimer.start();
         } else if(!followingProfile && time != 0){
             profileTimer.stop();
             profileTimer.reset();
         }
+
+        // if we're following a profile, calculate the next reference and feedforward
         if(followingProfile){
             var output = profile.calculate(time);
             SmartDashboard.putNumber("setpt position", output.position);
             SmartDashboard.putNumber("setpt velocity", output.velocity);
             setNextR(output.position, output.velocity);
+            feedforward = calculateGravityFeedforward(output.position);
+        } else {
+            feedforward = calculateGravityFeedforward(getPosition.getAsDouble());
         }
 
-        SmartDashboard.putNumber("position", getPosition.getAsDouble());
-        SmartDashboard.putNumber("velocity", getVelocity.getAsDouble());
+        SmartDashboard.putNumber("arm feedforward", feedforward);
 
+        SmartDashboard.putNumber("arm position", getPosition.getAsDouble());
+        SmartDashboard.putNumber("arm velocity", getVelocity.getAsDouble());
+
+        // run the feedback.
         loop.correct(VecBuilder.fill(getPosition.getAsDouble()));
         loop.predict(constants.dt);
-        voltDriveFunction.accept(loop.getU(0));
+        voltDriveFunction.accept(loop.getU(0) + feedforward);
     }
 }

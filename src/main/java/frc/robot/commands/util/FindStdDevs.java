@@ -1,5 +1,6 @@
 package frc.robot.commands.util;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotState;
@@ -33,7 +34,7 @@ public class FindStdDevs extends CommandBase {
 
     @Override
     public void execute(){
-        var newPose = state.getRawApriltagBotpose();
+        var newPose = state.getRawApriltagBotpose().get(new Pose3d());
         if(newPose.getX() == 0) return;
         xMeasurements.add(newPose.getX());
         yMeasurements.add(newPose.getY());
