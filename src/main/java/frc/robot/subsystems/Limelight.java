@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.lib.sensors.LimelightHelper;
+import frc.lib.util.Value;
 
 public class Limelight extends LimelightHelper {
     private static final double CONE_WIDTH = 0.21,
@@ -17,19 +18,35 @@ public class Limelight extends LimelightHelper {
         super(networktablesName);
     }
 
-    public Translation2d getConePoseRelativeToCamera(){
+    public Value<Translation2d> getConePoseRelativeToCamera(){
         setPipeline(CONE_PIPELINE);
-        var boundingBox = getBoundingBox();
-        double distance = getDistance(CONE_HEIGHT, CONE_WIDTH, boundingBox);
-        double angle = Units.degreesToRadians(-getFilteredX());
-        return new Translation2d(distance * Math.cos(angle), distance * Math.sin(angle));
+        var distanceValue = getDistance(CONE_HEIGHT, CONE_WIDTH);
+        var angleValue = getFilteredX();
+        if(!Value.valid(distanceValue, angleValue)) return Value.notAvailable();
+
+        var distance = distanceValue.get(0.0);
+        var angle = Units.degreesToRadians(-angleValue.get(0.0));
+        return new Value<>(
+                new Translation2d(
+                        distance * Math.cos(angle),
+                        distance * Math.sin(angle)
+                )
+        );
     }
 
-    public Translation2d getCubePoseRelativeToCamera(){
+    public Value<Translation2d> getCubePoseRelativeToCamera(){
         setPipeline(CUBE_PIPELINE);
-        var boundingBox = getBoundingBox();
-        double distance = getDistance(CUBE_WIDTH, CUBE_WIDTH, boundingBox);
-        double angle = Units.degreesToRadians(-getFilteredX());
-        return new Translation2d(distance * Math.cos(angle), distance * Math.sin(angle));
+        var distanceValue = getDistance(CUBE_WIDTH, CUBE_WIDTH);
+        var angleValue = getFilteredX();
+        if(!Value.valid(distanceValue, angleValue)) return Value.notAvailable();
+
+        var distance = distanceValue.get(0.0);
+        var angle = Units.degreesToRadians(-angleValue.get(0.0));
+        return new Value<>(
+                new Translation2d(
+                        distance * Math.cos(angle),
+                        distance * Math.sin(angle)
+                )
+        );
     }
 }

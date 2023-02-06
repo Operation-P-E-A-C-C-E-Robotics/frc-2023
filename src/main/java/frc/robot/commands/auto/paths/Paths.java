@@ -1,10 +1,7 @@
 package frc.robot.commands.auto.paths;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -13,6 +10,7 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstrai
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.util.Util;
+import frc.lib.util.Value;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
@@ -76,16 +74,18 @@ public class Paths {
     private Pose2d current = new Pose2d();
     private Pose2d target = new Pose2d();
 
-    public PathFollower driveToConeCommand(RobotState state, DriveTrain driveTrain){
+    public Value<PathFollower> driveToConeCommand(RobotState state, DriveTrain driveTrain){
         current = state.getOdometryPose();
-        target = Util.toPose2d(state.getConePose());
-        return new PathFollower(driveTrain, TrajectoryGenerator.generateTrajectory(
+        var cone = state.getConePose();
+        if(!cone.isNormal()) return Value.none();
+        target = Util.toPose2d(cone.get(new Pose3d()));
+        return new Value<>(new PathFollower(driveTrain, TrajectoryGenerator.generateTrajectory(
             current,
             List.of(/*middle.getTranslation()*/),
             target.plus(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(180))),  
             config.setReversed(true)
             ),
-        state);
+        state));
     }
 
     /**

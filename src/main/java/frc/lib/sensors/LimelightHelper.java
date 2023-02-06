@@ -1,14 +1,11 @@
 package frc.lib.sensors;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.*;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.DriveTrain;
+import frc.lib.util.Value;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -64,44 +61,52 @@ public class LimelightHelper {
         return tv.get() == 1;
     }
 
-    public double getTargetX(){
+    public Value<Double> getTargetX(){
+        if(!hasTarget()) return Value.notAvailable();
         if(tx == null) tx = dSub("tx");
-        return tx.get();
+        return Value.of(tx.get());
     }
 
-    public double getTargetY(){
+    public Value<Double> getTargetY(){
+        if(!hasTarget()) return Value.notAvailable();
         if(ty == null) ty = dSub("ty");
-        return ty.get();
+        return Value.of(ty.get());
     }
 
-    public double getTargetArea(){
+    public Value<Double> getTargetArea(){
+        if(!hasTarget()) return Value.notAvailable();
         if(ta == null) ta = dSub("ta");
-        return ta.get();
+        return Value.of(ta.get());
     }
 
-    public double getTargetSkew(){
+    public Value<Double> getTargetSkew(){
+        if(!hasTarget()) return Value.notAvailable();
         if(ts == null) ts = dSub("ts");
-        return ts.get();
+        return Value.of(ts.get());
     }
 
-    public double getFittedShortSideLength(){
+    public Value<Double> getFittedShortSideLength(){
+        if(!hasTarget()) return Value.notAvailable();
         if(tshort == null) tshort = dSub("tshort");
-        return tshort.get();
+        return Value.of(tshort.get());
     }
 
-    public double getFittedLongSideLength(){
+    public Value<Double> getFittedLongSideLength(){
+        if(!hasTarget()) return Value.notAvailable();
         if(tlong == null) tlong = dSub("tlong");
-        return tlong.get();
+        return Value.of(tlong.get());
     }
 
-    public double getRoughWidth(){
+    public Value<Double> getRoughWidth(){
+        if(!hasTarget()) return Value.notAvailable();
         if(thor == null) thor = dSub("thor");
-        return thor.get();
+        return Value.of(thor.get());
     }
 
-    public double getRoughHeight(){
+    public Value<Double> getRoughHeight(){
+        if(!hasTarget()) return Value.notAvailable();
         if(tvert == null) tvert = dSub("tvert");
-        return tvert.get();
+        return Value.of(tvert.get());
     }
 
     public double getPipeline(){
@@ -114,9 +119,11 @@ public class LimelightHelper {
         return tl.get() / 1000;
     }
 
-    public double[] getCameraTranslation(){
+    public Value<double[]> getCameraTranslation(){
         if(camtran == null) camtran = daSub("camtran");
-        return camtran.get();
+        var val = camtran.get();
+        if(val.length != 6) return Value.notAvailable();
+        return new Value<>(val);
     }
 
     public double getApriltagID(){
@@ -124,9 +131,11 @@ public class LimelightHelper {
         return tid.get();
     }
 
-    public double[] getCorners(){
+    public Value<double[]> getCorners(){
         if(tcornxy == null) tcornxy = daSub("tcornxy");
-        return tcornxy.get();
+        var val = tcornxy.get();
+        if(val.length == 0) return Value.notAvailable();
+        return new Value<>(val);
     }
 
     public double[] getCrosshairColor(){
@@ -160,8 +169,13 @@ public class LimelightHelper {
         this.pipeline.set(pipeline);
     }
 
-    public double getFilteredX(){
-        return xFilter.calculate(getTargetX());
+    public Value<Double> getFilteredX(){
+        var targetX = getTargetX();
+        if(targetX.getState() != Value.ValueState.NORMAL) {
+            xFilter.reset();
+            return Value.notAvailable();
+        }
+        return Value.of(xFilter.calculate(targetX.get(0.0)));
     }
 
     //GAMEPIECES:
@@ -173,16 +187,20 @@ public class LimelightHelper {
      * @param objectWidth width of object (meters)
      * @return approximate distance
      */
-    public double getDistance(double objectHeight, double objectWidth, BoundingBox target){
-        return (objectHeight * FOCAL_LENGTH) / getRoughHeight();
+    public Value<Double> getDistance(double objectHeight, double objectWidth){
+        var roughHeight = getRoughHeight();
+        var roughWidth = getRoughWidth();
+        if(roughHeight.getState() != Value.ValueState.NORMAL ||
+                roughWidth.getState() != Value.ValueState.NORMAL) return Value.notAvailable();
+        return Value.of((objectHeight * FOCAL_LENGTH) / getRoughHeight().get(0.0));
     }
 
     /**
      * get the equivalent of the yellow box in limelight software
      */
-    public BoundingBox getBoundingBox(){
-        var corners = getCorners();
-        if(corners.length < 2) return new BoundingBox(0,0,0,0);
+    public Value<BoundingBox> getBoundingBox(){
+        var corners = getCorners().get(new double[0]);
+        if(corners.length < 2) return Value.notAvailable();
         double minX = corners[0],
                 minY = corners[1],
                 maxX = corners[0],
@@ -197,7 +215,7 @@ public class LimelightHelper {
             if(y > maxY) maxY = y;
         }
 
-        return new BoundingBox(minX, minY, maxX, maxY);
+        return new Value<>(new BoundingBox(minX, minY, maxX, maxY));
     }
 
 
@@ -248,10 +266,10 @@ public class LimelightHelper {
      * get the pose of the robot from apriltags
      * @return the pose of the robot
      */
-    public Pose3d getBotpose(){
+    public Value<Pose3d> getBotpose(){
         var pose = botpose.get();
-        if(pose.length < 6) return new Pose3d();
-        return new Pose3d(
+        if(pose.length < 6) return Value.notAvailable();
+        return new Value<>(new Pose3d(
                 pose[0],
                 pose[1],
                 pose[2],
@@ -260,7 +278,7 @@ public class LimelightHelper {
                         pose[4],
                         pose[5]
                 )
-        );
+        ));
     }
 
     /**

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.AveragePose;
 import frc.lib.util.Util;
+import frc.lib.util.Value;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
@@ -47,24 +48,28 @@ public class RobotState {
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
 
-    public Pose3d getConePose(){
+    public Value<Pose3d> getConePose(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera)));
+        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
         if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
 
-        return pose;
+        return new Value<>(pose);
     }
 
-    public Pose3d getCubePose(){
+    public Value<Pose3d> getCubePose(){
         var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera)));
+        var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
         if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
 
-        return pose;
+        return new Value<>(pose);
     }
 
     /**
@@ -81,7 +86,7 @@ public class RobotState {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
         //DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
-        var conePose = getConePose();
+        var conePose = getConePose().get(new Pose3d());
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
@@ -90,7 +95,7 @@ public class RobotState {
         return new Transform3d(new Translation3d(t2d.getX(), t2d.getY(), 0.0), new Rotation3d(0,0,t2d.getRotation().getRadians()));
     }
 
-    public Pose3d getRawApriltagBotpose(){
+    public Value<Pose3d> getRawApriltagBotpose(){
         return apriltagCamera.getBotpose();
     }
 
@@ -104,7 +109,7 @@ public class RobotState {
 
     public Pose3d getRobotPose(){
         Pose2d odometryPose = getOdometryPose();
-        Pose3d botpose = apriltagCamera.getBotpose();
+        Pose3d botpose = apriltagCamera.getBotpose().get(new Pose3d());
         return new Pose3d(
                 odometryPose.getX(),
                 odometryPose.getY(),

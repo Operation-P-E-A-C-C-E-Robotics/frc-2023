@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.auto.paths.PathFollower;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -78,7 +79,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
     new JoystickButton(driverJoystick, 11).toggleOnTrue(new FindStdDevs(robotState));
-    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> testPaths.driveToConeCommand(robotState, driveTrain).schedule(), driveTrain));
+    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> testPaths.driveToConeCommand(robotState, driveTrain).get(null).schedule(), driveTrain));
   }
 
   /**
