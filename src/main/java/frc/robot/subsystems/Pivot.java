@@ -23,6 +23,7 @@ import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
+import frc.robot.DashboardManager;
 
 import static frc.robot.Constants.Pivot.*;
 
@@ -144,11 +145,6 @@ public class Pivot extends ArmSystemBase {
           true
   );
   private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
-  private final Mechanism2d mechanism2d = new Mechanism2d(100, 100);
-  private final MechanismRoot2d root = mechanism2d.getRoot("pivot", 50, 50);
-  private final MechanismLigament2d ligament = root.append(
-          new MechanismLigament2d("pivot ligament", 30, 0, 3, new Color8Bit(Color.kRed))
-  );
 
   @Override
   public void simulationPeriodic() {
@@ -187,14 +183,13 @@ public class Pivot extends ArmSystemBase {
       prevPercentSetpoint = percentSetpoint;
     }
 
-    //update visualization (Mechanism2d):
-    ligament.setAngle(Units.radiansToDegrees(pivotSim.getAngleRads()));
+    //update visualization
+    DashboardManager.getInstance().updatePivotAngle(Units.radiansToDegrees(pivotSim.getAngleRads()));
 
-    //write information + visualization to dashboard:
+    //write information to dashboard:
     SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
     SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
     SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
-    SmartDashboard.putData("pivot", mechanism2d);
 
     //print to console:
     System.out.println("pivot angle: " + getAngleRadians() + " radians");

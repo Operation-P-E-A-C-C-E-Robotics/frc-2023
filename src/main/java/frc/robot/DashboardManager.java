@@ -5,9 +5,11 @@
 package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 
 /** Add your docs here. */
 public class DashboardManager {
@@ -49,6 +51,39 @@ public class DashboardManager {
     public void update(){
         SmartDashboard.putData(field);
         // SmartDashboard.putData(differentialDrive); Unneccisary Clutter
-        
+        if(Robot.isSimulation()){
+            SmartDashboard.putData("turret", turretMech);
+            SmartDashboard.putData("arm", armMech);
+        }
+    }
+
+    //simulation visualization:
+    Mechanism2d turretMech = new Mechanism2d(200, 200);
+    MechanismLigament2d turret = turretMech.getRoot("Turret", 100, 100).append(
+            new MechanismLigament2d("Turret", 90, 0, 3, new Color8Bit(Color.kRed))
+    );
+    Mechanism2d armMech = new Mechanism2d(500, 500);
+    MechanismRoot2d armRoot = armMech.getRoot("Arm", 250, 100);
+    MechanismLigament2d pivot = armRoot.append(
+            new MechanismLigament2d("Arm", 150, 0, 3, new Color8Bit(Color.kRed))
+    );
+    MechanismLigament2d wrist = pivot.append(
+            new MechanismLigament2d("Wrist", 50, 0, 3, new Color8Bit(Color.kBlue))
+    );
+
+    public void updateTurret(double angle){
+        turret.setAngle(angle);
+    }
+
+    public void updateArmLength(double length){
+        pivot.setLength(length);
+    }
+
+    public void updatePivotAngle(double angle){
+        pivot.setAngle(angle);
+    }
+
+    public void updateWristAngle(double angle){
+        wrist.setAngle(angle);
     }
 }
