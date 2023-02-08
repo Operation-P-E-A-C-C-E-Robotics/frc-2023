@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch Pivot",
+      "request": "launch",
+      "mainClass": "frc.robot.subsystems.Pivot",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
       "name": "Launch ChargeStation",
       "request": "launch",
       "mainClass": "frc.lib.field.ChargeStation",

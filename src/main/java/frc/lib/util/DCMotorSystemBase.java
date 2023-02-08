@@ -20,8 +20,6 @@ import java.util.function.DoubleSupplier;
 
 public class DCMotorSystemBase extends SubsystemBase {
     private final LinearSystem<N2, N1, N2> plant;
-    private final KalmanFilter<N2, N1, N2> observer;
-    private final LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator;
     private final LinearSystemLoop<N2, N1, N2> loop;
     private final SystemConstants constants;
     private TrapezoidProfile profile = new TrapezoidProfile(
@@ -45,7 +43,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.inertia,
                 constants.gearing
         );
-        observer = new KalmanFilter<N2, N1, N2>(
+        KalmanFilter<N2, N1, N2> observer = new KalmanFilter<N2, N1, N2>(
                 Nat.N2(),
                 Nat.N2(),
                 plant,
@@ -53,7 +51,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 VecBuilder.fill(constants.kalmanSensorAccuracyPosition, constants.kalmanSensorAccuracyVelocity),
                 constants.dt
         );
-        linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N2>(
+        LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N2>(
                 plant,
                 VecBuilder.fill(constants.lqrPositionTolerance, constants.lqrVelocityTolerance),
                 VecBuilder.fill(constants.lqrControlEffortTolerance),
@@ -92,6 +90,9 @@ public class DCMotorSystemBase extends SubsystemBase {
         looping = false;
     }
 
+    /**
+     * @return whether the feedback loop is enabled
+     */
     public boolean isLooping() {
         return looping;
     }
@@ -114,6 +115,12 @@ public class DCMotorSystemBase extends SubsystemBase {
         followingProfile = false;
     }
 
+    /**
+     * generate a trajectory from the current position to the given position,
+     * and start following it
+     * @param position position setpoint
+     * @param velocity velocity setpoint
+     */
     public void goToState(double position, double velocity) {
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
@@ -126,36 +133,48 @@ public class DCMotorSystemBase extends SubsystemBase {
         setTrajectory(profile);
     }
 
+    /**
+     * set the next reference for the feedback loop -
+     * you probably don't want to use this, use goToState instead.
+     * This set's the reference for the next iteration of the feedback loop directly,
+     * and does not generate a trajectory.
+     * @param position position reference
+     * @param velocity velocity reference
+     */
     public void setNextR(double position, double velocity) {
         loop.setNextR(VecBuilder.fill(position, velocity));
     }
 
+    /**
+     * allow the subsystem to run code in the periodic method
+     * @param superPeriodic a function to run every periodic loop
+     */
     public void setPeriodicFunction(Runnable superPeriodic) {
         this.superPeriodic = superPeriodic;
     }
 
     @Override
     public final void periodic() {
+        // run the subsystem's periodic code
         if(superPeriodic != null) superPeriodic.run();
-        if(!looping) return;
-        var time = profileTimer.get();
+        if(!looping) return; // don't run the feedback loop if it's not enabled
+        var time = profileTimer.get(); // get the time since the profile started
 
+        // start the profile timer if it's not already running, and stop it if it's done
         if(followingProfile && time == 0){
             profileTimer.start();
         } else if(!followingProfile && time != 0){
             profileTimer.stop();
             profileTimer.reset();
         }
+
+        // if we're following a profile, calculate the next reference
         if(followingProfile){
             var output = profile.calculate(time);
-            SmartDashboard.putNumber("setpt position", output.position);
-            SmartDashboard.putNumber("setpt velocity", output.velocity);
             setNextR(output.position, output.velocity);
         }
 
-        SmartDashboard.putNumber("position", getPosition.getAsDouble());
-        SmartDashboard.putNumber("velocity", getVelocity.getAsDouble());
-
+        // run the feedback
         loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         loop.predict(constants.dt);
         voltDriveFunction.accept(loop.getU(0));

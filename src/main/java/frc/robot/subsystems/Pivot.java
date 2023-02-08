@@ -30,47 +30,78 @@ public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private double setpoint = 0;
-  private static final double MASS = 1;
-  private static final double LENGTH = 0.5;
 
-  /**
-   * Creates a new Pivot.
-    */
+  private static final double LENGTH = 0.5,
+                              MASS = 1;
+
+  /** Creates a new ExampleSubsystem. */
   public Pivot() {
-    super(SYSTEM_CONSTANTS, LENGTH, MASS); //pass in constants for the arm controller
+    super(SYSTEM_CONSTANTS, LENGTH, MASS);
 
-    //set up the motor controllers
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.FollowMaster);
-
-    SmartDashboard.putNumber("pivot setpoint", 0);
+    SmartDashboard.putNumber("pivot setpoint angle", 0);
+    SmartDashboard.putNumber("pivot setpoint percent", 0);
   }
 
+  /**
+   * set the pivot speed - positive values move towards the front of the robot.
+   * @param speed -1 to 1
+   */
   public void setPercent(double speed){
     disableLoop();
     pivotMaster.set(speed);
   }
 
+  /**
+   * set the pivot voltage - positive values move towards the front of the robot.
+   * @param volts -12 to 12
+   */
   private void setVoltage(double volts){
     pivotMaster.setVoltage(volts);
   }
 
+  /**
+   * set the pivot angle - positive values move towards the front of the robot.
+   * this enables feedback control.
+   * TODO - the arm sim calls -90deg straight down - I will change this to 180 deg straight down.
+   *    this function should call 180deg straight down. (zero degrees is straight up)
+   *    what a mess. "I should have just used radians." (<--AI Wrote this)
+   * @param angle a Rotation2d with the setpoint.
+   */
   public void setAngle(Rotation2d angle){
     setpoint = angle.getRadians();
     enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
     goToState(angle.getRadians(), 0);
   }
 
+  /**
+   * determine whether the pivot is within tolerance of the setpoint.
+   * @param tolerance how close to the setpoint is considered "within tolerance"
+   * @param setpoint the setpoint to check against
+   * @return true if within tolerance, false otherwise
+   */
   public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
     return Util.epsilonEquals(getAngleRadians(), setpoint, tolerance.pivot);
   }
 
+  /**
+   * determine whether the pivot is within tolerance of the setpoint.
+   * uses the last position set with setAngle() as the setpoint.
+   * @param tolerance how close to the setpoint is considered "within tolerance"
+   * @return true if within tolerance, false otherwise
+   */
   public boolean withinTolerance(SupersystemTolerance tolerance){
     return withinTolerance(tolerance, setpoint);
   }
 
+  /**
+   * get the current angle of the pivot.
+   * positive values are towards the front of the robot.
+   * @return a Rotation2d with the current angle.
+   */
   public Rotation2d getRotation(){
     var rotation = Units.rotationsToRadians(
             Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
@@ -78,10 +109,20 @@ public class Pivot extends ArmSystemBase {
     return new Rotation2d(rotation);
   }
 
+  /**
+   * get the current angle of the pivot.
+   * positive values are towards the front of the robot.
+   * @return a double with the current angle in radians.
+   */
   public double getAngleRadians(){
     return getRotation().getRadians();
   }
 
+  /**
+   * get the current angular velocity of the pivot.
+   * positive values are towards the front of the robot.
+   * @return a double with the current angular velocity in radians per second.
+   */
   public double getAngularVelocityRadiansPerSecond(){
     return Units.rotationsToRadians(
             Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
@@ -89,42 +130,74 @@ public class Pivot extends ArmSystemBase {
   }
 
   //simulation
+  //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
+  //I have to figure out how to make it call 0deg straight down.
   private final TalonFXSimCollection turretMotorSim = pivotMaster.getSimCollection();
   private final SingleJointedArmSim pivotSim = new SingleJointedArmSim(
           SYSTEM_CONSTANTS.motor,
           SYSTEM_CONSTANTS.gearing,
           SYSTEM_CONSTANTS.inertia,
           LENGTH,
-          -3,
-          3,
+          -100,
+          100,
           MASS,
           true
   );
-
-  double prevsetpt = 0.0;
-  Mechanism2d mech = new Mechanism2d(100, 100);
-  MechanismRoot2d root2d = mech.getRoot("pivot", 50, 50);
-  MechanismLigament2d pivotLigament = root2d.append(
-    new MechanismLigament2d("pivot", 50, 50, 2, new Color8Bit(Color.kRed))
+  private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
+  private final Mechanism2d mechanism2d = new Mechanism2d(100, 100);
+  private final MechanismRoot2d root = mechanism2d.getRoot("pivot", 50, 50);
+  private final MechanismLigament2d ligament = root.append(
+          new MechanismLigament2d("pivot ligament", 30, 0, 3, new Color8Bit(Color.kRed))
   );
 
   @Override
   public void simulationPeriodic() {
-    SmartDashboard.putData(mech);
-    var setpt = SmartDashboard.getNumber("pivot setpoint", 0);
-    if(setpt != prevsetpt){
-      setPercent(setpt);
-    }
-    prevsetpt = setpt;
-    SmartDashboard.putNumber("isitchanging", setpt);
-    //write the motor output to smartdashboard
-    SmartDashboard.putNumber("pivot motor output", pivotMaster.get());
-    pivotSim.setInput(pivotMaster.get() * RobotController.getBatteryVoltage());
+    //update the simulation
+    pivotSim.setInputVoltage(pivotMaster.get() * RobotController.getBatteryVoltage());
     pivotSim.update(0.02);
 
-    turretMotorSim.setIntegratedSensorRawPosition((int)Util.rotationsToCounts(pivotSim.getAngleRads(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
-    turretMotorSim.setIntegratedSensorVelocity((int)Util.rotationsToCounts(pivotSim.getVelocityRadPerSec(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
-    SmartDashboard.putNumber("pivot angle", pivotSim.getAngleRads());
-    pivotLigament.setAngle(getRotation());
+    //write the simulation data to the motor sim
+    //convert angle from sim to encoder tics:
+    turretMotorSim.setIntegratedSensorRawPosition(
+            (int) Util.rotationsToCounts(
+                    //account for the fact that the sim calls -90deg straight down by adding 270deg
+                    Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
+                    SYSTEM_CONSTANTS.cpr,
+                    SYSTEM_CONSTANTS.gearing
+            )
+    );
+    turretMotorSim.setIntegratedSensorVelocity(
+            (int) Util.rotationsToCounts(
+                    Units.radiansToRotations(pivotSim.getVelocityRadPerSec()),
+                    SYSTEM_CONSTANTS.cpr,
+                    SYSTEM_CONSTANTS.gearing
+            )
+    );
+
+    //get new angle setpoint from dashboard
+    var angleSetpoint = SmartDashboard.getNumber("pivot setpoint angle", 0);
+    if(angleSetpoint != prevAngleSetpoint){
+      setAngle(Rotation2d.fromDegrees(angleSetpoint));
+      prevAngleSetpoint = angleSetpoint;
+    }
+    //get new percent setpoint from dashboard
+    var percentSetpoint = SmartDashboard.getNumber("pivot setpoint percent", 0);
+    if(percentSetpoint != prevPercentSetpoint){
+      setPercent(percentSetpoint);
+      prevPercentSetpoint = percentSetpoint;
+    }
+
+    //update visualization (Mechanism2d):
+    ligament.setAngle(Units.radiansToDegrees(pivotSim.getAngleRads()));
+
+    //write information + visualization to dashboard:
+    SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
+    SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
+    SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
+    SmartDashboard.putData("pivot", mechanism2d);
+
+    //print to console:
+    System.out.println("pivot angle: " + getAngleRadians() + " radians");
+    System.out.println("pivot angular velocity: " + getAngularVelocityRadiansPerSecond() + " radians per second");
   }
 }

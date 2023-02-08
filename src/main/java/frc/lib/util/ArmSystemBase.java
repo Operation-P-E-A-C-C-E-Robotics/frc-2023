@@ -9,6 +9,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.LinearSystemLoop;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -22,8 +23,6 @@ import java.util.function.DoubleSupplier;
 
 public class ArmSystemBase extends SubsystemBase {
     private final LinearSystem<N2, N1, N1> plant;
-    private final KalmanFilter<N2, N1, N1> observer;
-    private final LinearQuadraticRegulator<N2, N1, N1> linearQuadraticRegulator;
     private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
     private TrapezoidProfile profile = new TrapezoidProfile(
@@ -36,10 +35,6 @@ public class ArmSystemBase extends SubsystemBase {
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
     private final double armLength, armMass;
-
-    //TESTING BS:
-    private final TunableNumber kgravity = new TunableNumber("Arm Gravity", 0.0);
-    private ArmFeedforward feedforward = new ArmFeedforward(0, kgravity.get(), 0.0);
     /**
      * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
@@ -49,7 +44,7 @@ public class ArmSystemBase extends SubsystemBase {
     public ArmSystemBase(SystemConstants constants, double armLength, double armMass) {
         this.constants = constants;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
-        observer = new KalmanFilter<N2, N1, N1>(
+        KalmanFilter<N2, N1, N1> observer = new KalmanFilter<N2, N1, N1>(
                 Nat.N2(),
                 Nat.N1(),
                 plant,
@@ -57,7 +52,7 @@ public class ArmSystemBase extends SubsystemBase {
                 VecBuilder.fill(constants.kalmanSensorAccuracyPosition),
                 constants.dt
         );
-        linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N1>(
+        LinearQuadraticRegulator<N2, N1, N1> linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N1>(
                 plant,
                 VecBuilder.fill(constants.lqrPositionTolerance, constants.lqrVelocityTolerance),
                 VecBuilder.fill(constants.lqrControlEffortTolerance),
@@ -72,8 +67,13 @@ public class ArmSystemBase extends SubsystemBase {
         );
         this.armLength = armLength;
         this.armMass = armMass;
+        SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 12.0);
     }
 
+    /**
+     * get the LinearSystem being used by the loop
+     * @return the LinearSystem
+     */
     public LinearSystem<N2, N1, N1> getSystem(){
         return plant;
     }
@@ -109,13 +109,17 @@ public class ArmSystemBase extends SubsystemBase {
     /**
      * calculate additional feedforward to account for gravity
      */
-    public double calculateGravityFeedforward(double angle){
-        feedforward = new ArmFeedforward(0, kgravity.get(), 0.0);
-        //calculate newton meters of force on the arm from gravity.
-        // double force = armMass * 9.81 * Math.cos(angle) * (1/constants.gearing);
-        // //calculate voltage needed to counteract force:
-        // return constants.motor.getVoltage(force, getVelocity.getAsDouble());
-        return feedforward.calculate(angle, getVelocity.getAsDouble());
+    public double calculateGravityFeedforward(double position, double velocity){
+        //calculate newton meters of force on the arm from gravity, using the arm's mass and length.
+        //account for the fact that we want 0deg to be straight up, not straight down
+        var force = (armMass * 9.80665) * armLength * Math.cos(position - Math.PI*1.5);
+
+        SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
+        //account for gearing:
+        force /= constants.gearing;
+        SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
+        //calculate voltage needed to counteract force:
+        return constants.motor.getVoltage(force, velocity) * SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 12.0);
     }
 
     /**
@@ -184,28 +188,41 @@ public class ArmSystemBase extends SubsystemBase {
             profileTimer.start();
         } else if(!followingProfile && time != 0){
             profileTimer.stop();
+
             profileTimer.reset();
         }
 
         // if we're following a profile, calculate the next reference and feedforward
         if(followingProfile){
             var output = profile.calculate(time);
-            SmartDashboard.putNumber("setpt position", output.position);
-            SmartDashboard.putNumber("setpt velocity", output.velocity);
             setNextR(output.position, output.velocity);
-            feedforward = calculateGravityFeedforward(output.position);
+            feedforward = calculateGravityFeedforward(output.position, output.velocity);
         } else {
-            feedforward = calculateGravityFeedforward(getPosition.getAsDouble());
+            feedforward = calculateGravityFeedforward(getPosition.getAsDouble(), getVelocity.getAsDouble());
         }
-
         SmartDashboard.putNumber("arm feedforward", feedforward);
-
-        SmartDashboard.putNumber("arm position", getPosition.getAsDouble());
-        SmartDashboard.putNumber("arm velocity", getVelocity.getAsDouble());
 
         // run the feedback.
         loop.correct(VecBuilder.fill(getPosition.getAsDouble()));
         loop.predict(constants.dt);
         voltDriveFunction.accept(loop.getU(0) + feedforward);
+        //feedforward only (for testing):
+//        voltDriveFunction.accept(feedforward);
+    }
+
+    public static void main(String args[]){
+        var armMass = 1;
+        var armLength = 1;
+        var gearing = 1;
+        var motor = DCMotor.getFalcon500(2);
+
+        //test the feedforward
+        for(var i = 0; i < 360; i++){
+            var angle = Math.toRadians(i) + Math.PI*1.5;
+            var force = (armMass * 9.80665) * armLength * Math.cos(angle + Math.PI);
+            force *= 1/gearing;
+            var voltage = motor.getVoltage(force, 0);
+            System.out.println(i + "," + voltage);
+        }
     }
 }

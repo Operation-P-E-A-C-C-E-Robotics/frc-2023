@@ -310,7 +310,7 @@ public class Util {
      * @return rotations
      */
     public static double countsToRotations(double counts, double cpr, double gearRatio){
-        return counts / (cpr * gearRatio);
+        return (counts / cpr) / gearRatio;
     }
 
     /**
