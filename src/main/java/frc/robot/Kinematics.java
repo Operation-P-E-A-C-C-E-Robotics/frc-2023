@@ -27,7 +27,7 @@ public class Kinematics {
     public void reset(){
         liftPosition = null;
         endEffectorPosition = null;
-    }
+    } //TODO make sure calling every loop
 
     /**
      * get the position of all the supersystem
@@ -128,6 +128,12 @@ public class Kinematics {
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
 
+    /**
+     * Convert from x/y/z coordinates of the center of the wrist
+     * @param pose the target translation
+     * @param wristAngle the angle of the wrist
+     * @return the SupersystemState to reach the target translation.
+     */
     public static SupersystemState inverseKinematicsFromPlacePoint(Translation3d pose, double wristAngle){
         double turret;
 
@@ -186,6 +192,15 @@ public class Kinematics {
 
         return wristInverseKinematics(liftPosition, liftState.getTurretAngle(), liftState.getWristAngle());
     }
+
+    /**
+     * Convert from x/y/z position of the end of the wrist to the position of
+     * the end of the arm, using the current turret angle and wrist angle
+     * @param liftPosition the position of the end of the wrist
+     * @param turretAngle the angle of the turret
+     * @param wristAngle the angle of the wrist
+     * @return the position of the end of the arm
+     */
     public static EndEffectorPosition wristInverseKinematics(Translation3d liftPosition, double turretAngle, double wristAngle){
         EndEffectorPosition offset = wristOffset(turretAngle, wristAngle);
         return new EndEffectorPosition(
@@ -193,6 +208,13 @@ public class Kinematics {
             liftPosition.plus(offset.getMidPosition())
         );
     }
+
+    /**
+     * get the contribution of the wrist to the end effector position
+     * @param turretAngle the angle of the turret
+     * @param wristAngle the angle of the wrist
+     * @return the position of the end of the wrist relative to the end of the arm
+     */
     public static EndEffectorPosition wristOffset(double turretAngle, double wristAngle){
         double endX, endY, endZ;
         double midX, midY, midZ;
@@ -213,9 +235,6 @@ public class Kinematics {
             new Translation3d(endX, endY, endZ),
             new Translation3d(midX, midY, midZ)
         );
-    }
-
-    public static void main(String args[]) {
     }
 
     public static class EndEffectorPosition {

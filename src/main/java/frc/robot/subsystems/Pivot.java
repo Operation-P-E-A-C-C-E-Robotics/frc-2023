@@ -12,18 +12,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
-import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
-import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
+import frc.robot.Robot;
 
 import static frc.robot.Constants.Pivot.*;
 
@@ -41,17 +35,19 @@ public class Pivot extends DCMotorSystemBase {
 
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
+
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.FollowMaster);
-    SmartDashboard.putNumber("pivot setpoint angle", 0);
-    SmartDashboard.putNumber("pivot setpoint percent", 0);
-    addFeedforward((double pos, double vel) -> {
-      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*1.5);
 
-      SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
+    if(Robot.isSimulation()) {
+      SmartDashboard.putNumber("pivot setpoint angle", 0);
+      SmartDashboard.putNumber("pivot setpoint percent", 0);
+    }
+
+    addFeedforward((double pos, double vel) -> {
+      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*0.5);
       //account for gearing:
       force /= SYSTEM_CONSTANTS.gearing;
-      SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
       //calculate voltage needed to counteract force:
       return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 12.0);
     });
@@ -195,16 +191,12 @@ public class Pivot extends DCMotorSystemBase {
     }
 
     //update visualization
-    DashboardManager.getInstance().updatePivotAngle(Units.radiansToDegrees(pivotSim.getAngleRads()));
+    DashboardManager.getInstance().drawPivotSim(Units.radiansToDegrees(pivotSim.getAngleRads()));
 
     //write information to dashboard:
     SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
     SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
     SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
-
-    //print to console:
-    System.out.println("pivot angle: " + getAngleRadians() + " radians");
-    System.out.println("pivot angular velocity: " + getAngularVelocityRadiansPerSecond() + " radians per second");
   }
 
   public static double getSimAngle(){

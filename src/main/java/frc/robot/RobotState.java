@@ -140,10 +140,6 @@ public class RobotState {
         return Util.globalToLocalPose(fieldToRobot, fieldPoint);
     }
 
-    // public Pose3d fieldOriginFromDrivetrain(){
-        
-    // }
-
     /**
      * convert a drivetrain relative point to a field-relative point
      * @param drivetrainPoint a pose relative to the center of the drivetrain

@@ -8,14 +8,11 @@ import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
-import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 
@@ -34,6 +31,7 @@ public class Arm extends DCMotorSystemBase {
         SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
         addFeedforward((double pos, double vel) -> {
+            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
             var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
             //account for gearing:
             force /= SYSTEM_CONSTANTS.gearing;
@@ -113,6 +111,6 @@ public class Arm extends DCMotorSystemBase {
         armMotorSim.setIntegratedSensorRawPosition((int) Util.rotationsToCounts(armSim.getPositionMeters(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
         armMotorSim.setIntegratedSensorVelocity((int) Util.rotationsToCounts(armSim.getVelocityMetersPerSecond(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
 
-        DashboardManager.getInstance().updateArmLength(armSim.getPositionMeters() * 150);
+        DashboardManager.getInstance().drawArmSim(armSim.getPositionMeters() * 150);
     }
 }

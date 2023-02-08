@@ -14,15 +14,9 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
-import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 
@@ -127,7 +121,7 @@ public class Turret extends DCMotorSystemBase {
     //print the turret angle to smartdashboard:
     SmartDashboard.putNumber("turret angle", getAngle().getDegrees());
 //    turretLigament.setAngle(getAngle());
-    DashboardManager.getInstance().updateTurret(getAngle().getDegrees());
+    DashboardManager.getInstance().drawTurretSim(getAngle().getDegrees());
   }
 
 }

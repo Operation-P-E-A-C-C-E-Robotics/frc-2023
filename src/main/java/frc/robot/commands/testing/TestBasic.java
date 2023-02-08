@@ -3,10 +3,7 @@ package frc.robot.commands.testing;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Turret;
-import frc.robot.subsystems.Wrist;
+import frc.robot.subsystems.*;
 
 public class TestBasic extends CommandBase {
     private final Arm arm;
@@ -23,8 +20,8 @@ public class TestBasic extends CommandBase {
      * @param turret the turret subsystem
      * @param wrist the wrist subsystem
      */
-    public TestBasic(Arm arm, Pivot pivot, Turret turret, Wrist wrist) {
-        addRequirements(arm, pivot, turret, wrist);
+    public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist) {
+        addRequirements(supersystem, arm, pivot, turret, wrist);
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
@@ -46,7 +43,7 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
         var armSpeed = testJoystick.getRawAxis(1);
         var pivotSpeed = testJoystick.getRawAxis(2);
-        var turretSpeed = testJoystick.getRawAxis(3);
+        var turretSpeed = testJoystick.getRawAxis(0);
         var wristSpeed = testJoystick.getRawAxis(4);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);

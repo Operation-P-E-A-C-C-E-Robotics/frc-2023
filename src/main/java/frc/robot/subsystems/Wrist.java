@@ -11,11 +11,11 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
+import frc.robot.Robot;
 
 import java.util.function.DoubleSupplier;
 
@@ -30,10 +30,12 @@ public class Wrist extends DCMotorSystemBase {
 
     public Wrist(DoubleSupplier pivotAngle){
         super(SYSTEM_CONSTANTS);
+
         wristMaster.setInverted(false);
+
         this.pivotAngle = pivotAngle;
 
-        SmartDashboard.putNumber("wrist setpoint", 0);
+        if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
     }
 
     /**
@@ -44,6 +46,10 @@ public class Wrist extends DCMotorSystemBase {
         wristMaster.set(speed);
     }
 
+    /**
+     * set motor voltage
+     * @param voltage positive values go towards the front of the robot.
+     */
     public void setVoltage(double voltage){
         wristMaster.setVoltage(voltage);
     }
@@ -125,10 +131,8 @@ public class Wrist extends DCMotorSystemBase {
             setPercent(setpoint);
             prevSetpoint = setpoint;
         }
-        System.out.println("setpt " + setpoint);
-        System.out.println("prev " + prevSetpoint);
         SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
-        DashboardManager.getInstance().updateWristAngle(getAngle().getDegrees());
+        DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
 
         wristSim.setInputVoltage(wristMaster.get() * RobotController.getBatteryVoltage());
         wristSim.update(0.02);

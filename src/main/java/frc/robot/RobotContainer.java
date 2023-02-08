@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.auto.paths.PathFollower;
 import frc.robot.commands.drive.TestVelocity;
+import frc.robot.commands.testing.TestBasic;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -60,9 +61,9 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     configureBindings();
-    teleopDriveMode.addOption("Arcade Drive", peaccyDrive);
-    teleopDriveMode.setDefaultOption("Velocity Drive", velocityDrive);
-    teleopDriveMode.addOption("Peaccy Drive",peaccyDrive);
+    teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
+    teleopDriveMode.addOption("Velocity Drive", velocityDrive);
+    teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
   }
 
@@ -83,6 +84,7 @@ public class RobotContainer {
       var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
       if(path != null) path.schedule();
     }, driveTrain));
+    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   /**
