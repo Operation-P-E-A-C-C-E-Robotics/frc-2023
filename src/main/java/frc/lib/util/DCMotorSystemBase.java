@@ -22,17 +22,21 @@ import java.util.function.DoubleSupplier;
 public class DCMotorSystemBase extends SubsystemBase {
     private final LinearSystem<N2, N1, N2> plant;
     private final LinearSystemLoop<N2, N1, N2> loop;
+    private final ArrayList<Feedforward> feedforwards = new ArrayList<>();
+
     private final SystemConstants constants;
+
     private TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(0, 0),
             new TrapezoidProfile.State(0, 0)
     );
-    private boolean followingProfile = false, looping = false;
     private final Timer profileTimer = new Timer();
+    private boolean followingProfile = false, looping = false;
+
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
+
     private Runnable superPeriodic;
-    private ArrayList<Feedforward> feedforwards = new ArrayList<>();
 
     /**
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
@@ -45,7 +49,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.inertia,
                 constants.gearing
         );
-        KalmanFilter<N2, N1, N2> observer = new KalmanFilter<N2, N1, N2>(
+        KalmanFilter<N2, N1, N2> observer = new KalmanFilter<>(
                 Nat.N2(),
                 Nat.N2(),
                 plant,
@@ -53,13 +57,14 @@ public class DCMotorSystemBase extends SubsystemBase {
                 VecBuilder.fill(constants.kalmanSensorAccuracyPosition, constants.kalmanSensorAccuracyVelocity),
                 constants.dt
         );
-        LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator = new LinearQuadraticRegulator<N2, N1, N2>(
+        LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator = new LinearQuadraticRegulator<>(
                 plant,
                 VecBuilder.fill(constants.lqrPositionTolerance, constants.lqrVelocityTolerance),
                 VecBuilder.fill(constants.lqrControlEffortTolerance),
                 constants.dt
         );
-        loop = new LinearSystemLoop<N2, N1, N2>(
+        //linearQuadraticRegulator.latencyCompensate(plant, constants.dt, constants.lqrSensorDelay);
+        loop = new LinearSystemLoop<>(
                 plant,
                 linearQuadraticRegulator,
                 observer,
@@ -184,6 +189,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 feedforward += i.calculate(output.position, output.velocity);
             }
         }
+        SmartDashboard.putNumber("Feedforward", feedforward);
 
         // run the feedback
         loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
@@ -204,6 +210,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 lqrPositionTolerance,
                 lqrVelocityTolerance,
                 lqrControlEffortTolerance,
+                lqrSensorDelay,
                 maxVoltage,
                 dt;
         public final DCMotor motor;
@@ -238,7 +245,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                                double lqrPositionTolerance,
                                double lqrVelocityTolerance,
                                double lqrControlEffortTolerance,
-                               double systemDelay,
+                               double lqrSensorDelay,
                                double maxVoltage,
                                double dt) {
             this.motor = motor;
@@ -254,6 +261,7 @@ public class DCMotorSystemBase extends SubsystemBase {
             this.lqrPositionTolerance = lqrPositionTolerance;
             this.lqrVelocityTolerance = lqrVelocityTolerance;
             this.lqrControlEffortTolerance = lqrControlEffortTolerance;
+            this.lqrSensorDelay = lqrSensorDelay;
             this.maxVoltage = maxVoltage;
             this.dt = dt;
         }

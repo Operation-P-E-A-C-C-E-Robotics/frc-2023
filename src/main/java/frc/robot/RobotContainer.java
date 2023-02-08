@@ -84,7 +84,7 @@ public class RobotContainer {
       var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
       if(path != null) path.schedule();
     }, driveTrain));
-    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+    //supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   /**

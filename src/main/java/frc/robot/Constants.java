@@ -23,13 +23,17 @@ public final class Constants {
         public static final int PIVOT_MASTER = 50, //TODO Arbitrary number to not conflict
                                 PIVOT_SLAVE  = 51;
 
+        public static final double LENGTH = 0.5,
+                MASS = 10;
+
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(2),
-                1,
-                100,
+                (MASS*9.807)*LENGTH*LENGTH, //6.67
+                200,
                 2048,
+
                 0.5,
-                0.5,
+                0.5, //0.735
                 0.1,
                 0.1,
                 0.1,

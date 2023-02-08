@@ -13,6 +13,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
@@ -21,17 +22,15 @@ import frc.robot.Robot;
 
 import static frc.robot.Constants.Pivot.*;
 
-public class Pivot extends DCMotorSystemBase {
+public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private double setpoint = 0;
 
-  private static final double LENGTH = 0.5,
-                              MASS = 1;
 
   /** Creates a new ExampleSubsystem. */
   public Pivot() {
-    super(SYSTEM_CONSTANTS);//, LENGTH, MASS);
+    super(SYSTEM_CONSTANTS, LENGTH, MASS);
 
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
@@ -39,18 +38,19 @@ public class Pivot extends DCMotorSystemBase {
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.FollowMaster);
 
-    if(Robot.isSimulation()) {
+    if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
       SmartDashboard.putNumber("pivot setpoint angle", 0);
       SmartDashboard.putNumber("pivot setpoint percent", 0);
     }
 
-    addFeedforward((double pos, double vel) -> {
-      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*0.5);
-      //account for gearing:
-      force /= SYSTEM_CONSTANTS.gearing;
-      //calculate voltage needed to counteract force:
-      return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 12.0);
-    });
+//    addFeedforward((double pos, double vel) -> {
+//      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*0.5);
+//      //account for gearing:
+//      force /= SYSTEM_CONSTANTS.gearing;
+//      SmartDashboard.putNumber("pivot force", force);
+//      //calculate voltage needed to counteract force:
+//      return (SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12.0);
+//    });
   }
 
   /**
@@ -136,7 +136,7 @@ public class Pivot extends DCMotorSystemBase {
     );
   }
 
-  //simulation
+  //SIMULATION: (this code is messy but I don't care)
   //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
   //I have to figure out how to make it call 0deg straight down.
   //TODO only initialize these in simulation
@@ -152,12 +152,13 @@ public class Pivot extends DCMotorSystemBase {
           true
   );
   private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
-
+  private final boolean PERIODIC_CONTROL_SIMULATION = false;
   @Override
   public void simulationPeriodic() {
     //update the simulation
     pivotSim.setInputVoltage(pivotMaster.get() * RobotController.getBatteryVoltage());
     pivotSim.update(0.02);
+    SmartDashboard.putNumber("pivot master output", pivotMaster.get());
 
     //write the simulation data to the motor sim
     //convert angle from sim to encoder tics:
@@ -179,13 +180,13 @@ public class Pivot extends DCMotorSystemBase {
 
     //get new angle setpoint from dashboard
     var angleSetpoint = SmartDashboard.getNumber("pivot setpoint angle", 0);
-    if(angleSetpoint != prevAngleSetpoint){
+    if(angleSetpoint != prevAngleSetpoint && PERIODIC_CONTROL_SIMULATION){
       setAngle(Rotation2d.fromDegrees(angleSetpoint));
       prevAngleSetpoint = angleSetpoint;
     }
     //get new percent setpoint from dashboard
     var percentSetpoint = SmartDashboard.getNumber("pivot setpoint percent", 0);
-    if(percentSetpoint != prevPercentSetpoint){
+    if(percentSetpoint != prevPercentSetpoint && PERIODIC_CONTROL_SIMULATION){
       setPercent(percentSetpoint);
       prevPercentSetpoint = percentSetpoint;
     }
@@ -197,9 +198,5 @@ public class Pivot extends DCMotorSystemBase {
     SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
     SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
     SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
-  }
-
-  public static double getSimAngle(){
-    return pivotSim.getAngleRads();
   }
 }

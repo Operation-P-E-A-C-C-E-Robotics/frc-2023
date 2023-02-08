@@ -15,6 +15,7 @@ import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
+import frc.robot.Robot;
 
 import java.util.function.DoubleSupplier;
 
@@ -28,16 +29,16 @@ public class Arm extends DCMotorSystemBase {
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
         super(SYSTEM_CONSTANTS);
-        SmartDashboard.putNumber("arm setpoint", 0);
+        if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
-        addFeedforward((double pos, double vel) -> {
-            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
-            var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
-            //account for gearing:
-            force /= SYSTEM_CONSTANTS.gearing;
-            //calculate voltage needed to counteract force:
-            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
-        });
+//        addFeedforward((double pos, double vel) -> {
+//            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
+//            var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
+//            //account for gearing:
+//            force /= SYSTEM_CONSTANTS.gearing;
+//            //calculate voltage needed to counteract force:
+//            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
+//        });
     }
 
     /**
@@ -97,11 +98,12 @@ public class Arm extends DCMotorSystemBase {
     );
     private final TalonFXSimCollection armMotorSim = armMaster.getSimCollection();
     double prevSetpoint = 0;
+    private final boolean PERIODIC_CONTROL_SIMULATION = false;
     @Override
     public void simulationPeriodic(){
         //update with setpoint from dashboard:
         setpoint = SmartDashboard.getNumber("arm setpoint", 0);
-        if(setpoint != prevSetpoint){
+        if(setpoint != prevSetpoint && PERIODIC_CONTROL_SIMULATION){
             setExtension(setpoint);
             prevSetpoint = setpoint;
         }

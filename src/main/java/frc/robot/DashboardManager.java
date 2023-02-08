@@ -5,7 +5,13 @@
 package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -14,9 +20,11 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class DashboardManager {
     private final Field2d field = new Field2d();
     private static final DashboardManager instance = new DashboardManager();
+    private final GenericEntry test = Shuffleboard.getTab("hi").add("test", 0).withWidget(BuiltInWidgets.kGyro).getEntry();
 
     private DashboardManager() {
         // this.robotState = robotState;
+        test.setDouble(0);
     }
 
     public static DashboardManager getInstance(){
