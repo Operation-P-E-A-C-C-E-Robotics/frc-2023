@@ -27,7 +27,7 @@ import frc.robot.DashboardManager;
 
 import static frc.robot.Constants.Pivot.*;
 
-public class Pivot extends ArmSystemBase {
+public class Pivot extends DCMotorSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private double setpoint = 0;
@@ -37,7 +37,7 @@ public class Pivot extends ArmSystemBase {
 
   /** Creates a new ExampleSubsystem. */
   public Pivot() {
-    super(SYSTEM_CONSTANTS, LENGTH, MASS);
+    super(SYSTEM_CONSTANTS);//, LENGTH, MASS);
 
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
@@ -45,6 +45,16 @@ public class Pivot extends ArmSystemBase {
     pivotSlave.setInverted(InvertType.FollowMaster);
     SmartDashboard.putNumber("pivot setpoint angle", 0);
     SmartDashboard.putNumber("pivot setpoint percent", 0);
+    addFeedforward((double pos, double vel) -> {
+      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*1.5);
+
+      SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
+      //account for gearing:
+      force /= SYSTEM_CONSTANTS.gearing;
+      SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
+      //calculate voltage needed to counteract force:
+      return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 12.0);
+    });
   }
 
   /**
@@ -133,8 +143,9 @@ public class Pivot extends ArmSystemBase {
   //simulation
   //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
   //I have to figure out how to make it call 0deg straight down.
+  //TODO only initialize these in simulation
   private final TalonFXSimCollection turretMotorSim = pivotMaster.getSimCollection();
-  private final SingleJointedArmSim pivotSim = new SingleJointedArmSim(
+  private final static SingleJointedArmSim pivotSim = new SingleJointedArmSim(
           SYSTEM_CONSTANTS.motor,
           SYSTEM_CONSTANTS.gearing,
           SYSTEM_CONSTANTS.inertia,
@@ -194,5 +205,9 @@ public class Pivot extends ArmSystemBase {
     //print to console:
     System.out.println("pivot angle: " + getAngleRadians() + " radians");
     System.out.println("pivot angular velocity: " + getAngularVelocityRadiansPerSecond() + " radians per second");
+  }
+
+  public static double getSimAngle(){
+    return pivotSim.getAngleRads();
   }
 }

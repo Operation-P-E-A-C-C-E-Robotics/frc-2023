@@ -345,6 +345,9 @@ public class Util {
         return countsToRotations(counts, cpr, gearRatio) * wheelDiameter * Math.PI;
     }
 
+    public static double countsToRotations(double counts, DCMotorSystemBase.SystemConstants constants){
+        return countsToRotations(counts, constants.cpr, constants.gearing);
+    }
     /**
      * convert rotations to encoder counts
      * @param rotations rotations
@@ -389,6 +392,9 @@ public class Util {
         return rotationsToCounts(rotations, cpr, gearRatio) / (wheelDiameter * Math.PI);
     }
 
+    public static double rotationsToCounts(double rotations, DCMotorSystemBase.SystemConstants constants){
+        return rotationsToCounts(rotations, constants.cpr, constants.gearing);
+    }
     public static void main(String args[]){
         var localOrigin = new Pose3d(
                 1,0,0,

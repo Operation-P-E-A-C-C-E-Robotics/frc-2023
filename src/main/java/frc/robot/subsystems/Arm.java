@@ -4,12 +4,19 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
+import frc.robot.DashboardManager;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -20,6 +27,7 @@ public class Arm extends SubsystemBase {
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm() {
+        SmartDashboard.putNumber("arm setpoint", 0);
     }
 
     /**
@@ -60,5 +68,35 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
+    }
+
+    //SIMULATION:
+    private final ElevatorSim armSim = new ElevatorSim(
+            SYSTEM_CONSTANTS.motor,
+            SYSTEM_CONSTANTS.gearing,
+            CARRAIGE_MASS,
+            1,
+            MIN_EXTENSION,
+            MAX_EXTENSION,
+            false,
+            VecBuilder.fill(0)
+    );
+    private final TalonFXSimCollection armMotorSim = armMaster.getSimCollection();
+    double prevSetpoint = 0;
+    @Override
+    public void simulationPeriodic(){
+        //update with setpoint from dashboard:
+        setpoint = SmartDashboard.getNumber("arm setpoint", 0);
+        if(setpoint != prevSetpoint){
+            setPercent(setpoint);
+            prevSetpoint = setpoint;
+        }
+
+        armSim.setInputVoltage(armMaster.get() * RobotController.getBatteryVoltage());
+        armSim.update(0.02);
+        armMotorSim.setIntegratedSensorRawPosition((int) Util.rotationsToCounts(armSim.getPositionMeters(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+        armMotorSim.setIntegratedSensorVelocity((int) Util.rotationsToCounts(armSim.getVelocityMetersPerSecond(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+
+        DashboardManager.getInstance().updateArmLength(armSim.getPositionMeters() * 150);
     }
 }

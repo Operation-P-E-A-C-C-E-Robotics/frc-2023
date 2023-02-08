@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.ArrayList;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
@@ -31,6 +32,7 @@ public class DCMotorSystemBase extends SubsystemBase {
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
+    private ArrayList<Feedforward> feedforwards = new ArrayList<>();
 
     /**
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
@@ -64,6 +66,10 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
+    }
+
+    public void addFeedforward(Feedforward feedforward){
+        feedforwards.add(feedforward);
     }
 
     public LinearSystem<N2, N1, N2> getSystem(){
@@ -168,16 +174,21 @@ public class DCMotorSystemBase extends SubsystemBase {
             profileTimer.reset();
         }
 
+        var feedforward = 0.0;
+
         // if we're following a profile, calculate the next reference
         if(followingProfile){
             var output = profile.calculate(time);
             setNextR(output.position, output.velocity);
+            for (var i : feedforwards) {
+                feedforward += i.calculate(output.position, output.velocity);
+            }
         }
 
         // run the feedback
         loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         loop.predict(constants.dt);
-        voltDriveFunction.accept(loop.getU(0));
+        voltDriveFunction.accept(loop.getU(0) + feedforward);
     }
 
     public static final class SystemConstants {
@@ -202,8 +213,8 @@ public class DCMotorSystemBase extends SubsystemBase {
          * @param inertia The inertia of the system
          * @param gearing The gearing of the system
          * @param cpr The counts per revolution of the encoder
-         * @param maxAngularVelocity The maximum angular velocity the system can attain
-         * @param maxAngularAcceleration The maximum angular acceleration the system can attain
+         * @param maxVelocity The maximum angular velocity the system can attain
+         * @param maxAcceleration The maximum angular acceleration the system can attain
          * @param kalmanModelAccuracyPosition The accuracy of the model for position
          * @param kalmanModelAccuracyVelocity The accuracy of the model for velocity
          * @param kalmanSensorAccuracyPosition The accuracy of the sensor for position
@@ -218,8 +229,8 @@ public class DCMotorSystemBase extends SubsystemBase {
                                double inertia,
                                double gearing,
                                double cpr,
-                               double maxAngularVelocity,
-                               double maxAngularAcceleration,
+                               double maxVelocity,
+                               double maxAcceleration,
                                double kalmanModelAccuracyPosition,
                                double kalmanModelAccuracyVelocity,
                                double kalmanSensorAccuracyPosition,
@@ -234,8 +245,8 @@ public class DCMotorSystemBase extends SubsystemBase {
             this.inertia = inertia;
             this.gearing = gearing;
             this.cpr = cpr;
-            this.maxVelocity = maxAngularVelocity;
-            this.maxAcceleration = maxAngularAcceleration;
+            this.maxVelocity = maxVelocity;
+            this.maxAcceleration = maxAcceleration;
             this.kalmanModelAccuracyPosition = kalmanModelAccuracyPosition;
             this.kalmanModelAccuracyVelocity = kalmanModelAccuracyVelocity;
             this.kalmanSensorAccuracyPosition = kalmanSensorAccuracyPosition;
@@ -246,5 +257,9 @@ public class DCMotorSystemBase extends SubsystemBase {
             this.maxVoltage = maxVoltage;
             this.dt = dt;
         }
+    }
+
+    public static interface Feedforward{
+        double calculate(double position, double velocity);
     }
 }

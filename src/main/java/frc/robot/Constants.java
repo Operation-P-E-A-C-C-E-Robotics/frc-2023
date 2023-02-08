@@ -121,8 +121,28 @@ public final class Constants {
     public static final class Arm {
         public static final int MASTER_PORT = 95, //TODO Arbitrary number to not conflict
                                 ARM_SLAVE  = 97;
-        public static final double INERTIA = 0,
-                                    GEARING = 0;
+        public static final double CARRAIGE_MASS = 1,
+                                    MIN_EXTENSION = 0.5,
+                                    MAX_EXTENSION = 1.5;
+
+        public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
+                DCMotor.getFalcon500(1),
+                1,
+                50,
+                2048,
+                4,
+                10,
+                3.0,
+                3.0,
+                0.01,
+                0.01,
+                0.05,
+                0.05,
+                12,
+                0,
+                12,
+                0.02
+        );
     }
 
     public static final class Constraints{
