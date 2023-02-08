@@ -43,6 +43,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
+    Inspiration.inspireAutonomous(isInMatch);
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -52,6 +53,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    Inspiration.inspireTeleopInit(isInMatch);
+
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
