@@ -78,6 +78,28 @@ public final class Constants {
                                 WRIST_FLIP_FORWARD   = 0,
                                 WRIST_FLIP_REVERSE   = 1;
         public static final double WRIST_FLIP_TIME = 0.5;
+
+        public static final double LENGTH = 0.2, //meters
+                MASS = 0.1; //kg
+
+        public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
+                DCMotor.getFalcon500(1),
+                1,
+                50,
+                2048,
+                4,
+                10,
+                3.0,
+                3.0,
+                0.01,
+                0.01,
+                0.05,
+                0.05,
+                12,
+                0,
+                12,
+                0.02
+        );
     }
 
     public static final class DriveTrain {

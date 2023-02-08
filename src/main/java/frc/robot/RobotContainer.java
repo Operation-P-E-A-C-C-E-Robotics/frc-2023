@@ -42,7 +42,7 @@ public class RobotContainer {
   private final Arm arm = new Arm(pivot::getAngleRadians);
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
-  private final Wrist wrist = new Wrist();
+  private final Wrist wrist = new Wrist(pivot::getAngleRadians);
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
   //OI
