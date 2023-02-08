@@ -38,8 +38,8 @@ public class RobotContainer {
                           armLimelight = new Limelight("limelight"); //TODO
 
   //subsystems
-  private final Arm arm = new Arm();
   private final Pivot pivot = new Pivot();
+  private final Arm arm = new Arm(pivot::getAngleRadians);
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
   private final Wrist wrist = new Wrist();

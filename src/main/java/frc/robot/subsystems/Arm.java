@@ -13,21 +13,33 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 
+import java.util.function.DoubleSupplier;
+
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends SubsystemBase {
+public class Arm extends DCMotorSystemBase {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
-    public Arm() {
+    public Arm(DoubleSupplier pivotAngleSupplier) {
+        super(SYSTEM_CONSTANTS);
         SmartDashboard.putNumber("arm setpoint", 0);
+        //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
+        addFeedforward((double pos, double vel) -> {
+            var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
+            //account for gearing:
+            force /= SYSTEM_CONSTANTS.gearing;
+            //calculate voltage needed to counteract force:
+            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
+        });
     }
 
     /**
@@ -39,22 +51,30 @@ public class Arm extends SubsystemBase {
         armMaster.set(speed);
     }
 
+    public void setVoltage(double voltage){
+        armMaster.setVoltage(voltage);
+    }
+
     /**
      * get the distance from the pivot to the end of the
      * lift
      * @return lift extension meters
      */
     public double getExtension(){
-        return Util.countsToRotations(armMaster.getSelectedSensorPosition(), 2048, 0);
+        return Util.countsToRotations(armMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
     }
 
+    public double getVelocity(){
+        return Util.countsToRotations(armMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+    }
     /**
      * set the lift extension in meters between
      * the pivot and the wrist
      */
     public void setExtension(double meters){
         setpoint = meters;
-        //todo
+        enableLoop(this::setVoltage, this::getExtension, this::getVelocity);
+        goToState(meters, 0);
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
@@ -65,10 +85,6 @@ public class Arm extends SubsystemBase {
         return withinTolerance(tolerance, setpoint);
     }
 
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-    }
 
     //SIMULATION:
     private final ElevatorSim armSim = new ElevatorSim(
@@ -88,7 +104,7 @@ public class Arm extends SubsystemBase {
         //update with setpoint from dashboard:
         setpoint = SmartDashboard.getNumber("arm setpoint", 0);
         if(setpoint != prevSetpoint){
-            setPercent(setpoint);
+            setExtension(setpoint);
             prevSetpoint = setpoint;
         }
 
