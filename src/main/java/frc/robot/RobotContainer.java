@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.auto.paths.PathFollower;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.testing.TestBasic;
+import frc.robot.commands.testing.TestChickenHead;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -85,6 +86,7 @@ public class RobotContainer {
       if(path != null) path.schedule();
     }, driveTrain));
     //supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+    //supersystem.setDefaultCommand(new TestChickenHead(arm, pivot, turret, wrist, supersystem, robotState));
   }
 
   /**
