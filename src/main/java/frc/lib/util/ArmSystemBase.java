@@ -67,7 +67,7 @@ public class ArmSystemBase extends SubsystemBase {
         );
         this.armLength = armLength;
         this.armMass = armMass;
-        SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 12);
+        SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 1);
     }
 
     /**
@@ -112,12 +112,19 @@ public class ArmSystemBase extends SubsystemBase {
     public double calculateGravityFeedforward(double position, double velocity){
         //calculate newton meters of force on the arm from gravity, using the arm's mass and length.
         //account for the fact that we want 0deg to be straight up, not straight down
-//        var force = (armMass * 9.80665) * armLength * Math.cos(position - Math.PI*1.5);
-        var force = Math.cos(position - Math.PI*1.5);
+    //    var force = (armLength/(armMass * 9.80665)) * Math.cos(position - Math.PI*1.5);
+        var force = armMass
+                                * armLength
+                                * 9.8
+                                * 3.0
+                                * constants.inertia
+                                / (armMass * armLength * armLength)
+                                * Math.cos(position - Math.PI*1.5);
+        // var force = constants.inertia * Math.cos(position - Math.PI*1.5);
         SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
         //account for gearing:
-//        force /= constants.gearing;
-        force *= SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 70); //0.735
+       force /= constants.gearing;
+        force *= SmartDashboard.getNumber("Arm Gravity Feedforward Multiplier", 1); //0.735
 //        force *= constants.inertia/constants.gearing;
         SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
         //calculate voltage needed to counteract force:

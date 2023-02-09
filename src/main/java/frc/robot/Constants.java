@@ -28,8 +28,8 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(2),
-                (MASS*9.807)*LENGTH*LENGTH, //6.67
-                200,
+                1, //6.67
+                50,
                 2048,
 
                 0.5,
@@ -147,13 +147,13 @@ public final class Constants {
     public static final class Arm {
         public static final int MASTER_PORT = 95, //TODO Arbitrary number to not conflict
                                 ARM_SLAVE  = 97;
-        public static final double CARRAIGE_MASS = 1,
+        public static final double CARRAIGE_MASS = 5,
                                     MIN_EXTENSION = 0.5,
                                     MAX_EXTENSION = 1.5;
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                1,
+                5,
                 50,
                 2048,
                 4,
