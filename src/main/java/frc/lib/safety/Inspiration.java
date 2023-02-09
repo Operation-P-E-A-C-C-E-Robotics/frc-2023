@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 public class Inspiration {
     public static boolean initializeInspiration(){
@@ -164,7 +165,8 @@ public class Inspiration {
 
     private final static LinkedList<String> slowPrintQueue = new LinkedList<>();
     private final static Timer slowPrintTimer = new Timer();
-    private final static double slowPrintDelay = 0.7; //second
+    private static double slowPrintDelay = 1; //second
+    private static final Random rand = new Random();
     public static void slowPrint(String s){
         slowPrintQueue.add(s);
     }
@@ -176,6 +178,7 @@ public class Inspiration {
                 System.out.println(slowPrintQueue.remove());
                 System.out.println();
             }
+            // slowPrintDelay = rand.nextDouble(3);
             slowPrintTimer.reset();
         }
     }
