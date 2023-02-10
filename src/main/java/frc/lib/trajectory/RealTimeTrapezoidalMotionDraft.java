@@ -26,7 +26,7 @@ public class RealTimeTrapezoidalMotionDraft {
         if(currentState.position >= decelerationPosition){
             //we are in the deceleration phase
             System.out.println("deceleration phase");
-            constranedState = constrainDeceleration(currentState.position, decelerationPosition, dt);
+            constranedState = constrainDeceleration(currentState.position, goalState.position, dt);
         } else {
             //we are in the acceleration/coast phase
             System.out.println("acceleration phase");
@@ -65,13 +65,13 @@ public class RealTimeTrapezoidalMotionDraft {
         var acceleration = -maxAcceleration;
 
         //figure out which constraint is limiting the motion
-        if(Math.abs(acceleration) < maxAcceleration){
+        if(Math.abs(acceleration) > maxAcceleration){
             //acceleration is limiting the motion
             System.out.println("acceleration is limiting the motion");
             acceleration = Util.limit(acceleration, maxAcceleration);
             velocity = integrate(currentState.velocity, acceleration, dt);
         }
-        if(Math.abs(velocity) < maxVelocity){
+        if(Math.abs(velocity) > maxVelocity){
             velocity = Util.limit(velocity, maxVelocity);
             acceleration = derive(currentState.velocity, velocity, dt);
             //velocity is limiting the motion
@@ -125,7 +125,7 @@ public class RealTimeTrapezoidalMotionDraft {
 
 
     public static void main(String[] args){
-        var motion = new RealTimeTrapezoidalMotionDraft(1, 1);
+        var motion = new RealTimeTrapezoidalMotionDraft(1, 0.5);
 //        System.out.println(motion.integrateSlope(1, 1, 2));
 //        System.out.println(motion.deriveSlope(1, 0, 2));
 //        System.out.println(motion.deriveInitial(1, 0, 2));
