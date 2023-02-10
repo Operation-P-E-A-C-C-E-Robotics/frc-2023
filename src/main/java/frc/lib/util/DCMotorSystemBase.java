@@ -14,6 +14,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.trajectory.RealTimeTrapezoidalMotionDraft;
 
 import java.util.ArrayList;
 import java.util.function.DoubleConsumer;
@@ -30,6 +31,7 @@ public class DCMotorSystemBase extends SubsystemBase {
             new TrapezoidProfile.Constraints(0, 0),
             new TrapezoidProfile.State(0, 0)
     );
+    private RealTimeTrapezoidalMotionDraft testProfile;
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
 
@@ -70,6 +72,9 @@ public class DCMotorSystemBase extends SubsystemBase {
                 observer,
                 constants.maxVoltage,
                 constants.dt
+        );
+        testProfile = new RealTimeTrapezoidalMotionDraft(
+                constants.maxVelocity, constants.maxAcceleration
         );
     }
 
@@ -141,6 +146,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 new TrapezoidProfile.State(position, velocity),
                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
         );
+        testProfile.setGoalState(position, velocity, 0);
         setTrajectory(profile);
     }
 
@@ -180,10 +186,11 @@ public class DCMotorSystemBase extends SubsystemBase {
         }
 
         var feedforward = 0.0;
-
+        testProfile.setState(new RealTimeTrapezoidalMotionDraft.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         // if we're following a profile, calculate the next reference
         if(followingProfile){
-            var output = profile.calculate(time);
+//            var output = profile.calculate(time);
+            var output = testProfile.calculate(0.02);
             setNextR(output.position, output.velocity);
             for (var i : feedforwards) {
                 feedforward += i.calculate(output.position, output.velocity);
