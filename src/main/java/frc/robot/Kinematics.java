@@ -15,6 +15,9 @@ public class Kinematics {
 
     /**
      * handles kinematics of the supersystem
+     * NOTE TO FUTURE PROGRAMMERS: Since I foresee getSupersystemState/Position
+     * getting called a lot, I cache their values, so we don't recalculate multiple times per loop
+     * but, each loop we must call reset() to clear the cache.
      */
     public Kinematics(Supersystem supersystem){
         this.supersystem = supersystem;

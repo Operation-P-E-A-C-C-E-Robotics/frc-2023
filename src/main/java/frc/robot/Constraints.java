@@ -8,6 +8,11 @@ public class Constraints {
     SlewRateLimiter liftExtendedDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
     private Kinematics kinematics;
 
+    /**
+     * A class to hold functions that constrain the robot's behavior.
+     * They take in a value and return the same value, modified to be within the limitations of the robot.
+     * @param kinematics the robot's kinematics
+     */
     public Constraints(Kinematics kinematics){
         this.kinematics = kinematics;
     }
