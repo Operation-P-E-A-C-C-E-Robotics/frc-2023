@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.trajectory.RealTimeTrapezoidalMotion;
-import frc.lib.trajectory.RealTimeTrapezoidalMotionDraft;
 
 import java.util.ArrayList;
 import java.util.function.DoubleConsumer;
@@ -32,7 +31,7 @@ public class DCMotorSystemBase extends SubsystemBase {
 //            new TrapezoidProfile.Constraints(0, 0),
 //            new TrapezoidProfile.State(0, 0)
 //    );
-    private RealTimeTrapezoidalMotionDraft testProfile;
+    private RealTimeTrapezoidalMotion testProfile;
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
 
@@ -74,7 +73,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
-        testProfile = new RealTimeTrapezoidalMotionDraft(
+        testProfile = new RealTimeTrapezoidalMotion(
                 constants.maxVelocity, constants.maxAcceleration
         );
     }
@@ -118,7 +117,7 @@ public class DCMotorSystemBase extends SubsystemBase {
      * set a new trajectory to follow
      * @param profile The profile to follow
      */
-    public void setTrajectory(RealTimeTrapezoidalMotionDraft profile) {
+    public void setTrajectory(RealTimeTrapezoidalMotion profile) {
         profileTimer.reset();
         this.testProfile = profile;
         followingProfile = true;
@@ -147,7 +146,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 new TrapezoidProfile.State(position, velocity),
                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
         );
-        testProfile.setGoalState(position, velocity, 0);
+        testProfile.setGoalState(position, velocity);
         followingProfile = true;
 //        setTrajectory(profile);
     }
@@ -188,7 +187,7 @@ public class DCMotorSystemBase extends SubsystemBase {
         }
 
         var feedforward = 0.0;
-        testProfile.setState(new RealTimeTrapezoidalMotionDraft.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
+        testProfile.setState(new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         // if we're following a profile, calculate the next reference
         if(followingProfile){
             System.out.println("heloooo");

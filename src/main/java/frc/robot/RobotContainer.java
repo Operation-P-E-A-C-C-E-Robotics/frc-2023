@@ -40,10 +40,10 @@ public class RobotContainer {
                           armLimelight = new Limelight("limelight"); //TODO
 
   //subsystems
-  private final Pivot pivot = new Pivot();
-  private final Arm arm = new Arm(pivot::getAngleRadians);
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
+  private final Pivot pivot = new Pivot();
+  private final Arm arm = new Arm(pivot::getAngleRadians);
   private final Wrist wrist = new Wrist(pivot::getAngleRadians);
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
@@ -86,7 +86,7 @@ public class RobotContainer {
       if(path != null) path.schedule();
     }, driveTrain));
     //supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-    //supersystem.setDefaultCommand(new TestChickenHead(arm, pivot, turret, wrist, supersystem, robotState));
+    supersystem.setDefaultCommand(new TestChickenHead(arm, pivot, turret, wrist, supersystem, robotState));
   }
 
   /**
