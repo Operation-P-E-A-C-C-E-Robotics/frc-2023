@@ -32,7 +32,7 @@ public class DCMotorSystemBase extends SubsystemBase {
 //            new TrapezoidProfile.Constraints(0, 0),
 //            new TrapezoidProfile.State(0, 0)
 //    );
-    private RealTimeTrapezoidalMotion testProfile;
+    private RealTimeTrapezoidalMotionDraft testProfile;
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
 
@@ -74,7 +74,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
-        testProfile = new RealTimeTrapezoidalMotion(
+        testProfile = new RealTimeTrapezoidalMotionDraft(
                 constants.maxVelocity, constants.maxAcceleration
         );
     }
@@ -118,7 +118,7 @@ public class DCMotorSystemBase extends SubsystemBase {
      * set a new trajectory to follow
      * @param profile The profile to follow
      */
-    public void setTrajectory(RealTimeTrapezoidalMotion profile) {
+    public void setTrajectory(RealTimeTrapezoidalMotionDraft profile) {
         profileTimer.reset();
         this.testProfile = profile;
         followingProfile = true;
@@ -147,7 +147,8 @@ public class DCMotorSystemBase extends SubsystemBase {
                 new TrapezoidProfile.State(position, velocity),
                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
         );
-        testProfile.setGoalState(position, velocity);
+        testProfile.setGoalState(position, velocity, 0);
+        followingProfile = true;
 //        setTrajectory(profile);
     }
 
@@ -187,9 +188,10 @@ public class DCMotorSystemBase extends SubsystemBase {
         }
 
         var feedforward = 0.0;
-        testProfile.setState(new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
+        testProfile.setState(new RealTimeTrapezoidalMotionDraft.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         // if we're following a profile, calculate the next reference
         if(followingProfile){
+            System.out.println("heloooo");
             var output = testProfile.calculate(0.02);
             setNextR(output.position, output.velocity);
             for (var i : feedforwards) {
@@ -201,6 +203,7 @@ public class DCMotorSystemBase extends SubsystemBase {
         // run the feedback
         loop.correct(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         loop.predict(constants.dt);
+
         voltDriveFunction.accept(loop.getU(0) + feedforward);
     }
 
