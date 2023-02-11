@@ -23,7 +23,6 @@ public class DashboardManager {
     private final GenericEntry test = Shuffleboard.getTab("hi").add("test", 0).withWidget(BuiltInWidgets.kGyro).getEntry();
 
     private DashboardManager() {
-        // this.robotState = robotState;
         test.setDouble(0);
     }
 

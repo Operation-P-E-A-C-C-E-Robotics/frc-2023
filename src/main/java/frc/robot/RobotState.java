@@ -21,7 +21,7 @@ public class RobotState {
     private final AveragePose conePoseSmoothed = new AveragePose();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
-    private Limelight apriltagCamera, armCamera;
+    private final Limelight apriltagCamera, armCamera;
     private Pose2d prevRobotPose;
 
 
@@ -79,22 +79,41 @@ public class RobotState {
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
+
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
             // driveTrain.driveSim.setPose(getOdometryPose());
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
-        //DashboardManager.getInstance().drawAprilTag(apriltagCamera.getCameraPose());
+
         var conePose = getConePose().get(new Pose3d());
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
-    public Transform3d getRobotVelocity(){
-        var t2d = getOdometryPose().minus(prevRobotPose);
-        return new Transform3d(new Translation3d(t2d.getX(), t2d.getY(), 0.0), new Rotation3d(0,0,t2d.getRotation().getRadians()));
+    /**
+     * get the robot's velocity in field space
+     * @param dt time since last update
+     * @return robot's velocity, relative to the field
+     */
+    public Transform3d getRobotVelocity(double dt){
+        var deltaTransform = getOdometryPose().minus(prevRobotPose);
+        return new Transform3d(
+                new Translation3d(
+                        deltaTransform.getX() / dt,
+                        deltaTransform.getY() / dt,
+                        0.0
+                ), new Rotation3d(
+                        0, 0,
+                        deltaTransform.getRotation().getRadians() / dt
+                )
+        );
     }
 
+    /**
+     * get the robot's pose in field coordinates from the apriltag camera
+     * @return robot's position, relative to the field
+     */
     public Value<Pose3d> getRawApriltagBotpose(){
         return apriltagCamera.getBotpose();
     }
@@ -107,6 +126,11 @@ public class RobotState {
         return fieldToDrivetrainEstimator.getEstimatedPosition();
     }
 
+    /**
+     * get the robot's pose in field coordinates as a pose3d,
+     * using fused odometry for x, y, and heading, and raw apriltag data for z
+     * @return robot's position, relative to the field
+     */
     public Pose3d getRobotPose(){
         Pose2d odometryPose = getOdometryPose();
         Pose3d botpose = apriltagCamera.getBotpose().get(new Pose3d());
