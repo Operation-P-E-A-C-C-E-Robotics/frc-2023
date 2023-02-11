@@ -70,16 +70,17 @@ public class RealTimeTrapezoidalMotion {
     }
 
     public double calcDecelerationPosition(double dt){
-        System.out.println("calc distance to decelerate: " + calcDistanceToDecelerate(dt));
-        return goalState.position - calcDistanceToDecelerate(dt);
+        System.out.println("calc distance to decelerate: " + calcDistanceToDecelerate(currentState.velocity, maxAcceleration, dt));
+        var invert = goalState.position < currentState.position ? -1 : 1;
+        return goalState.position - (calcDistanceToDecelerate(currentState.velocity, maxAcceleration, dt));
     }
 
-    public double calcTimeToDecelerate(){
-        return currentState.velocity / maxAcceleration;
+    public double calcTimeToDecelerate(double velocity, double acceleration, double dt){
+        return Math.abs(velocity) / (acceleration * dt);
     }
 
-    public double calcDistanceToDecelerate(double dt){
-        return integrateSlope(0, currentState.velocity, calcTimeToDecelerate());
+    public double calcDistanceToDecelerate(double velocity, double acceleration, double dt){
+        return integrateSlope(0, velocity, calcTimeToDecelerate(velocity, acceleration, dt));
     }
 
     public void setState(State state){
@@ -93,5 +94,10 @@ public class RealTimeTrapezoidalMotion {
 
     public double integrateSlope(double initial, double slope, double dt){
         return integrate(initial*2, (dt/slope) - initial, dt) / 2;
+    }
+
+    public static void main(String[] args){
+        var motion = new RealTimeTrapezoidalMotion(1, 1);
+        System.out.println("hi");
     }
 }
