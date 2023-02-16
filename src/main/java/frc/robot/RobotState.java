@@ -83,7 +83,6 @@ public class RobotState {
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
-            // driveTrain.driveSim.setPose(getOdometryPose());
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
         }
 

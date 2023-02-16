@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import frc.lib.util.DCMotorSystemBase.SystemConstants;
 
 /**
@@ -31,11 +32,11 @@ public final class Constants {
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,
                 GEARBOX_RATIO_HIGH = 10.66,//:1
-                GEARBOX_RATIO_LOW = 1.0,//:1 TODO
+                GEARBOX_RATIO_LOW = 17.88,//:1
                 METERS_PER_ROTATION = 0.4844,
                 MOMENT_OF_INERTIA = 7.5, //J/m^2 //TODO
-                MASS = 60.0, //kg //TODO
-                TRACK_WIDTH = 0.6; //m //TODO Configure
+                MASS = 68.0, //kg //TODO
+                TRACK_WIDTH = 0.6096; //m
 
         //state space constants
         public static final double  LQR_ERROR_TOLERANCE = 0.1,
@@ -56,7 +57,7 @@ public final class Constants {
                 RAMSETE_B = 2.0,
                 RAMSETE_ZETA = 0.3,
                 AUTO_VOLTAGE_MAX = 7,
-                AUTO_MAX_SPEED_METERS_PER_SECOND = 1,
+                AUTO_MAX_SPEED_METERS_PER_SECOND = 1, //3
                 AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
 
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH);
@@ -66,8 +67,8 @@ public final class Constants {
         public static final int MOTOR_PORT = 4;
 
         //constraints:
-        public static final double  MAX_ANGLE_RAD = Math.PI/2, //TODO actual constraints
-                MIN_ANGLE_RAD = -Math.PI/2;
+        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(270), //TODO actual constraints
+                MIN_ANGLE_RAD = -MAX_ANGLE_RAD;
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),

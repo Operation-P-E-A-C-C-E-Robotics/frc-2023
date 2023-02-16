@@ -14,7 +14,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.trajectory.RealTimeTrapezoidalMotion;
+import frc.lib.trajectory.TrapezoidalMotion;
 
 import java.util.ArrayList;
 import java.util.function.DoubleConsumer;
@@ -33,7 +33,7 @@ public class DCMotorSystemBase extends SubsystemBase {
     );
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
-    private RealTimeTrapezoidalMotion testMotion;
+    private TrapezoidalMotion testMotion;
 
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
@@ -73,7 +73,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
-        testMotion = new RealTimeTrapezoidalMotion(constants.maxVelocity, constants.maxAcceleration);
+        testMotion = new TrapezoidalMotion(constants.maxVelocity, constants.maxAcceleration);
         SmartDashboard.putNumber("DCMotor Velocity", 0);
         SmartDashboard.putNumber("DCMotor Position", 0);
         SmartDashboard.putNumber("DCMotor Profile Position", 0);

@@ -1,6 +1,5 @@
 package frc.lib.trajectory;
 
-import frc.lib.trajectory.RealTimeTrapezoidalMotion;
 import frc.lib.util.Util;
 
 public class LinearAcceleration {
