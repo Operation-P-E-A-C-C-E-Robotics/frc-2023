@@ -3,12 +3,15 @@ package frc.lib.trajectory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import frc.lib.util.Util;
 
+import javax.sound.sampled.Line;
+
 public class RealTimeTrapezoidalMotion {
 
     private final double maxVelocity;
     private final double maxAcceleration;
     private State currentState = new State(0,0);
     private State goalState = new State(0,0);
+    private State deltaState = new State(0,0);
 
     /**
      * This class is a better version of the TrapezoidalMotion class. It generates trapezoidal
@@ -25,79 +28,54 @@ public class RealTimeTrapezoidalMotion {
         this.maxAcceleration = maxAcceleration;
     }
 
-    public State calculate(double dt){
-        State constranedState;
-        var decelerationPosition = calcDecelerationPosition(dt);
-        if(currentState.position >= decelerationPosition){
-            //we are in the deceleration phase
-            constranedState = constrainDeceleration(currentState.position, decelerationPosition, dt);
-        } else {
-            //we are in the acceleration/coast phase
-            constranedState = constrainAcceleration(currentState.position, goalState.position, dt);
-        }
-        return constranedState;
+    public void setCurrentState(double position, double velocity){
+        currentState = new State(position, velocity);
     }
 
     public void setGoalState(double position, double velocity){
         goalState = new State(position, velocity);
+
     }
 
-    public State constrainAcceleration(double initialPosition, double finalPosition, double dt){
-        var velocity = finalPosition - initialPosition;
-        var acceleration = velocity - currentState.velocity;
-        return constrain(initialPosition, velocity, acceleration, dt);
-    }
-
-    public State constrainDeceleration(double initialPosition, double finalPosition, double dt){
-        return constrain(initialPosition, finalPosition - initialPosition, -maxAcceleration, dt);
-    }
-
-    public State constrain(double initialPosition, double targetVelocity, double targetAcceleration, double dt){
-        // figure out which constraint is limiting the motion
-        if(Math.abs(targetAcceleration) > maxAcceleration){
-            // if acceleration is limiting, then we need to adjust the velocity to match the acceleration
-            targetAcceleration = Util.limit(targetAcceleration, maxAcceleration);
-            targetVelocity = integrate(currentState.velocity, targetAcceleration, dt);
+    public State calculate(double dt){
+        // calculate the motions for deceleration (current velocity to the goal position with maximum acceleration),
+        // and acceleration (current velocity to goal velocity with maximum acceleration)
+        boolean inverted = goalState.position < currentState.position;
+        double velocityToReachGoal = (Math.abs(goalState.position - currentState.position) * (inverted ? -1 : 1)) / dt;
+        double accelerationVelocity = Util.limit(velocityToReachGoal, maxVelocity);
+        var deceleration = Motion.fromPosition(currentState.velocity, goalState.velocity, velocityToReachGoal);
+//        deceleration = Motion.fromState(new State(currentState.position, currentState.velocity), new State(goalState.position, goalState.velocity));
+        var acceleration = Motion.fromTime(currentState.velocity, accelerationVelocity, dt);//.limitAccelerationConstantTime(maxAcceleration);
+//        System.out.println("Accel: " + acceleration);
+//        System.out.println("Decel: " + deceleration);
+//        System.out.println("inverted: " + inverted);
+//        System.out.println("velocityToReachGoal: " + velocityToReachGoal);
+//        System.out.println("accelerationVelocity: " + accelerationVelocity);
+        double position = currentState.position + acceleration.deltaPosition, velocity;
+        boolean needsToDecelerate = Math.abs(deceleration.acceleration) >= maxAcceleration && !Double.isInfinite(deceleration.acceleration);
+        if(needsToDecelerate){
+            // we are in the deceleration phase
+            System.out.println("Decelerating");
+            deceleration = deceleration.interpolateTimeDeceleration(dt);
+            position = currentState.position + (deceleration.deltaPosition);
+            velocity = deceleration.finalVelocity;
+        } else {
+            System.out.println("Accelerating");
+//            position = currentState.position + acceleration.deltaPosition;
+            velocity = acceleration.finalVelocity;
         }
-        if(Math.abs(targetVelocity) > maxVelocity){
-            // if velocity is limiting, acceleration can be ignored (since acceleration isn't what we are
-            // returning)
-            targetVelocity = Util.limit(targetVelocity, maxVelocity);
-        }
-        // calculate the actual attainable position
-        initialPosition = integrate(initialPosition, targetVelocity, dt);
-        return new State(initialPosition, targetVelocity);
-    }
-
-    public double calcDecelerationPosition(double dt){
-        System.out.println("calc distance to decelerate: " + calcDistanceToDecelerate(currentState.velocity, maxAcceleration, dt));
-        var invert = goalState.position < currentState.position ? -1 : 1;
-        return goalState.position - (calcDistanceToDecelerate(currentState.velocity, maxAcceleration, dt));
-    }
-
-    public double calcTimeToDecelerate(double velocity, double acceleration, double dt){
-        return Math.abs(velocity) / (acceleration * dt);
-    }
-
-    public double calcDistanceToDecelerate(double velocity, double acceleration, double dt){
-        return integrateSlope(0, velocity, calcTimeToDecelerate(velocity, acceleration, dt));
-    }
-
-    public void setState(State state){
-        this.currentState = state;
-    }
-
-    //constant velocity P = V * t
-    public double integrate(double initial, double value, double dt){
-        return initial + (value * dt);
-    }
-
-    public double integrateSlope(double initial, double slope, double dt){
-        return integrate(initial*2, (dt/slope) - initial, dt) / 2;
+        return new State(position, velocity);
     }
 
     public static void main(String[] args){
-        var motion = new RealTimeTrapezoidalMotion(1, 1);
-        System.out.println("hi");
+        var test = new RealTimeTrapezoidalMotion(2, 0.1);
+        test.setCurrentState(-0.5, -0.1);
+//        test.setGoalState(-0.5, 0);
+            test.setGoalState(0.5, 0);
+        for(int i = 0; i < 1000; i++){
+            System.out.println(test.currentState.velocity);
+            var state = test.calculate(0.5);
+            test.setCurrentState(-state.position, -state.velocity);
+        }
     }
 }

@@ -68,11 +68,11 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                1,
+                10,
                 50,
                 2048,
-                4,
-                10,
+                0.01,
+                0.01,
                 3.0,
                 3.0,
                 0.01,

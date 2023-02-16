@@ -36,7 +36,6 @@ public class ArmSystemBase extends SubsystemBase {
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
     private final double armLength, armMass;
-    private final RealTimeTrapezoidalMotion testProfile;
     /**
      * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
@@ -70,7 +69,6 @@ public class ArmSystemBase extends SubsystemBase {
         this.armLength = armLength;
         this.armMass = armMass;
         SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 1);
-        testProfile = new RealTimeTrapezoidalMotion(constants.maxVelocity, constants.maxAcceleration);
     }
 
     /**
@@ -156,13 +154,12 @@ public class ArmSystemBase extends SubsystemBase {
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
         }
-        // var profile = new TrapezoidProfile(
-        //         new TrapezoidProfile.Constraints(constants.maxVelocity, constants.maxAcceleration),
-        //         new TrapezoidProfile.State(position, velocity),
-        //         new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
-        // );
-        // setTrajectory(profile);
-        testProfile.setGoalState(position, velocity);
+         var profile = new TrapezoidProfile(
+                 new TrapezoidProfile.Constraints(constants.maxVelocity, constants.maxAcceleration),
+                 new TrapezoidProfile.State(position, velocity),
+                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
+         );
+         setTrajectory(profile);
         followingProfile = true;
     }
 
@@ -200,12 +197,12 @@ public class ArmSystemBase extends SubsystemBase {
             profileTimer.reset();
         }
 
-        testProfile.setState(new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
+//        testProfile.setState(new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
 
         // if we're following a profile, calculate the next reference and feedforward
         if(followingProfile){
-            // var output = profile.calculate(time);
-            var output = testProfile.calculate(0.02);
+             var output = profile.calculate(time);
+//            var output = testProfile.calculate(0.02);
             setNextR(output.position, output.velocity);
             feedforward = calculateGravityFeedforward(output.position, output.velocity);
         } else {

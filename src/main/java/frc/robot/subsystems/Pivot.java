@@ -38,6 +38,7 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.FollowMaster);
 
+
     if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
       SmartDashboard.putNumber("pivot setpoint angle", 0);
       SmartDashboard.putNumber("pivot setpoint percent", 0);

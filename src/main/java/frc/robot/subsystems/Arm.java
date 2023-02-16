@@ -11,6 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
@@ -21,14 +22,14 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends DCMotorSystemBase {
+public class Arm extends ArmSystemBase {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
-        super(SYSTEM_CONSTANTS);
+        super(SYSTEM_CONSTANTS, 0, 0);
         if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
 //        addFeedforward((double pos, double vel) -> {
