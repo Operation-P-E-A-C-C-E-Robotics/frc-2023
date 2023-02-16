@@ -16,14 +16,17 @@ import frc.lib.util.DCMotorSystemBase.SystemConstants;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
+
+//TODO CAN ID's according to the Electrical Service Manual (https://docs.google.com/document/d/1KB8-KpFrxM39kcLAH9h3_pHSRaMYU2LS7VqXjaPE9zI/edit?usp=sharing)
+//CAN ID's in the order they are connected in the chain, 1st connection is ID 0, 2nd is ID 1, etc
 public final class Constants {
     public static final class DriveTrain {
         //ports
-        public static final int LEFT_MASTER  = 0,
-                LEFT_SLAVE   = 1,
-                RIGHT_MASTER = 2,
-                RIGHT_SLAVE  = 3,
-                PIGEON_IMU  = 20; //todo unused
+        public static final int LEFT_MASTER  = 0, //DOCS Drive Falcon 0
+                                LEFT_SLAVE   = 1, //DOCS Drive Falcon 1
+                                RIGHT_MASTER = 2, //DOCS Drive Falcon 3
+                                RIGHT_SLAVE  = 3, //DOCS Drive Falcon 2
+                                PIGEON_IMU   = 5; 
 
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,
@@ -60,7 +63,7 @@ public final class Constants {
     }
 
     public static final class Turret {
-        public static final int MOTOR_PORT = 90; //TODO Arbitrary number to not conflict
+        public static final int MOTOR_PORT = 4;
 
         //constraints:
         public static final double  MAX_ANGLE_RAD = Math.PI/2, //TODO actual constraints
@@ -89,12 +92,14 @@ public final class Constants {
 
     public static final class Pivot{
         //port numbers
-        public static final int PIVOT_MASTER = 50, //TODO Arbitrary number to not conflict
-                                PIVOT_SLAVE  = 51;
-
+        public static final int PIVOT_MASTER = 8, //DOCS Pivot Falcon 0
+                                PIVOT_SLAVE  = 9, //DOCS Pivot Falcon 1
+                      BRAKE_SOLENOID_FORWARD = 5,
+                     BRAKE_SOLENOID_BACKWARD = 6;
         //constraints
         public static final double  MAX_ANGLE_RAD = Math.PI, //TODO actual constraints
-                                    MIN_ANGLE_RAD = -Math.PI;
+                                    MIN_ANGLE_RAD = -Math.PI,
+                                    TIME_FOR_BRAKE_TO_ENGAGE = 0.5; //TODO Meassure time for Break to engage
 
         //physical constants
         public static final double  LENGTH = 0.5,
@@ -122,7 +127,7 @@ public final class Constants {
 
     public static final class Arm {
         //ports
-        public static final int MASTER_PORT = 95, //TODO Arbitrary number to not conflict
+        public static final int ARM_MASTER = 95, //TODO Arbitrary number to not conflict
                 ARM_SLAVE  = 97;
 
         //physical constants
