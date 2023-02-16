@@ -33,7 +33,7 @@ public class Motion {
     }
 
     public Motion interpolateTime(double time){
-//        if(inverted) return interpolateTimeDeceleration(time);
+    //    if(inverted) return interpolateTimeDeceleration(time);
         var finalVelocity = Util.interpolate(initialVelocity, this.finalVelocity, time / this.time);
         return fromTime(initialVelocity, finalVelocity, time);
     }
@@ -51,6 +51,7 @@ public class Motion {
     }
 
     public Motion limitAccelerationConstantTime(double maxAcceleration){
+        if(acceleration < maxAcceleration) return this;
         return fromVelocityAcceleration(initialVelocity, Util.limit(acceleration, maxAcceleration), time);
     }
 
@@ -62,25 +63,17 @@ public class Motion {
         var deltaPosition = finalState.position - initialState.position;
         var initialVelocity = initialState.velocity;
         var finalVelocity = finalState.velocity;
-        var inverted = deltaPosition < 0;
 
-        if(inverted){
-//            deltaPosition = -deltaPosition;
-//            initialVelocity = finalVelocity;
-//            finalVelocity = initialVelocity;
-        }
-
-        var time = deltaPosition / (initialVelocity + (finalVelocity - initialVelocity) / 2);
+        var time = Math.abs(deltaPosition / (initialVelocity + (finalVelocity - initialVelocity) / 2));
         var acceleration = (finalVelocity - initialVelocity) / time;
-
+        var inverted = acceleration < 0;
         if(Double.isNaN(time)) time = 0;
         if(Double.isNaN(acceleration)) acceleration = 0;
-
         return new Motion(deltaPosition, initialVelocity, finalVelocity, acceleration, time, inverted);
     }
 
     public static Motion fromPosition(double initialVelocity, double finalVelocity, double deltaPosition){
-        var inverted = deltaPosition < 0;
+
 //        if(inverted){
 //            deltaPosition = -deltaPosition;
 //            initialVelocity = finalVelocity;
@@ -88,8 +81,14 @@ public class Motion {
 //        }
         var time = deltaPosition / (initialVelocity + ((finalVelocity - initialVelocity) / 2));
         var acceleration = (finalVelocity - initialVelocity) / time;
+        var inverted = acceleration < 0;
         if(Double.isNaN(time)) time = 0;
         if(Double.isNaN(acceleration)) acceleration = 0;
+        if(time < 0) {
+            // deltaPosition = -deltaPosition;
+            acceleration = -acceleration;
+            time = -time;
+        }
         return new Motion(deltaPosition, initialVelocity, finalVelocity, acceleration, time, inverted);
     }
 
@@ -113,13 +112,9 @@ public class Motion {
     }
 
     public static void main(String[] args){
-        var test = Motion.fromState(new State(0, 0), new State(1, 1));
+        var test = Motion.fromState(new State(0, 1), new State(-1, 0));
         System.out.println(test);
-        for(double i = 0; i < test.time; i += 0.1){
-            System.out.println(test.interpolateTime(i));
-        }
-        for(double i = 0; i < test.time; i += 0.1){
-            System.out.println(test.interpolateTimeDeceleration(i));
-        }
+        // System.out.println(test.limitAcce(0.1));
+        System.out.println(Motion.fromVelocityAcceleration(0, 0.1, -1));
     }
 }

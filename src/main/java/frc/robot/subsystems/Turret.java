@@ -101,7 +101,8 @@ public class Turret extends DCMotorSystemBase {
    * @return radians, CCW is positive
    */
   public double getAngleRadians(){
-    return getAngle().getRadians();
+    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+    return Units.rotationsToRadians(rotation);
   }
 
     /**
@@ -142,7 +143,7 @@ public class Turret extends DCMotorSystemBase {
     turretMotorSim.setIntegratedSensorRawPosition(
             (int)Util.rotationsToCounts(
                     Units.radiansToRotations(
-                            turretSim.getOutput().get(0,0)
+                            turretSim.getOutput(0)
                     ),
                     SYSTEM_CONSTANTS.cpr,
                     SYSTEM_CONSTANTS.gearing
@@ -151,7 +152,7 @@ public class Turret extends DCMotorSystemBase {
     turretMotorSim.setIntegratedSensorVelocity(
             (int)Util.rotationsToCounts(
               Units.radiansToRotations(
-                      turretSim.getOutput().get(1,0)
+                      turretSim.getOutput(1)
               ),
             SYSTEM_CONSTANTS.cpr,
             SYSTEM_CONSTANTS.gearing
