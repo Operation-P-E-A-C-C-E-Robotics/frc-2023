@@ -2,6 +2,8 @@ package frc.lib.trajectory;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
+import java.util.ArrayList;
+
 import static edu.wpi.first.math.trajectory.TrapezoidProfile.*;
 
 public class Trajectory {
@@ -29,7 +31,7 @@ public class Trajectory {
             timeInWaypoint += motion.time;
         }
         var interpolated = waypoint.interpolateTime(time - timeInWaypoint);
-        return new State(position + interpolated.deltaPosition, interpolated.initialVelocity);
+        return new State(position + interpolated.deltaPosition, interpolated.finalVelocity);
     }
 
     public double getTotalTime(){
@@ -50,24 +52,30 @@ public class Trajectory {
     public static Trajectory trapezoidTrajectory(State current, State target, double maxVelocity, double maxAcceleration){
         //calculate the distance to accelerate and coast
         var deltaPosition = Math.abs(target.position - current.position);
-        var signum = Math.signum(target.position - current.position);
+        var distanceSign = Math.signum(target.position - current.position);
+        ArrayList<State> states = new ArrayList<>();
         Trajectory trajectory;
+
+        states.add(current);
 
         // if the current velocity is in the opposite direction of the target, decelerate to 0 and then accelerate
         // if we don't do this, the math gets pissy.
-        if(signum != Math.signum(current.velocity) && signum != 0 && Math.signum(current.velocity) != 0){
+        if(distanceSign != Math.signum(current.velocity) && distanceSign != 0 && Math.signum(current.velocity) != 0){
             //calculate the distance to decelerate from the current velocity to 0:
             var decelerationDistance = Math.pow(current.velocity, 2) / (2 * maxAcceleration);
 
             //calculate the two trajectories
             var intermediate = new State(current.position + decelerationDistance * Math.signum(current.velocity), 0);
-            var t1 = Trajectory.trapezoidTrajectory(current, intermediate, maxVelocity, maxAcceleration);
-            var t2 = Trajectory.trapezoidTrajectory(intermediate, target, maxVelocity, maxAcceleration);
-
-            //append the two trajectories
-            trajectory = t1;
-            trajectory.append(t2);
-            return trajectory;
+//            var t1 = Trajectory.trapezoidTrajectory(current, intermediate, maxVelocity, maxAcceleration);
+//            var t2 = Trajectory.trapezoidTrajectory(intermediate, target, maxVelocity, maxAcceleration);
+//
+//            //append the two trajectories
+//            trajectory = t1;
+//            trajectory.append(t2);
+//            return trajectory;
+            states.add(intermediate);
+            current = intermediate;
+            deltaPosition += decelerationDistance;
         }
 
         var accelerationDistance = Math.pow(maxVelocity, 2) / (2 * maxAcceleration);
@@ -81,28 +89,31 @@ public class Trajectory {
             coastDistance = 0;
         }
 
-        accelerationDistance *= signum;
-        coastDistance *= signum;
-        maxVelocity *= signum;
+        // reapply the sign to the outputs
+        accelerationDistance *= distanceSign;
+        coastDistance *= distanceSign;
+        maxVelocity *= distanceSign;
+
+        states.add(new State(current.position + accelerationDistance, maxVelocity));
+        states.add(new State(current.position + accelerationDistance + coastDistance, maxVelocity));
+        states.add(target);
 
         return new Trajectory(
-                current,
-                new State(current.position + accelerationDistance, maxVelocity),
-                new State(current.position + accelerationDistance + coastDistance, maxVelocity),
-                target
+                states.toArray(new State[0])
         );
     }
 
     public static void main(String[] args){
-        var test = new Trajectory(
-                new State(5,-5),
-                new State(-1,-1),
-                new State(-2,-1),
-                new State(-3,0),
-                new State(-2,1)
+        var test = Trajectory.trapezoidTrajectory(
+                new State(0, 0),
+                new State(10, 3),
+                5,
+                5
         );
-        for(double i = 0; i <= test.getTotalTime(); i += 0.01){
-            System.out.println(test.calculate(i).position);
+        System.out.println(test.getTotalTime());
+        for(int i = 0; i < test.getTotalTime() * 100; i++){
+            var state = test.calculate(i / 100.0);
+            System.out.println(state.position);
         }
     }
 }
