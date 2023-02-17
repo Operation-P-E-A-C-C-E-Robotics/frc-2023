@@ -40,23 +40,23 @@ public class RealTimeTrapezoidalMotion {
     public State calculate(double dt){
         // calculate the motions for deceleration (current velocity to the goal position with maximum acceleration),
         // and acceleration (current velocity to goal velocity with maximum acceleration)
-        boolean inverted = goalState.position < currentState.position;
-        double velocityToReachGoal = (goalState.position - currentState.position);// / dt;
+        double velocityToReachGoal = (goalState.position - currentState.position);
         double accelerationVelocity = Util.limit(velocityToReachGoal, maxVelocity);
-        var deceleration = Motion.fromPosition(currentState.velocity, goalState.velocity, goalState.position - currentState.position);
-        deceleration = Motion.fromState(currentState, goalState);//.limitAccelerationConstantPosition(maxAcceleration);
-        var acceleration = Motion.fromTime(currentState.velocity, accelerationVelocity, dt).limitAccelerationConstantTime(maxAcceleration);
-        System.out.println("accelerationaes:" + accelerationVelocity);
+        System.out.println("velocity to reach goal: " + accelerationVelocity);
+        var deceleration = Motion.fromState(currentState, goalState);
+        var acceleration = Motion.fromTime(currentState.velocity, maxVelocity * Math.signum(velocityToReachGoal), dt);//.limitAccelerationConstantTime(maxAcceleration);
+        System.out.println("acceleration!!!!!!!!!!!!!!!!!!!!!!!!!!!! " + acceleration);
         double position = currentState.position + acceleration.deltaPosition, velocity;
         boolean needsToDecelerate = Math.abs(deceleration.acceleration) >= maxAcceleration
         && !Double.isInfinite(deceleration.acceleration);
         if(needsToDecelerate){
             // we are in the deceleration phase
             deceleration = deceleration.interpolateTime(dt);
-            System.out.println("deceleration: "+ deceleration);
+            System.out.println("DECCEELELELRATIONTGINGINGINGIGNIGNGINGINGINGIGNGINGIGNGINE ASJLKEFJLKEAF");
             position = currentState.position + (deceleration.deltaPosition);
             velocity = deceleration.finalVelocity;
         } else {
+            System.out.println("ACCELELELRATIONTGINGINGINGIGNIGNGINGINGINGIGNGINGIGNGINE ASJLKEFJLKEAF");
         //    position = currentState.position + acceleration.deltaPosition;
             velocity = acceleration.finalVelocity;
         }
@@ -65,8 +65,8 @@ public class RealTimeTrapezoidalMotion {
 
     public static void main(String[] args){
         var test = new RealTimeTrapezoidalMotion(1, 1);
-        test.setCurrentState(-7, -0.1);
-        test.setGoalState(0, 0);
+        test.setCurrentState(0.5, -1);
+        test.setGoalState(-1, 0);
         for(int i = 0; i < 300; i++){
             System.out.println(test.currentState.position);
             var state = test.calculate(0.07);

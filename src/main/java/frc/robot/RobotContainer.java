@@ -35,7 +35,7 @@ import frc.robot.commands.util.FindStdDevs;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
-  private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(20));
+  private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight apriltagLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("limelight"); //TODO
 

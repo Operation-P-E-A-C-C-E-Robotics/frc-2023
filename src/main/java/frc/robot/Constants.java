@@ -26,7 +26,7 @@ public final class Constants {
                                 LEFT_SLAVE   = 1, //DOCS Drive Falcon 1
                                 RIGHT_MASTER = 2, //DOCS Drive Falcon 3
                                 RIGHT_SLAVE  = 3, //DOCS Drive Falcon 2
-                                PIGEON_IMU   = 5; 
+                                PIGEON_IMU   = 5;
 
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,
@@ -127,8 +127,7 @@ public final class Constants {
 
     public static final class Arm {
         //ports
-        public static final int ARM_MASTER = 95, //TODO Arbitrary number to not conflict
-                ARM_SLAVE  = 97;
+        public static final int MASTER_PORT = 95; //TODO Arbitrary number to not conflict
 
         //physical constants
         public static final double  CARRAIGE_MASS = 5, //kg

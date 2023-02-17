@@ -51,7 +51,7 @@ public class Motion {
     }
 
     public Motion limitAccelerationConstantTime(double maxAcceleration){
-        if(acceleration < maxAcceleration) return this;
+        if(Math.abs(acceleration) < maxAcceleration) return this;
         return fromVelocityAcceleration(initialVelocity, Util.limit(acceleration, maxAcceleration), time);
     }
 
@@ -85,8 +85,9 @@ public class Motion {
         if(Double.isNaN(time)) time = 0;
         if(Double.isNaN(acceleration)) acceleration = 0;
         if(time < 0) {
+
             // deltaPosition = -deltaPosition;
-            acceleration = -acceleration;
+            // acceleration = -acceleration;
             time = -time;
         }
         return new Motion(deltaPosition, initialVelocity, finalVelocity, acceleration, time, inverted);
