@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
@@ -262,6 +263,9 @@ public class Supersystem extends SubsystemBase {
         }
     }
 
+    public Subsystem[] getRequirements(){
+        return new Subsystem[]{this, turret, pivot, wrist, arm};
+    }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();
     private final boolean PERIODIC_CONTROL_SIMULATION = true;
