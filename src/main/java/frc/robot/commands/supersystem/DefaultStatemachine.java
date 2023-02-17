@@ -46,8 +46,6 @@ public class DefaultStatemachine extends CommandBase {
 
     @Override
     public void execute(){
-        var heading = robotHeading.getAsDouble();
-
         var newState = updateState();
         if(newState != state){
             state = newState;
