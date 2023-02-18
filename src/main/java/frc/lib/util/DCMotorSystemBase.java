@@ -157,7 +157,9 @@ public class DCMotorSystemBase extends SubsystemBase {
 //        if(followingProfile && Math.abs(position - this.profile.calculate(this.profile.totalTime()).position) > Math.abs(position - getPosition.getAsDouble())){
 //            return;
 //        }
-
+        if(!shouldFollowProfile(position)){
+            return;
+        }
         var profile = new TrapezoidProfile(
                 new TrapezoidProfile.Constraints(constants.maxVelocity, constants.maxAcceleration),
                 new TrapezoidProfile.State(position, velocity),
@@ -165,11 +167,24 @@ public class DCMotorSystemBase extends SubsystemBase {
         );
         followingProfile = true;
         testMotion = Trajectory.trapezoidTrajectory(
-            new State(getPosition.getAsDouble(), getVelocity.getAsDouble()),
+            new State(loop.getObserver().getXhat(0), loop.getObserver().getXhat(1)),
             new State(position, velocity),
             constants.maxVelocity, constants.maxAcceleration
         );
         setTrajectory(profile);
+        SmartDashboard.putNumber("DCMotor Setpoint Position", position);
+        SmartDashboard.putNumber("DCMotor Setpoint Velocity", velocity);
+    }
+
+    private boolean shouldFollowProfile(double newPosition){
+        // check whether to update with a new trajectory when calling goToState, or just ignore the call.
+        // this is to prevent issues with updating the trajectory every time goToState is called, which can cause
+        // the robot to oscillate around the setpoint.
+        // this is a hacky solution, but it works for now.
+        var currentTrajectoryError = Math.abs(newPosition - this.profile.calculate(this.profile.totalTime()).position);
+        var newTrajectoryError = Math.abs(newPosition - getPosition.getAsDouble());
+        var currentTrajectoryErrorFromNewTrajectory = Math.abs(newPosition - this.profile.calculate(profileTimer.get()).position);
+        return currentTrajectoryErrorFromNewTrajectory > 0.05;
     }
 
     /**
@@ -216,7 +231,7 @@ public class DCMotorSystemBase extends SubsystemBase {
         // if we're following a profile, calculate the next reference
         if(followingProfile){
 //            var output = profile.calculate(time);
-            var output = testMotion.calculate(time);
+            var output = testMotion.calculate(time + 0.02);
             setNextR(output.position, output.velocity);
             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);

@@ -82,7 +82,7 @@ public class Trajectory {
         // to a lower velocity and don't coast (triangular profile)
         if(accelerationDistance > deltaPosition/2){
             maxVelocity = Math.sqrt(2 * maxAcceleration * deltaPosition);
-            accelerationDistance = Math.pow(maxVelocity, 2) / (2 * maxAcceleration) / 2;
+            accelerationDistance = deltaPosition / 2;
             coastDistance = 0;
         }
 
@@ -102,14 +102,15 @@ public class Trajectory {
 
     public static void main(String[] args){
         var test = Trajectory.trapezoidTrajectory(
-                new State(0, 0),
-                new State(10, 3),
+                new State(9.9, 5),
+                new State(10, 0),
                 5,
                 5
         );
         System.out.println(test.getTotalTime());
-        for(int i = 0; i < test.getTotalTime() * 100; i++){
-            var state = test.calculate(i / 100.0);
+        System.out.println(test.calculate(100).position);
+        for(int i = 0; i < 100; i++){
+            var state = test.calculate((i / 100.0) * test.getTotalTime());
             System.out.println(state.position);
         }
     }
