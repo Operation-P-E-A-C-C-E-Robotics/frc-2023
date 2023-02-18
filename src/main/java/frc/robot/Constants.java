@@ -23,11 +23,13 @@ import frc.lib.util.DCMotorSystemBase.SystemConstants;
 public final class Constants {
     public static final class DriveTrain {
         //ports
-        public static final int LEFT_MASTER  = 0, //DOCS Drive Falcon 0
-                                LEFT_SLAVE   = 1, //DOCS Drive Falcon 1
-                                RIGHT_MASTER = 2, //DOCS Drive Falcon 3
-                                RIGHT_SLAVE  = 3, //DOCS Drive Falcon 2
-                                PIGEON_IMU   = 5;
+        public static final int LEFT_MASTER  = 2, //DOCS Drive Falcon 0
+                                LEFT_SLAVE   = 3, //DOCS Drive Falcon 1
+                                RIGHT_MASTER = 0, //DOCS Drive Falcon 3
+                                RIGHT_SLAVE  = 1, //DOCS Drive Falcon 2
+                                PIGEON_IMU   = 5,
+                                SHIFT_HIGH_PORT = 0,
+                                SHIFT_LOW_PORT = 1;
 
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,
@@ -72,17 +74,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                1,
-                50,
+                5,
+                100 * 5, //100:1 versaplanetary, 5:1 driving gear
                 2048,
-                3.14,
-                3.14,
+                5,
+                10,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.05,
-                0.05,
+                0.5,
+                1,
                 12,
                 0,
                 12,
@@ -118,7 +120,7 @@ public final class Constants {
                 0.1,
                 0.1,
                 0.01,
-                0.01,
+                0.1,
                 12,
                 0,
                 12,
@@ -158,8 +160,8 @@ public final class Constants {
     public static final class Wrist {
         //ports
         public static final int WRIST_MOTOR          = 70, //TODO Arbitrary number to not conflict
-                WRIST_FLIP_FORWARD   = 0,
-                WRIST_FLIP_REVERSE   = 1;
+                WRIST_FLIP_FORWARD   = 2,
+                WRIST_FLIP_REVERSE   = 3;
 
         //constants
         public static final double WRIST_FLIP_TIME = 0.5; //seconds TODO time to flip wrist

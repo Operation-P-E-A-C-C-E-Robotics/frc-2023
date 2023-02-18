@@ -66,8 +66,8 @@ public class TestChickenHead extends CommandBase {
         z += testJoystick.getRawAxis(2) * SENSITIVITY;
         var target = new Pose3d(new Translation3d(x, y, z), new Rotation3d());
         var targetRelativeToEndOfArm = robotState.fieldToDrivetrain(target);
-        targetRelativeToEndOfArm = robotState.drivetrainToTurret(targetRelativeToEndOfArm);
-        targetRelativeToEndOfArm = robotState.turretToEndEffector(targetRelativeToEndOfArm);
+        // targetRelativeToEndOfArm = robotState.drivetrainToTurret(targetRelativeToEndOfArm);
+        // targetRelativeToEndOfArm = robotState.turretToEndEffector(targetRelativeToEndOfArm);
         supersystem.setSupersystemPosition(targetRelativeToEndOfArm.getTranslation());
     }
 }

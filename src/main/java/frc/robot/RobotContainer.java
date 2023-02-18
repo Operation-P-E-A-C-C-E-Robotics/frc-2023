@@ -13,8 +13,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.auto.paths.PathFollower;
 import frc.robot.commands.drive.TestVelocity;
+import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestChickenHead;
+import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -52,9 +54,20 @@ public class RobotContainer {
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
 
   //commands
-  private final PeaccyDrive peaccyDrive = new PeaccyDrive(driveTrain, driverJoystick::getY, driverJoystick::getX, () -> driverJoystick.getRawButton(1));
+  private final PeaccyDrive peaccyDrive = new PeaccyDrive(
+    driveTrain,
+    driverJoystick::getY,
+    driverJoystick::getX,
+    () -> driverJoystick.getRawButton(1),
+    () -> driverJoystick.getRawButton(2)
+  );
   private final TestVelocity velocityDrive = new TestVelocity(driveTrain, driverJoystick, Constants.DriveTrain.DRIVE_KINEMATICS);
-  private final ArcadeDrive arcadeDrive = new ArcadeDrive(driveTrain, driverJoystick::getY, driverJoystick::getX);
+  private final ArcadeDrive arcadeDrive = new ArcadeDrive(
+    driveTrain,
+    driverJoystick::getY,
+    driverJoystick::getX,
+    () -> driverJoystick.getRawButton(2)
+  );
 
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
   private final Paths testPaths = new Paths(robotState, driveTrain);
@@ -85,8 +98,18 @@ public class RobotContainer {
       var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
       if(path != null) path.schedule();
     }, driveTrain));
-    //supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-    supersystem.setDefaultCommand(new TestChickenHead(arm, pivot, turret, wrist, supersystem, robotState));
+    turret.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+    supersystem.setDefaultCommand(new DefaultStatemachine(
+      supersystem,
+      () -> robotXInRange(0, 4.5),
+      () -> robotXInRange(12, 30),
+      () -> robotState.getOdometryPose().getRotation().getRadians()
+    ));
+  }
+
+  public boolean robotXInRange(double low, double high){
+    return robotState.getOdometryPose().getTranslation().getX() > low && robotState.getOdometryPose().getTranslation().getX() < high;
   }
 
   /**

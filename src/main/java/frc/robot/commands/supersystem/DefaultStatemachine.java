@@ -12,10 +12,10 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class DefaultStatemachine extends CommandBase {
-    private final double TARGET_ROTATION = 0, PICKUP_ROTATION = Math.PI/2;
+    private final double TARGET_ROTATION = 0, PICKUP_ROTATION = Math.PI;
     private final Kinematics.SupersystemState restingState = new Kinematics.SupersystemState(0, 0, Constants.Arm.MIN_EXTENSION, Math.PI/2);
     private final Translation3d tiltTranslationForward = new Translation3d(0.3, 0, Constants.Arm.MIN_EXTENSION);
-    private final BooleanSupplier isOnAllianceSide;
+    private final BooleanSupplier tiltTowardsTargetSupplier, tiltTowardsPickupSupplier;
     private final Supersystem supersystem;
     private final DoubleSupplier robotHeading;
     private boolean automate = true;
@@ -28,10 +28,11 @@ public class DefaultStatemachine extends CommandBase {
      * turret towards side of the field that is of interest.
      * @param supersystem
      */
-    public DefaultStatemachine(Supersystem supersystem, BooleanSupplier isOnAllianceSide, DoubleSupplier robotHeading) {
+    public DefaultStatemachine(Supersystem supersystem, BooleanSupplier tiltTowardsTargetSupplier, BooleanSupplier tiltTowardsPickupSupplier, DoubleSupplier robotHeading) {
         addRequirements(supersystem.getRequirements());
         this.supersystem = supersystem;
-        this.isOnAllianceSide = isOnAllianceSide;
+        this.tiltTowardsTargetSupplier = tiltTowardsTargetSupplier;
+        this.tiltTowardsPickupSupplier = tiltTowardsPickupSupplier;
         this.robotHeading = robotHeading;
     }
 
@@ -46,11 +47,8 @@ public class DefaultStatemachine extends CommandBase {
 
     @Override
     public void execute(){
-        var newState = updateState();
-        if(newState != state){
-            state = newState;
-            handleStateTransition(state);
-        }
+        state = updateState();
+        handleStateTransition(state);
     }
 
     private void handleStateTransition(State newState){
@@ -78,10 +76,12 @@ public class DefaultStatemachine extends CommandBase {
         if(!automate) {
             return State.RESTING;
         }
-        if(isOnAllianceSide.getAsBoolean()){
+        if(tiltTowardsPickupSupplier.getAsBoolean()){
+            return State.TILT_TOWARDS_PICKUP;
+        } else if (tiltTowardsTargetSupplier.getAsBoolean()) {
             return State.TILT_TOWARDS_TARGETS;
         } else {
-            return State.TILT_TOWARDS_PICKUP;
+            return State.RESTING;
         }
     }
 

@@ -60,7 +60,7 @@ public class Wrist extends DCMotorSystemBase {
      */
     public void setAngle(Rotation2d angle){
         enableLoop(this::setVoltage, this::getAngleRads, this::getVelocityRads);
-        goToState(angle.getRadians(), 0);
+        goToState(angle.getRadians());
     }
 
     public void setFlipped(boolean flipped){

@@ -10,10 +10,11 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.trajectory.Trajectory;
 import frc.lib.util.DCMotorSystemBase.SystemConstants;
 
 import java.util.function.DoubleConsumer;
@@ -23,10 +24,11 @@ public class ArmSystemBase extends SubsystemBase {
     private final LinearSystem<N2, N1, N1> plant;
     private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
-    private TrapezoidProfile profile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(0, 0),
-            new TrapezoidProfile.State(0, 0)
-    );
+    private Trajectory trajectory;
+    private State trajectoryStart, trajectoryEnd;
+    private boolean recalculateTrajectory = false; //whether we need to recalculate the trajectory
+
+
     private boolean followingProfile = false, looping = false;
     private final Timer profileTimer = new Timer();
     private DoubleConsumer voltDriveFunction;
@@ -86,6 +88,10 @@ public class ArmSystemBase extends SubsystemBase {
         this.voltDriveFunction = voltDriveFunction;
         this.getPosition = getPosition;
         this.getVelocity = getVelocity;
+        if(trajectory == null){
+            trajectoryStart = trajectoryEnd = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        }
         looping = true;
     }
 
@@ -124,16 +130,6 @@ public class ArmSystemBase extends SubsystemBase {
     }
 
     /**
-     * set a new trajectory to follow
-     * @param profile The profile to follow
-     */
-    public void setTrajectory(TrapezoidProfile profile) {
-        profileTimer.reset();
-        this.profile = profile;
-        followingProfile = true;
-    }
-
-    /**
      * stop following the current trajectory, but continue holding
      * the current reference
      */
@@ -147,17 +143,37 @@ public class ArmSystemBase extends SubsystemBase {
      * @param velocity The velocity to go to
      */
     public void goToState(double position, double velocity) {
-        //this.positionSetpoint = position; //TODO for testing only
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
         }
-         var profile = new TrapezoidProfile(
-                 new TrapezoidProfile.Constraints(constants.maxVelocity, constants.maxAcceleration),
-                 new TrapezoidProfile.State(position, velocity),
-                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
-         );
-         setTrajectory(profile);
-        followingProfile = true;
+        // 3 different options:
+        // 1. Create a brand new trajectory from the current state to the target state, and reset the timer
+        // 2. Create a trajectory from the current state of the last trajectory to the target state, without resetting the timer
+        // 3. Create a trajectory from the initial state of the last trajectory to the target state, without resetting the timer
+        // we want to do option 1 if we are at the end of the current profile, or the new distance is far away from the current profile
+        // we want to do option 2 if the new distance is close to the current profile, and we are close to the end of the profile
+        // we want to do option 3 if the new distance is close to the current profile, and we are not close to the end of the profile
+
+        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.2){
+            // option 1
+            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryEnd = new State(position, 0);
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+            profileTimer.reset();
+            profileTimer.start();
+            followingProfile = true;
+            recalculateTrajectory = false;
+        } else if(Math.abs(position - trajectoryEnd.position) < 0.2 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
+            // option 2
+            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryEnd = new State(position, 0);
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+            recalculateTrajectory = false;
+        } else {
+            // option 3
+            trajectoryEnd = new State(position, 0);
+            recalculateTrajectory = true;
+        }
     }
 
     /**
@@ -179,40 +195,44 @@ public class ArmSystemBase extends SubsystemBase {
 
     @Override
     public final void periodic() {
-        if(superPeriodic != null) superPeriodic.run();
-        if(!looping) return; // don't run the loop if it's not enabled
+         // run the subsystem's periodic code
+         if(superPeriodic != null) superPeriodic.run();
+         if(!looping) return; // don't run the feedback loop if it's not enabled
 
-        var time = profileTimer.get();
-        double feedforward = 0;
+         var time = profileTimer.get(); // get the time since the profile started
+         double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
 
-        // make sure the timer is running if we're following a profile, reset it if we're not
-        if(followingProfile && time == 0){
-            profileTimer.start();
-        } else if(!followingProfile && time != 0){
-            profileTimer.stop();
+         SmartDashboard.putNumber("DCMotor Velocity", velocity);
+         SmartDashboard.putNumber("DCMotor Position", position);
+         var feedforward = 0.0;
 
-            profileTimer.reset();
-        }
+         if(recalculateTrajectory){
+             trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+             recalculateTrajectory = false;
+         }
 
-//        testProfile.setState(new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble()));
-
-        // if we're following a profile, calculate the next reference and feedforward
-        if(followingProfile){
-             var output = profile.calculate(time);
-//            var output = testProfile.calculate(0.02);
-            setNextR(output.position, output.velocity);
+         // if we're following a profile, calculate the next reference
+         if(followingProfile){
+ //            var output = profile.calculate(time);
+             var output = trajectory.calculate(time + 0.1);
+             setNextR(output.position, output.velocity);
+             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
+             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);
+            //  for (var i : feedforwards) {
+            //      feedforward += i.calculate(output.position, output.velocity);
+            //  }
             feedforward = calculateGravityFeedforward(output.position, output.velocity);
-        } else {
-            feedforward = calculateGravityFeedforward(getPosition.getAsDouble(), getVelocity.getAsDouble());
-        }
-        SmartDashboard.putNumber("arm feedforward", feedforward);
+         } else {
+            feedforward = calculateGravityFeedforward(loop.getXHat(0), loop.getXHat(1));
+         }
 
-        // run the feedback.
-        loop.correct(VecBuilder.fill(getPosition.getAsDouble()));
-        loop.predict(constants.dt);
-        voltDriveFunction.accept(loop.getU(0) + feedforward);
-        //feedforward only (for testing):
-//        voltDriveFunction.accept(feedforward);
+         SmartDashboard.putNumber("Feedforward", feedforward);
+
+         // run the feedback
+         loop.correct(VecBuilder.fill(position));
+         loop.predict(constants.dt);
+
+         voltDriveFunction.accept(loop.getU(0) + feedforward);
     }
 
     public static void main(String args[]){

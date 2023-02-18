@@ -29,13 +29,14 @@ public class DCMotorSystemBase extends SubsystemBase {
 
     private final SystemConstants constants;
 
-    private TrapezoidProfile profile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(0, 0),
-            new TrapezoidProfile.State(0, 0)
-    );
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
-    private Trajectory testMotion;
+
+    //trajectory:
+    private Trajectory trajectory;
+    private State trajectoryStart = new State(0,0), trajectoryEnd = new State(0,0);
+    private boolean recalculateTrajectory = false; //whether we need to recalculate the trajectory
+    private double lookahead = 0; //how far ahead to look in the trajectory (todo may not be used)
 
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
@@ -75,11 +76,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
-        testMotion = Trajectory.trapezoidTrajectory(new State(0,0), new State(0,0), constants.maxVelocity, constants.maxAcceleration);
-        SmartDashboard.putNumber("DCMotor Velocity", 0);
-        SmartDashboard.putNumber("DCMotor Position", 0);
-        SmartDashboard.putNumber("DCMotor Profile Position", 0);
-        SmartDashboard.putNumber("DCMotor Profile Velocity", 0);
+        trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
     }
 
     public void addFeedforward(Feedforward feedforward){
@@ -118,16 +115,6 @@ public class DCMotorSystemBase extends SubsystemBase {
     }
 
     /**
-     * set a new trajectory to follow
-     * @param profile The profile to follow
-     */
-    public void setTrajectory(TrapezoidProfile profile) {
-        profileTimer.reset();
-        this.profile = profile;
-        followingProfile = true;
-    }
-
-    /**
      * stop following the current trajectory, but continue holding
      * the current reference
      */
@@ -141,50 +128,38 @@ public class DCMotorSystemBase extends SubsystemBase {
      * @param position position setpoint
      * @param velocity velocity setpoint
      */
-    public void goToState(double position, double velocity) { //TODO get rid of velocity parameter
+    public void goToState(double position) { //TODO get rid of velocity parameter
         if(!looping){
             throw new IllegalStateException("Cannot set state without enabling loop");
         }
-//        if(Util.epsilonEquals(position, this.profile.calculate(this.profile.totalTime()).position, 0.3)){
-//            if(Util.epsilonEquals(position, this.profile.calculate(profileTimer.get()).position, 0.3)){
-//                followingProfile = false;
-//                setNextR(position, position - getPosition.getAsDouble());
-//            }
-//            return;
-//        }
-        //only follow a new trajectory if the difference between the old and new trajectory is greater
-        //than the error between the current position and the setpoint
-//        if(followingProfile && Math.abs(position - this.profile.calculate(this.profile.totalTime()).position) > Math.abs(position - getPosition.getAsDouble())){
-//            return;
-//        }
-        if(!shouldFollowProfile(position)){
-            return;
-        }
-        var profile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(constants.maxVelocity, constants.maxAcceleration),
-                new TrapezoidProfile.State(position, velocity),
-                new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
-        );
-        followingProfile = true;
-        testMotion = Trajectory.trapezoidTrajectory(
-            new State(loop.getObserver().getXhat(0), loop.getObserver().getXhat(1)),
-            new State(position, velocity),
-            constants.maxVelocity, constants.maxAcceleration
-        );
-        setTrajectory(profile);
-        SmartDashboard.putNumber("DCMotor Setpoint Position", position);
-        SmartDashboard.putNumber("DCMotor Setpoint Velocity", velocity);
-    }
+        // 3 different options:
+        // 1. Create a brand new trajectory from the current state to the target state, and reset the timer
+        // 2. Create a trajectory from the current state of the last trajectory to the target state, without resetting the timer
+        // 3. Create a trajectory from the initial state of the last trajectory to the target state, without resetting the timer
+        // we want to do option 1 if we are at the end of the current profile, or the new distance is far away from the current profile
+        // we want to do option 2 if the new distance is close to the current profile, and we are close to the end of the profile
+        // we want to do option 3 if the new distance is close to the current profile, and we are not close to the end of the profile
 
-    private boolean shouldFollowProfile(double newPosition){
-        // check whether to update with a new trajectory when calling goToState, or just ignore the call.
-        // this is to prevent issues with updating the trajectory every time goToState is called, which can cause
-        // the robot to oscillate around the setpoint.
-        // this is a hacky solution, but it works for now.
-        var currentTrajectoryError = Math.abs(newPosition - this.profile.calculate(this.profile.totalTime()).position);
-        var newTrajectoryError = Math.abs(newPosition - getPosition.getAsDouble());
-        var currentTrajectoryErrorFromNewTrajectory = Math.abs(newPosition - this.profile.calculate(profileTimer.get()).position);
-        return currentTrajectoryErrorFromNewTrajectory > 0.05;
+        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.2){
+            // option 1
+            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryEnd = new State(position, 0);
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+            profileTimer.reset();
+            profileTimer.start();
+            followingProfile = true;
+            recalculateTrajectory = false;
+        } else if(Math.abs(position - trajectoryEnd.position) < 0.2 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
+            // option 2
+            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryEnd = new State(position, 0);
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+            recalculateTrajectory = false;
+        } else {
+            // option 3
+            trajectoryEnd = new State(position, 0);
+            recalculateTrajectory = true;
+        }
     }
 
     /**
@@ -212,26 +187,23 @@ public class DCMotorSystemBase extends SubsystemBase {
         // run the subsystem's periodic code
         if(superPeriodic != null) superPeriodic.run();
         if(!looping) return; // don't run the feedback loop if it's not enabled
+
         var time = profileTimer.get(); // get the time since the profile started
         double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
-
-        // start the profile timer if it's not already running, and stop it if it's done
-        if(followingProfile && time == 0){
-            profileTimer.start();
-        } else if(!followingProfile && time != 0){
-            profileTimer.stop();
-            profileTimer.reset();
-        }
-
-        // testMotion.setCurrentState(position, velocity);//-getVelocity.getAsDouble());
 
         SmartDashboard.putNumber("DCMotor Velocity", velocity);
         SmartDashboard.putNumber("DCMotor Position", position);
         var feedforward = 0.0;
+
+        if(recalculateTrajectory){
+            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+            recalculateTrajectory = false;
+        }
+
         // if we're following a profile, calculate the next reference
         if(followingProfile){
 //            var output = profile.calculate(time);
-            var output = testMotion.calculate(time + 0.02);
+            var output = trajectory.calculate(time + 0.1);
             setNextR(output.position, output.velocity);
             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);

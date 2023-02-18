@@ -268,7 +268,7 @@ public class Supersystem extends SubsystemBase {
     }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();
-    private final boolean PERIODIC_CONTROL_SIMULATION = true;
+    private final boolean PERIODIC_CONTROL_SIMULATION = false;
     @Override
     public void simulationPeriodic(){
         var newSetpoint = new Translation3d(

@@ -22,7 +22,10 @@ import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -48,6 +51,10 @@ public class DriveTrain extends SubsystemBase {
   private final PIDController leftController;
   private final PIDController rightController;
   private final PigeonHelper pigeon;
+
+  //SHIFTING!:
+  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
+  private Gear gear = Gear.HIGH;
 
   //LQR velocity drive:
   //STATES: [left velocity, right velocity]
@@ -304,11 +311,37 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double countsToMeters(double encoderCounts){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / GEARBOX_RATIO_HIGH) * METERS_PER_ROTATION;
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * METERS_PER_ROTATION;
   }
 
   public double metersToCounts(double meters){
-    return ((meters / METERS_PER_ROTATION) * GEARBOX_RATIO_HIGH) * DRIVE_ENCODER_CPR;
+    return ((meters / METERS_PER_ROTATION) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
+  }
+
+  public void setGear(Gear gear){
+    if(gear == this.gear) return;
+    this.gear = gear;
+    if(gear == Gear.LOW){
+      shiftSolenoid.set(Value.kReverse);
+      leftMaster.setInverted(false);
+      rightMaster.setInverted(true);
+    } else {
+      shiftSolenoid.set(Value.kForward);
+      leftMaster.setInverted(true);
+      rightMaster.setInverted(false);
+    }
+  }
+
+  public Gear getGear(){
+    return gear;
+  }
+
+  public double getCurrentGearRatio(){
+    if(gear == Gear.LOW){
+      return GEARBOX_RATIO_LOW;
+    } else {
+      return GEARBOX_RATIO_HIGH;
+    }
   }
 
   //simulation
@@ -328,14 +361,16 @@ public class DriveTrain extends SubsystemBase {
   public void simulationPeriodic(){
     driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
     driveSim.update(0.02);
-    leftMasterSim.setIntegratedSensorRawPosition(-(int)metersToCounts(driveSim.getLeftPositionMeters()));
-    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
-    leftMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
-    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
+    leftMasterSim.setIntegratedSensorRawPosition(-(int)metersToCounts(driveSim.getRightPositionMeters()));
+    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
+    leftMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
+    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
     pigeon.setSimHeading(driveSim.getHeading().getDegrees());
+  }
 
-
-
+  public enum Gear{
+    HIGH,
+    LOW
   }
 }
 

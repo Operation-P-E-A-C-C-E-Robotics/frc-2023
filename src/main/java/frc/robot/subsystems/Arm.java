@@ -22,14 +22,14 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends ArmSystemBase {
+public class Arm extends DCMotorSystemBase {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
-        super(SYSTEM_CONSTANTS, 0, 0);
+        super(SYSTEM_CONSTANTS);
         if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
 //        addFeedforward((double pos, double vel) -> {
@@ -74,7 +74,7 @@ public class Arm extends ArmSystemBase {
     public void setExtension(double meters){
         setpoint = meters;
         enableLoop(this::setVoltage, this::getExtension, this::getVelocity);
-        goToState(meters, 0);
+        goToState(meters);
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){

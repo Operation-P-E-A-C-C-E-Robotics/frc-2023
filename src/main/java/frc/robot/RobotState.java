@@ -83,7 +83,7 @@ public class RobotState {
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
-            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), driveTrain.driveSim.getPose());
+            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         }
 
         var conePose = getConePose().get(new Pose3d());

@@ -32,7 +32,7 @@ public class Turret extends DCMotorSystemBase {
   public Turret() {
     super(SYSTEM_CONSTANTS);
     turretMaster.setInverted(false);
-    if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
+    if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
   }
 
   /**
@@ -65,8 +65,8 @@ public class Turret extends DCMotorSystemBase {
    */
   public void setAngle(Rotation2d angle){
       setpoint = angle.getRadians();
-      enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRadians, this::getAngularVelocityRadians);
-      goToState(angle.getRadians(), 0);
+      enableFeedback();
+      goToState(angle.getRadians());
   }
 
   /**
@@ -135,7 +135,7 @@ public class Turret extends DCMotorSystemBase {
 
   //SIMULATION:
   private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
-  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem(), VecBuilder.fill(0.001, 0.001));
+  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem());
   private  double prevsetpt = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
   @Override
