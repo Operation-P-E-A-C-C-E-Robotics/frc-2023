@@ -1,6 +1,7 @@
 package frc.lib.trajectory;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 
 import java.util.ArrayList;
 
@@ -9,6 +10,7 @@ import static edu.wpi.first.math.trajectory.TrapezoidProfile.*;
 public class Trajectory {
     private Motion[] waypoints;
     private final State initialState;
+    private State finalState;
 
     public Trajectory(State... waypoints){
         this.initialState = waypoints[0];
@@ -16,9 +18,11 @@ public class Trajectory {
         for(int i = 1; i < waypoints.length; i++){
             this.waypoints[i - 1] = Motion.fromState(waypoints[i - 1], waypoints[i]);
         }
+        this.finalState = waypoints[waypoints.length-1];
     }
 
     public State calculate(double time){
+        if(time >= getTotalTime()) return finalState;
         var waypoint = waypoints[0];
         var timeInWaypoint = 0.0;
         var position = initialState.position;
@@ -54,7 +58,6 @@ public class Trajectory {
         var deltaPosition = Math.abs(target.position - current.position);
         var distanceSign = Math.signum(target.position - current.position);
         ArrayList<State> states = new ArrayList<>();
-        Trajectory trajectory;
 
         states.add(current);
 
@@ -66,13 +69,7 @@ public class Trajectory {
 
             //calculate the two trajectories
             var intermediate = new State(current.position + decelerationDistance * Math.signum(current.velocity), 0);
-//            var t1 = Trajectory.trapezoidTrajectory(current, intermediate, maxVelocity, maxAcceleration);
-//            var t2 = Trajectory.trapezoidTrajectory(intermediate, target, maxVelocity, maxAcceleration);
-//
-//            //append the two trajectories
-//            trajectory = t1;
-//            trajectory.append(t2);
-//            return trajectory;
+
             states.add(intermediate);
             current = intermediate;
             deltaPosition += decelerationDistance;

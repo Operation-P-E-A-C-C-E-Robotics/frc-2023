@@ -33,7 +33,7 @@ public class ArcadeDrive extends CommandBase {
   @Override
   public void execute() {
     var forward = Util.handleDeadband(-forwardSupplier.getAsDouble(), 0.04);
-    var rotation = Util.handleDeadband(rotationSupplier.getAsDouble(), 0.04); 
+    var rotation = Util.handleDeadband(-rotationSupplier.getAsDouble(), 0.04);
     driveTrain.arcadeDrive(-forward, rotation);
   }
 }

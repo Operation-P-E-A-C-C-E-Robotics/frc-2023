@@ -11,9 +11,11 @@ import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.trajectory.Trajectory;
 import frc.lib.trajectory.TrapezoidalMotion;
 
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ public class DCMotorSystemBase extends SubsystemBase {
     );
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
-    private TrapezoidalMotion testMotion;
+    private Trajectory testMotion;
 
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
@@ -73,7 +75,7 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
-        testMotion = new TrapezoidalMotion(constants.maxVelocity, constants.maxAcceleration);
+        testMotion = Trajectory.trapezoidTrajectory(new State(0,0), new State(0,0), constants.maxVelocity, constants.maxAcceleration);
         SmartDashboard.putNumber("DCMotor Velocity", 0);
         SmartDashboard.putNumber("DCMotor Position", 0);
         SmartDashboard.putNumber("DCMotor Profile Position", 0);
@@ -162,7 +164,11 @@ public class DCMotorSystemBase extends SubsystemBase {
                 new TrapezoidProfile.State(getPosition.getAsDouble(), getVelocity.getAsDouble())
         );
         followingProfile = true;
-        testMotion.setGoalState(position, velocity);
+        testMotion = Trajectory.trapezoidTrajectory(
+            new State(getPosition.getAsDouble(), getVelocity.getAsDouble()),
+            new State(position, velocity),
+            constants.maxVelocity, constants.maxAcceleration
+        );
         setTrajectory(profile);
     }
 
@@ -202,7 +208,7 @@ public class DCMotorSystemBase extends SubsystemBase {
             profileTimer.reset();
         }
 
-        testMotion.setCurrentState(position, velocity);//-getVelocity.getAsDouble());
+        // testMotion.setCurrentState(position, velocity);//-getVelocity.getAsDouble());
 
         SmartDashboard.putNumber("DCMotor Velocity", velocity);
         SmartDashboard.putNumber("DCMotor Position", position);
@@ -210,7 +216,7 @@ public class DCMotorSystemBase extends SubsystemBase {
         // if we're following a profile, calculate the next reference
         if(followingProfile){
 //            var output = profile.calculate(time);
-            var output = testMotion.calculate(constants.dt);
+            var output = testMotion.calculate(time);
             setNextR(output.position, output.velocity);
             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);
