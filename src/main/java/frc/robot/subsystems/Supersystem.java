@@ -71,11 +71,11 @@ public class Supersystem extends SubsystemBase {
      * set the position of all supersystem joints
      */
     public void setSupersystemState(SupersystemState state){
+        state = Kinematics.optimize(state, getSupersystemState());
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
-
-
+        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
     }
 
     /**

@@ -240,6 +240,58 @@ public class Kinematics {
         );
     }
 
+    /**
+     * Optimize the supersystem state to minimize motions of the joints.
+     * The output of inverse kinematics only allows the turret to rotate
+     * -90 to 90 degrees before flipping. This allows us to use the full travel
+     * of the turret, by flipping the state only once the turret is at the
+     * end of its travel (-270 to 270 degrees).
+     * @param target the target state
+     * @param current the current state
+     * @return the optimized state
+     */
+    public static SupersystemState optimize(SupersystemState target, SupersystemState current){
+        //first, figure out if any optimization is needed at all - if the target is within +/- 90 degrees of the current
+        //turret angle, then we don't need to flip
+        double turretDiff = target.getTurretAngle() - current.getTurretAngle();
+        if(turretDiff > -Math.PI/2 && turretDiff < Math.PI/2){
+            return target;
+        }
+
+        //if we need to flip, then we need to figure out which direction to flip
+        // if our target is in the first quadrant, we need to flip CCW
+        // if our target is in the second quadrant, we need to flip CW
+        boolean flipCCW = target.getTurretAngle() > 0;
+        return flip(target, flipCCW);
+    }
+
+    /**
+     * flip the supersystem state to a
+     * state with the same postion by inverting the lift,
+     * and rotating the turret by 180 degrees
+     * @param state the state to flip
+     * @param direction the direction to flip - true: turret CCW, false: turret CW
+     * @return the flipped state
+     */
+    public static SupersystemState flip(SupersystemState state, boolean direction){
+        return new SupersystemState(
+            state.getTurretAngle() + (direction ? Math.PI : -Math.PI),
+            0-state.getPivotAngle(),
+            state.getArmExtension(),
+            state.getWristAngle()
+        );
+    }
+
+    public static void main(String args[]){
+        //test optimization:
+        SupersystemState target = inverseKinematics(new Translation3d(0.5, 0.5, 0.5),0);
+        SupersystemState current = inverseKinematics(new Translation3d(-0.5, 1, 0.5),0);
+        System.out.println("target: " + target);
+        System.out.println("current: " + current);
+        System.out.println("optimized: " + optimize(target, current));
+        System.out.println("optimized: " + kinematics(optimize(target, current)));
+    }
+
     public static class EndEffectorPosition {
         private final Translation3d endPosition, midPosition;
         public EndEffectorPosition(Translation3d endPosition, Translation3d midPosition){
