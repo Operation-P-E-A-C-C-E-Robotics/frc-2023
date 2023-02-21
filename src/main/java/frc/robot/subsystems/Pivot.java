@@ -28,7 +28,6 @@ import static frc.robot.Constants.Pivot.*;
 
 public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
-  private final WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, BRAKE_SOLENOID_FORWARD, BRAKE_SOLENOID_BACKWARD);
   private final Timer brakeTimer = new Timer();
   private static boolean brakeState = true;
@@ -39,6 +38,7 @@ public class Pivot extends ArmSystemBase {
   public Pivot() {
     super(SYSTEM_CONSTANTS, LENGTH, MASS);
 
+    WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
 
@@ -48,7 +48,8 @@ public class Pivot extends ArmSystemBase {
     setBrakeEnabled(true);
     // brakeSolenoid.initSendable(null);
 
-    if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
+    if(Robot.isSimulation()) {
+      initializeSimulation();
       SmartDashboard.putNumber("pivot setpoint angle", 0);
       SmartDashboard.putNumber("pivot setpoint percent", 0);
     }
@@ -72,23 +73,21 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.set(speed);
   }
 
-  public void setBrakeEnabled(boolean state) {
+  public void setBrakeEnabled(boolean engageBrake) {
       brakeTimer.start();
-      if (state = true){
+      if (engageBrake){
         brakeState = true; //Notify the bool that we are engaging the break so nothing else can move the system
         brakeSolenoid.set(Value.kForward); //Forward = Break On
-      } else if (state=false){
+      } else {
         brakeSolenoid.set(Value.kReverse); //Reverse = Break Off
         if(brakeTimer.hasElapsed(TIME_FOR_BRAKE_TO_ENGAGE)) { //wait for the break to release before allowing other methods to control the motor
           brakeState = false;  //Notify the bool that we are disengaging the break so everything else can move the system
           brakeTimer.stop();
           brakeTimer.reset();
         }
-      } else {
-        brakeState = true; 
-        brakeSolenoid.set(Value.kReverse); //If we recieve an invalid state, put the brake on just in case, this thing is dangerous
       }
-      DashboardManager.getInstance().drawPivotBrakeBool(brakeState);
+      // A boolean can't be anything besides true or false, so the code you put here would have never run.
+//      DashboardManager.getInstance().drawPivotBrakeBool(brakeState); //this function doesn't seem to exist rn, that's why I commented it out.
 
   }
 
@@ -172,67 +171,71 @@ public class Pivot extends ArmSystemBase {
     );
   }
 
-  //SIMULATION: (this code is messy but I don't care)
+  //SIMULATION: (DON'T TOUCH)
   //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
   //I have to figure out how to make it call 0deg straight down.
-  //TODO only initialize these in simulation
-  // private final TalonFXSimCollection turretMotorSim = pivotMaster.getSimCollection();
-  // private final static SingleJointedArmSim pivotSim = new SingleJointedArmSim(
-  //         SYSTEM_CONSTANTS.motor,
-  //         SYSTEM_CONSTANTS.gearing,
-  //         SYSTEM_CONSTANTS.inertia,
-  //         LENGTH,
-  //         -100,
-  //         100,
-  //         MASS,
-  //         true
-  // );
-  // private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
+   private TalonFXSimCollection turretMotorSim;
+   private static SingleJointedArmSim pivotSim;
+   private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
-  // @Override
-  // public void simulationPeriodic() {
-  //   //update the simulation
-  //   pivotSim.setInputVoltage(pivotMaster.get() * RobotController.getBatteryVoltage());
-  //   pivotSim.update(0.02);
-  //   SmartDashboard.putNumber("pivot master output", pivotMaster.get());
 
-  //   //write the simulation data to the motor sim
-  //   //convert angle from sim to encoder tics:
-  //   turretMotorSim.setIntegratedSensorRawPosition(
-  //           (int) Util.rotationsToCounts(
-  //                   //account for the fact that the sim calls -90deg straight down by adding 270deg
-  //                   Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
-  //                   SYSTEM_CONSTANTS.cpr,
-  //                   SYSTEM_CONSTANTS.gearing
-  //           )
-  //   );
-  //   turretMotorSim.setIntegratedSensorVelocity(
-  //           (int) Util.rotationsToCounts(
-  //                   Units.radiansToRotations(pivotSim.getVelocityRadPerSec()),
-  //                   SYSTEM_CONSTANTS.cpr,
-  //                   SYSTEM_CONSTANTS.gearing
-  //           )
-  //   );
+  public void initializeSimulation(){
+    turretMotorSim = pivotMaster.getSimCollection();
+    pivotSim = new SingleJointedArmSim(
+            SYSTEM_CONSTANTS.motor,
+            SYSTEM_CONSTANTS.gearing,
+            SYSTEM_CONSTANTS.inertia,
+            LENGTH,
+            -100,
+            100,
+            MASS,
+            true
+    );
+  }
+   @Override
+   public void simulationPeriodic() {
+     //update the simulation
+     pivotSim.setInputVoltage(pivotMaster.get() * RobotController.getBatteryVoltage());
+     pivotSim.update(0.02);
+     SmartDashboard.putNumber("pivot master output", pivotMaster.get());
+
+     //write the simulation data to the motor sim
+     //convert angle from sim to encoder tics:
+     turretMotorSim.setIntegratedSensorRawPosition(
+             (int) Util.rotationsToCounts(
+                     //account for the fact that the sim calls -90deg straight down by adding 270deg
+                     Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
+                     SYSTEM_CONSTANTS.cpr,
+                     SYSTEM_CONSTANTS.gearing
+             )
+     );
+     turretMotorSim.setIntegratedSensorVelocity(
+             (int) Util.rotationsToCounts(
+                     Units.radiansToRotations(pivotSim.getVelocityRadPerSec()),
+                     SYSTEM_CONSTANTS.cpr,
+                     SYSTEM_CONSTANTS.gearing
+             )
+     );
 
   //   //get new angle setpoint from dashboard
-  //   var angleSetpoint = SmartDashboard.getNumber("pivot setpoint angle", 0);
-  //   if(angleSetpoint != prevAngleSetpoint && PERIODIC_CONTROL_SIMULATION){
-  //     setAngle(Rotation2d.fromDegrees(angleSetpoint));
-  //     prevAngleSetpoint = angleSetpoint;
-  //   }
-  //   //get new percent setpoint from dashboard
-  //   var percentSetpoint = SmartDashboard.getNumber("pivot setpoint percent", 0);
-  //   if(percentSetpoint != prevPercentSetpoint && PERIODIC_CONTROL_SIMULATION){
-  //     setPercent(percentSetpoint);
-  //     prevPercentSetpoint = percentSetpoint;
-  //   }
+     var angleSetpoint = SmartDashboard.getNumber("pivot setpoint angle", 0);
+     if(angleSetpoint != prevAngleSetpoint && PERIODIC_CONTROL_SIMULATION){
+       setAngle(Rotation2d.fromDegrees(angleSetpoint));
+       prevAngleSetpoint = angleSetpoint;
+     }
+     //get new percent setpoint from dashboard
+     var percentSetpoint = SmartDashboard.getNumber("pivot setpoint percent", 0);
+     if(percentSetpoint != prevPercentSetpoint && PERIODIC_CONTROL_SIMULATION){
+       setPercent(percentSetpoint);
+       prevPercentSetpoint = percentSetpoint;
+     }
 
-  //   //update visualization
-  //   DashboardManager.getInstance().drawPivotSim(Units.radiansToDegrees(pivotSim.getAngleRads()));
+     //update visualization
+     DashboardManager.getInstance().drawPivotSim(Units.radiansToDegrees(pivotSim.getAngleRads()));
 
-  //   //write information to dashboard:
-  //   SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
-  //   SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
-  //   SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
-  // }
+     //write information to dashboard:
+     SmartDashboard.putNumber("pivot angle degrees", Math.toDegrees(getAngleRadians()));
+     SmartDashboard.putNumber("pivot angular velocity", getAngularVelocityRadiansPerSecond());
+     SmartDashboard.putNumber("pivot setpoint degrees", Math.toDegrees(setpoint));
+   }
 }
