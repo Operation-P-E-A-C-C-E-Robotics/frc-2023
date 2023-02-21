@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.DankPids;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -23,7 +24,7 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends DCMotorSystemBase {
-    private final WPI_TalonFX armMaster = new WPI_TalonFX(ARM_MASTER); //todo port number
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
@@ -40,6 +41,7 @@ public class Arm extends DCMotorSystemBase {
 //            //calculate voltage needed to counteract force:
 //            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
 //        });
+        DankPids.registerDankTalon(armMaster);
     }
 
     /**

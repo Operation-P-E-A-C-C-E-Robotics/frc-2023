@@ -37,8 +37,13 @@ public class Constraints {
     public static double MAX_Y = 0; //TODO the maximum y value of the robot's end effector (4ft)
     public static double MAX_Z = 0; //TODO the maximum z value of the robot's end effector (max height)
 
-    public static double PIVOT_COLLIDE_EXTENDED = 0; //TODO the angle at which the pivot makes the arm collide with the robot
-    public static double PIVOT_COLLIDE_RETRACTED = 0; //TODO the angle at which the pivot makes the arm collide with the robot
+    // TODO the angle at which the pivot makes the arm collide with the robot,
+    // when the arm is extended.
+    public static double PIVOT_COLLIDE_EXTENDED = 0;
+
+    // TODO the angle at which the pivot makes the arm collide with the robot
+    // when the arm is retracted.
+    public static double PIVOT_COLLIDE_RETRACTED = 0;
 
     /**
      * prevent the arm from extending too far
@@ -71,7 +76,7 @@ public class Constraints {
         //keep the pivot from colliding with the robot
         if(Math.abs(state.getPivotAngle()) > PIVOT_COLLIDE_EXTENDED){
             //if the pivot is within the collision range, move the arm in
-            var newArm = 0; //TODO the arm all the way in.
+            var newArm = Constants.Arm.MIN_EXTENSION; //TODO the arm all the way in.
             double newPivot = state.getPivotAngle();
             if(Math.abs(state.getPivotAngle()) > PIVOT_COLLIDE_RETRACTED){
                 //if the arm will still collide with the robot, keep the pivot at the collision angle

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.DankPids;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -23,7 +24,7 @@ import static frc.robot.Constants.Wrist.*;
 
 public class Wrist extends DCMotorSystemBase {
     private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final DoubleSolenoid wristFlipping = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
+    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();
@@ -36,6 +37,7 @@ public class Wrist extends DCMotorSystemBase {
         this.pivotAngle = pivotAngle;
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
+        DankPids.registerDankTalon(wristMaster);
     }
 
     /**
@@ -64,7 +66,7 @@ public class Wrist extends DCMotorSystemBase {
     }
 
     public void setFlipped(boolean flipped){
-       wristFlipping.set(flipped ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+       wristSolenoid.set(flipped ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
        if (flipped != previousFlipState){
            wristTimer.reset();
            wristTimer.start();

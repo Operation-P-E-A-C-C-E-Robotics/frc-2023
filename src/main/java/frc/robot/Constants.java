@@ -160,8 +160,8 @@ public final class Constants {
     public static final class Wrist {
         //ports
         public static final int WRIST_MOTOR = 15, //TODO Arbitrary number to not conflict
-                        WRIST_FLIP_FORWARD  = 0, //TODO Get PH port
-                        WRIST_FLIP_REVERSE  = 1; //TODO get PH port
+                        WRIST_FLIP_FORWARD  = 2, //TODO Get PH port
+                        WRIST_FLIP_REVERSE  = 3; //TODO get PH port
 
         //constants
         public static final double WRIST_FLIP_TIME = 0.5; //seconds TODO time to flip wrist
