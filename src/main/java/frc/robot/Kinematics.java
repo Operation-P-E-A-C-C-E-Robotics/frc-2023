@@ -2,6 +2,8 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+import frc.lib.util.Util;
 import frc.robot.subsystems.Supersystem;
 
 import static frc.robot.Constants.Kinematics.PIVOT_HEIGHT;
@@ -251,18 +253,35 @@ public class Kinematics {
      * @return the optimized state
      */
     public static SupersystemState optimize(SupersystemState target, SupersystemState current){
-        //first, figure out if any optimization is needed at all - if the target is within +/- 90 degrees of the current
-        //turret angle, then we don't need to flip
-        double turretDiff = target.getTurretAngle() - current.getTurretAngle();
-        if(turretDiff > -Math.PI/2 && turretDiff < Math.PI/2){
+        // figure out what multiple of 180 degrees to add to get us closest to the current state:
+        double turret = target.getTurretAngle();
+        double pivot = target.getPivotAngle();
+        int flips = (int) Math.round((current.getTurretAngle() - turret) / (Math.PI));
+        System.out.println(flips);
+        // flip flips number of times:
+        for(int i = 0; i < Math.abs(flips); i++){
+            turret += Math.PI * Math.signum(flips);
+            pivot = -pivot;
+        }
+        if(!Util.inRange(turret, Units.degreesToRadians(270))) return target;
+        //check if flipped state is closer to current state:
+        var flippedState = new SupersystemState(turret, pivot, target.getArmExtension(), target.getWristAngle());
+        System.out.println("flipped: " + flippedState);
+        if(timeToMove(flippedState, current) < timeToMove(target, current)){
+            return flippedState;
+        } else {
             return target;
         }
+    }
 
-        //if we need to flip, then we need to figure out which direction to flip
-        // if our target is in the first quadrant, we need to flip CCW
-        // if our target is in the second quadrant, we need to flip CW
-        boolean flipCCW = target.getTurretAngle() > 0;
-        return flip(target, flipCCW);
+    private static final double TURRET_VELOCITY = 0.5;
+    private static final double PIVOT_VELOCITY = 0.5;
+    private static double timeToMove(SupersystemState target, SupersystemState current){
+        double deltaTurret = Math.abs(target.getTurretAngle() - current.getTurretAngle());
+        double deltaPivot = Math.abs(target.getPivotAngle() - current.getPivotAngle());
+        double maxTime = deltaTurret / TURRET_VELOCITY;
+        maxTime = Math.max(maxTime, deltaPivot / PIVOT_VELOCITY);
+        return maxTime;
     }
 
     /**
@@ -284,8 +303,8 @@ public class Kinematics {
 
     public static void main(String args[]){
         //test optimization:
-        SupersystemState target = inverseKinematics(new Translation3d(0.5, 0.5, 0.5),0);
-        SupersystemState current = inverseKinematics(new Translation3d(-0.5, 1, 0.5),0);
+        SupersystemState target = new SupersystemState(Units.degreesToRadians(90), -1, 1, 0);
+        SupersystemState current = new SupersystemState(Units.degreesToRadians(270), -1, 1, 0);
         System.out.println("target: " + target);
         System.out.println("current: " + current);
         System.out.println("optimized: " + optimize(target, current));
