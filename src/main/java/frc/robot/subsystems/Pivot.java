@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -39,11 +40,15 @@ public class Pivot extends ArmSystemBase {
     super(SYSTEM_CONSTANTS, LENGTH, MASS);
 
     WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
+
+    pivotMaster.setNeutralMode(NeutralMode.Brake);
+    pivotSlave.setNeutralMode(NeutralMode.Brake);
+
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
 
     pivotMaster.setInverted(false);
-    pivotSlave.setInverted(InvertType.FollowMaster);
+    pivotSlave.setInverted(InvertType.OpposeMaster);
 
     setBrakeEnabled(true);
     // brakeSolenoid.initSendable(null);
@@ -103,6 +108,7 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.setVoltage(volts);
   }
 
+
   /**
    * set the pivot angle - positive values move towards the front of the robot.
    * this enables feedback control.
@@ -158,7 +164,7 @@ public class Pivot extends ArmSystemBase {
     return getRotation().getRadians();
   }
 
- 
+
 
   /**
    * get the current angular velocity of the pivot.
