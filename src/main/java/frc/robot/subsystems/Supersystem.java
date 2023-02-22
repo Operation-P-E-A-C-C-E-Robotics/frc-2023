@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
 import frc.robot.Robot;
@@ -78,11 +79,19 @@ public class Supersystem extends SubsystemBase {
         wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
     }
 
+    public boolean withinTolerance(Constants.SupersystemTolerance tolerance){
+        return arm.withinTolerance(tolerance)
+            && pivot.withinTolerance(tolerance)
+            && turret.withinTolerance(tolerance)
+            && wrist.withinTolerance(tolerance);
+    }
+
     /**
      * set the position of the end of the lift
      * @param position position from the center of the robot
      */
     public void setSupersystemPosition(Translation3d position){
+        //TODO set the wrist angle to be parralel to the ground on the right side, when no other angle is given.
         setSupersystemState(Kinematics.inverseKinematics(position, wrist.getAngle().getRadians()));
     }
 
@@ -215,6 +224,16 @@ public class Supersystem extends SubsystemBase {
                 state.getArmExtension(),
                 position.getRadians()
         ));
+        return this;
+    }
+
+    public Supersystem addTurretOffset(double offset){
+        setTurret(new Rotation2d(getSupersystemState().getTurretAngle() + offset));
+        return this;
+    }
+
+    public Supersystem addArmOffset(double offset){
+        setLift(getSupersystemState().getArmExtension() + offset);
         return this;
     }
 

@@ -7,9 +7,7 @@
 
 package frc.lib.util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -25,6 +23,14 @@ public class AllianceFlipUtil {
     public static Translation2d apply(Translation2d translation) {
         if (shouldFlip()) {
             return new Translation2d(FieldConstants.fieldLength - translation.getX(), translation.getY());
+        } else {
+            return translation;
+        }
+    }
+
+    public static Translation3d apply(Translation3d translation) {
+        if (shouldFlip()) {
+            return new Translation3d(FieldConstants.fieldLength - translation.getX(), translation.getY(), translation.getZ());
         } else {
             return translation;
         }
