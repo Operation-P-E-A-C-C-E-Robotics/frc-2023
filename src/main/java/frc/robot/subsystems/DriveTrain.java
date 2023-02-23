@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
+import frc.lib.util.DankPids;
 import frc.lib.util.DriveSignal;
 import static frc.robot.Constants.DriveTrain.*;
 
@@ -124,6 +125,10 @@ public class DriveTrain extends SubsystemBase {
     rightController = new PIDController(kP, kI, kD);
 
     driveLQR.latencyCompensate(drivePlant, 0.02, 0); //TODO
+    DankPids.registerDankTalon(leftMaster);
+    DankPids.registerDankTalon(rightMaster);
+    DankPids.registerDankTalon(leftSlave);
+    DankPids.registerDankTalon(rightSlave);
   }
 
   /**
@@ -243,6 +248,10 @@ public class DriveTrain extends SubsystemBase {
    */
   public double getRightVelocity(){
     return countsToMeters(rightMaster.getSelectedSensorVelocity());
+  }
+
+  public double getAverageVelocity(){
+    return (getLeftVelocity() + getRightVelocity()) / 2;
   }
 
   /**

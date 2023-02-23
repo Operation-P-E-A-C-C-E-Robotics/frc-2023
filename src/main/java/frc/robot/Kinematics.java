@@ -257,48 +257,26 @@ public class Kinematics {
         double turret = target.getTurretAngle();
         double pivot = target.getPivotAngle();
         int flips = (int) Math.round((current.getTurretAngle() - turret) / (Math.PI));
-        System.out.println(flips);
+
         // flip flips number of times:
         for(int i = 0; i < Math.abs(flips); i++){
             turret += Math.PI * Math.signum(flips);
             pivot = -pivot;
         }
+        // if we move too far, return the original state:
         if(!Util.inRange(turret, Units.degreesToRadians(270))) return target;
-        //check if flipped state is closer to current state:
+
+        //return whichever state is closer to the current state:
         var flippedState = new SupersystemState(turret, pivot, target.getArmExtension(), target.getWristAngle());
-        System.out.println("flipped: " + flippedState);
-        if(timeToMove(flippedState, current) < timeToMove(target, current)){
-            return flippedState;
-        } else {
-            return target;
-        }
+        return timeToMove(flippedState, current) < timeToMove(target, current) ? flippedState : target;
     }
 
     private static final double TURRET_VELOCITY = 0.5;
     private static final double PIVOT_VELOCITY = 0.5;
     private static double timeToMove(SupersystemState target, SupersystemState current){
-        double deltaTurret = Math.abs(target.getTurretAngle() - current.getTurretAngle());
-        double deltaPivot = Math.abs(target.getPivotAngle() - current.getPivotAngle());
-        double maxTime = deltaTurret / TURRET_VELOCITY;
-        maxTime = Math.max(maxTime, deltaPivot / PIVOT_VELOCITY);
-        return maxTime;
-    }
-
-    /**
-     * flip the supersystem state to a
-     * state with the same postion by inverting the lift,
-     * and rotating the turret by 180 degrees
-     * @param state the state to flip
-     * @param direction the direction to flip - true: turret CCW, false: turret CW
-     * @return the flipped state
-     */
-    public static SupersystemState flip(SupersystemState state, boolean direction){
-        return new SupersystemState(
-            state.getTurretAngle() + (direction ? Math.PI : -Math.PI),
-            0-state.getPivotAngle(),
-            state.getArmExtension(),
-            state.getWristAngle()
-        );
+        var deltaTurret = Math.abs(target.getTurretAngle() - current.getTurretAngle());
+        var deltaPivot = Math.abs(target.getPivotAngle() - current.getPivotAngle());
+        return Math.max(deltaTurret / TURRET_VELOCITY, deltaPivot / PIVOT_VELOCITY);
     }
 
     public static void main(String args[]){

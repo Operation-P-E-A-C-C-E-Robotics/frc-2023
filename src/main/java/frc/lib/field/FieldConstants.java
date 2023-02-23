@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -20,7 +22,6 @@ import java.util.Map;
  * of corners start in the lower left moving clockwise.
  *
  * <p>All translations and poses are stored with the origin at the rightmost point on the BLUE
- * ALLIANCE wall. Use the {@link #allianceFlip(Translation2d)} and {@link #allianceFlip(Pose2d)}
  * methods to flip these values based on the current alliance color.
  */
 public final class FieldConstants {
@@ -106,6 +107,11 @@ public final class FieldConstants {
         public static final Translation3d[] mid3dTranslations = new Translation3d[nodeRowCount];
         public static final Translation2d[] highTranslations = new Translation2d[nodeRowCount];
         public static final Translation3d[] high3dTranslations = new Translation3d[nodeRowCount];
+        public static final ArrayList<Translation3d> midCubeTranslations = new ArrayList<>();
+        public static final ArrayList<Translation3d> midConeTranslations = new ArrayList<>();
+        public static final ArrayList<Translation3d> highCubeTranslations = new ArrayList<>();
+        public static final ArrayList<Translation3d> highConeTranslations = new ArrayList<>();
+        public static final ArrayList<Translation3d> lowTranslations3d = new ArrayList<>();
 
         static {
             for (int i = 0; i < nodeRowCount; i++) {
@@ -118,7 +124,28 @@ public final class FieldConstants {
                         new Translation3d(
                                 highX, nodeFirstY + nodeSeparationY * i, isCube ? highCubeZ : highConeZ);
                 highTranslations[i] = new Translation2d(highX, nodeFirstY + nodeSeparationY * i);
+                if(isCube){
+                    midCubeTranslations.add(mid3dTranslations[i]);
+                    highCubeTranslations.add(high3dTranslations[i]);
+                } else {
+                    midConeTranslations.add(mid3dTranslations[i]);
+                    highConeTranslations.add(high3dTranslations[i]);
+                }
+                lowTranslations3d.add(new Translation3d(lowTranslations[i].getX(), lowTranslations[i].getY(), 0.0));
             }
+        }
+
+        public static Translation3d getNearestNode(Translation3d robotTranslation, ArrayList<Translation3d> nodes){
+            Translation3d nearestNode = nodes.get(0);
+            double nearestDistance = robotTranslation.getDistance(nearestNode);
+            for(Translation3d node : nodes){
+                double distance = robotTranslation.getDistance(node);
+                if(distance < nearestDistance){
+                    nearestDistance = distance;
+                    nearestNode = node;
+                }
+            }
+            return nearestNode;
         }
 
         // Complex low layout (shifted to account for cube vs cone rows and wide edge nodes)

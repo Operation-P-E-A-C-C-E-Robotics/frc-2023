@@ -48,6 +48,23 @@ public class RobotState {
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
 
+    public static final double PLACE_DISTANCE = 2; //TODO meters
+    public static final double PLACE_MAX_VELOCITY = 0.1; //TODO meters per second
+
+    /**
+     * determine whether the drivetrain is near enough a target to start placing or intaking
+     * the drivetrain also needs to not be moving too fast.
+     * @param target target to check
+     * @return whether the drivetrain is near enough a target to start placing or intaking
+     */
+    public boolean inRangeOfTarget(Translation2d target){
+        var pose = getOdometryPose().getTranslation();
+        var distanceToTarget = pose.minus(target).getNorm();
+        var distanceOkay = distanceToTarget < PLACE_DISTANCE;
+        var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < PLACE_MAX_VELOCITY;
+        return distanceOkay && velocityOkay;
+    }
+
     public Value<Pose3d> getConePose(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();

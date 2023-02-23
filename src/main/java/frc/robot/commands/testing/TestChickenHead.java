@@ -51,23 +51,21 @@ public class TestChickenHead extends CommandBase {
     public void execute(){
         System.out.println("CHICKEN HEAD ENGAGED!");
         //get teh current position of the end effector
-//        var currentEndEffector = new Pose3d(supersystem.getKinematics().getSupersystemPosition(), new Rotation3d());
-//        var current = robotState.drivetrainToField(robotState.turretToDrivetrain(robotState.endEffectorToTurret(currentEndEffector)));
+        var currentEndEffector = new Pose3d(supersystem.getKinematics().getSupersystemPosition(), new Rotation3d());
+        var current = robotState.drivetrainToField(robotState.turretToDrivetrain(robotState.endEffectorToTurret(currentEndEffector)));
         SmartDashboard.putNumber("arm extension", arm.getExtension());
         SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
         SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
-//        SmartDashboard.putNumber("x", current.getX());
-//        SmartDashboard.putNumber("y", current.getY());
-//        SmartDashboard.putNumber("z", current.getZ());
+        SmartDashboard.putNumber("x", current.getX());
+        SmartDashboard.putNumber("y", current.getY());
+        SmartDashboard.putNumber("z", current.getZ());
         x += testJoystick.getRawAxis(0) * SENSITIVITY;
         y += testJoystick.getRawAxis(1) * SENSITIVITY;
         z += testJoystick.getRawAxis(2) * SENSITIVITY;
         var target = new Pose3d(new Translation3d(x, y, z), new Rotation3d());
         var targetRelativeToEndOfArm = robotState.fieldToDrivetrain(target);
-        // targetRelativeToEndOfArm = robotState.drivetrainToTurret(targetRelativeToEndOfArm);
-        // targetRelativeToEndOfArm = robotState.turretToEndEffector(targetRelativeToEndOfArm);
         supersystem.setSupersystemPosition(targetRelativeToEndOfArm.getTranslation());
     }
 }

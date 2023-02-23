@@ -8,5 +8,5 @@
     <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../../../javadoc test" />
     <option name="OPTION_INCLUDE_LIBS" value="true" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="17" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_14" project-jdk-name="17" project-jdk-type="JavaSDK" />
 </project>

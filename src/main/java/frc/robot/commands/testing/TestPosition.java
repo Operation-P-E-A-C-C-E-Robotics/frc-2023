@@ -44,19 +44,19 @@ public class TestPosition extends CommandBase {
 
     @Override
     public void execute(){
-        // System.out.println("Testing position control - executing");
-        // SmartDashboard.putNumber("arm extension", arm.getExtension());
-        // SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
-        // SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
-        // SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
-        // SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
-        // var armSetpoint = SmartDashboard.getNumber("arm setpoint", arm.getExtension());
-        // var pivotSetpoint = SmartDashboard.getNumber("pivot setpoint (deg)", pivot.getAngleRadians());
-        var turretSetpoint = prevsetpt + (testJoystick.getX()*4);
-        // var wristSetpoint = SmartDashboard.getNumber("wrist setpoint (deg)", wrist.getAngle().getDegrees());
-        // var flipWrist = SmartDashboard.getBoolean("flip wrist", false);
-        // arm.setExtension(armSetpoint);
-        // pivot.setAngle(Rotation2d.fromDegrees(pivotSetpoint));
+         System.out.println("Testing position control - executing");
+         SmartDashboard.putNumber("arm extension", arm.getExtension());
+         SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
+         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
+         SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
+         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
+         var armSetpoint = SmartDashboard.getNumber("arm setpoint", arm.getExtension());
+         var pivotSetpoint = SmartDashboard.getNumber("pivot setpoint (deg)", pivot.getAngleRadians());
+        var turretSetpoint = SmartDashboard.getNumber("TURRRETTTTT", 0);
+         var wristSetpoint = SmartDashboard.getNumber("wrist setpoint (deg)", wrist.getAngle().getDegrees());
+         var flipWrist = SmartDashboard.getBoolean("flip wrist", false);
+         arm.setExtension(armSetpoint);
+         pivot.setAngle(Rotation2d.fromDegrees(pivotSetpoint));
         if(turretSetpoint != prevsetpt){
             turret.setAngle(Rotation2d.fromDegrees(turretSetpoint));
             prevsetpt = turretSetpoint;

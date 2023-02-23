@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.DankPids;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -33,6 +34,7 @@ public class Turret extends DCMotorSystemBase {
     super(SYSTEM_CONSTANTS);
     turretMaster.setInverted(false);
     if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
+    DankPids.registerDankTalon(turretMaster);
   }
 
   /**

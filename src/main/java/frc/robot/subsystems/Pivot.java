@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.DankPids;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -67,6 +68,8 @@ public class Pivot extends ArmSystemBase {
 //      //calculate voltage needed to counteract force:
 //      return (SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12.0);
 //    });
+    DankPids.registerDankTalon(pivotMaster);
+    DankPids.registerDankTalon(pivotSlave);
   }
 
   /**
