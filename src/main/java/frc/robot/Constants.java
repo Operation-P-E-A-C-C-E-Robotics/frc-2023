@@ -95,8 +95,8 @@ public final class Constants {
 
     public static final class Pivot{
         //port numbers
-        public static final int PIVOT_MASTER = 8, //DOCS Pivot Falcon 0
-                                PIVOT_SLAVE  = 9, //DOCS Pivot Falcon 1
+        public static final int PIVOT_MASTER = 9, //DOCS Pivot Falcon 0
+                                PIVOT_SLAVE  = 10, //DOCS Pivot Falcon 1
                       BRAKE_SOLENOID_FORWARD = 5,
                      BRAKE_SOLENOID_BACKWARD = 6;
         //constraints
