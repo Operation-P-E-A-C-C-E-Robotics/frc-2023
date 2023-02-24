@@ -130,7 +130,7 @@ public final class Constants {
 
     public static final class Arm {
         //ports
-        public static final int MASTER_PORT = 95; //TODO Arbitrary number to not conflict
+        public static final int MASTER_PORT = 12; //DOCS IGUS Extension Falcon 0 //TODO is this the right motor
 
         //physical constants
         public static final double  CARRAIGE_MASS = 5, //kg
@@ -159,7 +159,7 @@ public final class Constants {
 
     public static final class Wrist {
         //ports
-        public static final int WRIST_MOTOR = 15, //TODO Arbitrary number to not conflict
+        public static final int WRIST_MOTOR = 13, //DOCS Wrist Falcon 0
                         WRIST_FLIP_FORWARD  = 2, //TODO Get PH port
                         WRIST_FLIP_REVERSE  = 3; //TODO get PH port
 

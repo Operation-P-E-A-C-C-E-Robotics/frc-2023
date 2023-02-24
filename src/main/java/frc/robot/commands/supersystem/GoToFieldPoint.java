@@ -9,9 +9,11 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.Supersystem;
 
+import java.util.function.Supplier;
+
 public class GoToFieldPoint extends CommandBase {
     private final Supersystem supersystem;
-    private Translation3d targetLocation;
+    private Supplier<Translation3d> targetLocation;
     private final Constants.SupersystemTolerance tolerance;
     private final RobotState robotState;
     private final boolean stopWhenInTolerance;
@@ -21,7 +23,7 @@ public class GoToFieldPoint extends CommandBase {
      * It will end when the supersystem is within tolerance of the target.
      */
     public GoToFieldPoint(Supersystem supersystem,
-                          Translation3d targetLocation,
+                          Supplier<Translation3d> targetLocation,
                           Constants.SupersystemTolerance tolerance,
                           RobotState robotState,
                           boolean stopWhenInTolerance) {
@@ -33,15 +35,11 @@ public class GoToFieldPoint extends CommandBase {
         addRequirements(supersystem.getRequirements());
     }
 
-    public void updateTargetLocation(Translation3d targetLocation){
-        this.targetLocation = targetLocation;
-    }
-
     @Override
     public void execute(){
-        if(!robotState.inRangeOfTarget(new Translation2d(targetLocation.getX(), targetLocation.getY()))) return;
-        var drivetrainRelativeTarget = robotState.fieldToDrivetrain(new Pose3d(targetLocation, new Rotation3d()));
-        supersystem.setSupersystemPosition(drivetrainRelativeTarget.getTranslation());
+        var target = targetLocation.get();
+        if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
+        supersystem.setPlacePositionFieldRelative(target, robotState);
     }
 
     @Override

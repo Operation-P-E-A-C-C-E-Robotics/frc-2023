@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -11,6 +8,7 @@ import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
 import frc.robot.Robot;
+import frc.robot.RobotState;
 
 //TODO change to use RobotState
 public class Supersystem extends SubsystemBase {
@@ -129,10 +127,10 @@ public class Supersystem extends SubsystemBase {
      * @param height the height above the field translation
      * @param wristAngle the angle of the wrist - 0 is straight up.
      */
-    public void setPlacePositionFieldRelative(Translation2d position, Pose2d robotPose, double height, Rotation2d wristAngle){
-        var difference = position.minus(robotPose.getTranslation());
-        difference = difference.rotateBy(robotPose.getRotation().unaryMinus()); //TODO positive or negative rotation?
-        setPlacePosition(new Translation3d(difference.getX(), position.getY(), height), wristAngle);
+    public void setPlacePositionFieldRelative(Translation3d position, RobotState robotState){
+        var drivetrainRelativePosition = robotState.fieldToDrivetrain(new Pose3d(position, new Rotation3d()));
+        setPlacePosition(drivetrainRelativePosition.getTranslation(), new Rotation2d());
+        setWristParallelToGround();
     }
 
     /**
@@ -224,6 +222,17 @@ public class Supersystem extends SubsystemBase {
                 state.getArmExtension(),
                 position.getRadians()
         ));
+        return this;
+    }
+
+    /**
+     * set the wrist angle to be parallel to the ground on the correct side, when no other angle is given.
+     * @return this
+     */
+    public Supersystem setWristParallelToGround(){
+        var pivot = getSupersystemState().getPivotAngle();
+        var newWrist = Math.PI/2 * Math.signum(pivot) +  pivot;
+        setWrist(new Rotation2d(newWrist));
         return this;
     }
 
