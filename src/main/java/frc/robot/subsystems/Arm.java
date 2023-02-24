@@ -4,21 +4,11 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.util.ArmSystemBase;
 import frc.lib.util.DCMotorSystemBase;
-import frc.lib.util.DankPids;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
-import frc.robot.DashboardManager;
-import frc.robot.Robot;
-
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Arm.*;
@@ -31,7 +21,7 @@ public class Arm extends DCMotorSystemBase {
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
         super(SYSTEM_CONSTANTS);
-        if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
+        // if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
 //        addFeedforward((double pos, double vel) -> {
 //            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
@@ -41,7 +31,7 @@ public class Arm extends DCMotorSystemBase {
 //            //calculate voltage needed to counteract force:
 //            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
 //        });
-        DankPids.registerDankTalon(armMaster);
+        // DankPids.registerDankTalon(armMaster);
     }
 
     /**
@@ -88,34 +78,34 @@ public class Arm extends DCMotorSystemBase {
     }
 
 
-    //SIMULATION:
-    private final ElevatorSim armSim = new ElevatorSim(
-            SYSTEM_CONSTANTS.motor,
-            SYSTEM_CONSTANTS.gearing,
-            CARRAIGE_MASS,
-            1,
-            MIN_EXTENSION,
-            MAX_EXTENSION,
-            false,
-            VecBuilder.fill(0)
-    );
-    private final TalonFXSimCollection armMotorSim = armMaster.getSimCollection();
-    double prevSetpoint = 0;
-    private final boolean PERIODIC_CONTROL_SIMULATION = false;
-    @Override
-    public void simulationPeriodic(){
-        //update with setpoint from dashboard:
-        setpoint = SmartDashboard.getNumber("arm setpoint", 0);
-        if(setpoint != prevSetpoint && PERIODIC_CONTROL_SIMULATION){
-            setExtension(setpoint);
-            prevSetpoint = setpoint;
-        }
+    // //SIMULATION:
+    // private final ElevatorSim armSim = new ElevatorSim(
+    //         SYSTEM_CONSTANTS.motor,
+    //         SYSTEM_CONSTANTS.gearing,
+    //         CARRAIGE_MASS,
+    //         1,
+    //         MIN_EXTENSION,
+    //         MAX_EXTENSION,
+    //         false,
+    //         VecBuilder.fill(0)
+    // );
+    // private final TalonFXSimCollection armMotorSim = armMaster.getSimCollection();
+    // double prevSetpoint = 0;
+    // private final boolean PERIODIC_CONTROL_SIMULATION = false;
+    // @Override
+    // public void simulationPeriodic(){
+    //     //update with setpoint from dashboard:
+    //     setpoint = SmartDashboard.getNumber("arm setpoint", 0);
+    //     if(setpoint != prevSetpoint && PERIODIC_CONTROL_SIMULATION){
+    //         setExtension(setpoint);
+    //         prevSetpoint = setpoint;
+    //     }
 
-        armSim.setInputVoltage(armMaster.get() * RobotController.getBatteryVoltage());
-        armSim.update(0.02);
-        armMotorSim.setIntegratedSensorRawPosition((int) Util.rotationsToCounts(armSim.getPositionMeters(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
-        armMotorSim.setIntegratedSensorVelocity((int) Util.rotationsToCounts(armSim.getVelocityMetersPerSecond(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+    //     armSim.setInputVoltage(armMaster.get() * RobotController.getBatteryVoltage());
+    //     armSim.update(0.02);
+    //     armMotorSim.setIntegratedSensorRawPosition((int) Util.rotationsToCounts(armSim.getPositionMeters(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
+    //     armMotorSim.setIntegratedSensorVelocity((int) Util.rotationsToCounts(armSim.getVelocityMetersPerSecond(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing));
 
-        DashboardManager.getInstance().drawArmSim(armSim.getPositionMeters() * 150);
-    }
+    //     DashboardManager.getInstance().drawArmSim(armSim.getPositionMeters() * 150);
+    // }
 }

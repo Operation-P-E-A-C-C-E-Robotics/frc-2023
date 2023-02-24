@@ -2,8 +2,6 @@ package frc.lib.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
-
 import java.util.ArrayList;
 import java.util.List;
 

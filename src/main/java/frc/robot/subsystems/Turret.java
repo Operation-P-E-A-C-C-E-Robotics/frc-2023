@@ -4,26 +4,16 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.util.DCMotorSystemBase;
-import frc.lib.util.DankPids;
-import frc.lib.util.Util;
-import frc.robot.Constants.SupersystemTolerance;
-import frc.robot.DashboardManager;
-import frc.robot.Robot;
-
 import static frc.robot.Constants.Turret.MOTOR_PORT;
 import static frc.robot.Constants.Turret.SYSTEM_CONSTANTS;
+
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.Util;
+import frc.robot.Constants.SupersystemTolerance;
 
 public class Turret extends DCMotorSystemBase {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
@@ -33,9 +23,10 @@ public class Turret extends DCMotorSystemBase {
   public Turret() {
     super(SYSTEM_CONSTANTS);
     turretMaster.setInverted(false);
-    if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
-    DankPids.registerDankTalon(turretMaster);
+    // if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
+    // DankPids.registerDankTalon(turretMaster);
   }
+
 
   /**
    * set the turret speed, Positive Values should be Counter Clock Wise
@@ -136,39 +127,39 @@ public class Turret extends DCMotorSystemBase {
   }
 
   //SIMULATION:
-  private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
-  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem());
-  private  double prevsetpt = 0;
-  private final boolean PERIODIC_CONTROL_SIMULATION = false;
-  @Override
-  public void simulationPeriodic() {
-    turretMotorSim.setIntegratedSensorRawPosition(
-            (int)Util.rotationsToCounts(
-                    Units.radiansToRotations(
-                            turretSim.getOutput(0)
-                    ),
-                    SYSTEM_CONSTANTS.cpr,
-                    SYSTEM_CONSTANTS.gearing
-            )
-    );
-    turretMotorSim.setIntegratedSensorVelocity(
-            (int)Util.rotationsToCounts(
-              Units.radiansToRotations(
-                      turretSim.getOutput(1)
-              ),
-            SYSTEM_CONSTANTS.cpr,
-            SYSTEM_CONSTANTS.gearing
-            )
-    );
-    var setpt = SmartDashboard.getNumber("turret setpoint", 0);
-    if(setpt != prevsetpt && PERIODIC_CONTROL_SIMULATION) setAngle(Rotation2d.fromDegrees(setpt));
-    prevsetpt = setpt;
-    turretSim.setInput(turretMaster.get() * RobotController.getBatteryVoltage());
-    turretSim.update(0.02);
-    //print the turret angle to smartdashboard:
-    SmartDashboard.putNumber("turret angle", getAngle().getDegrees());
-//    turretLigament.setAngle(getAngle());
-    DashboardManager.getInstance().drawTurretSim(getAngle().getDegrees());
-  }
+//   private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
+//   private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem());
+//   private  double prevsetpt = 0;
+//   private final boolean PERIODIC_CONTROL_SIMULATION = false;
+//   @Override
+//   public void simulationPeriodic() {
+//     turretMotorSim.setIntegratedSensorRawPosition(
+//             (int)Util.rotationsToCounts(
+//                     Units.radiansToRotations(
+//                             turretSim.getOutput(0)
+//                     ),
+//                     SYSTEM_CONSTANTS.cpr,
+//                     SYSTEM_CONSTANTS.gearing
+//             )
+//     );
+//     turretMotorSim.setIntegratedSensorVelocity(
+//             (int)Util.rotationsToCounts(
+//               Units.radiansToRotations(
+//                       turretSim.getOutput(1)
+//               ),
+//             SYSTEM_CONSTANTS.cpr,
+//             SYSTEM_CONSTANTS.gearing
+//             )
+//     );
+//     var setpt = SmartDashboard.getNumber("turret setpoint", 0);
+//     if(setpt != prevsetpt && PERIODIC_CONTROL_SIMULATION) setAngle(Rotation2d.fromDegrees(setpt));
+//     prevsetpt = setpt;
+//     turretSim.setInput(turretMaster.get() * RobotController.getBatteryVoltage());
+//     turretSim.update(0.02);
+//     //print the turret angle to smartdashboard:
+//     SmartDashboard.putNumber("turret angle", getAngle().getDegrees());
+// //    turretLigament.setAngle(getAngle());
+//     DashboardManager.getInstance().drawTurretSim(getAngle().getDegrees());
+//   }
 
 }

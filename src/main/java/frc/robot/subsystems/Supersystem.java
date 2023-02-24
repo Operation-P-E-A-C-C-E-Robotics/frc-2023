@@ -4,13 +4,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
-import frc.robot.Robot;
 
 //TODO change to use RobotState
 public class Supersystem extends SubsystemBase {
@@ -33,11 +31,11 @@ public class Supersystem extends SubsystemBase {
         this.turret = turret;
         this.wrist = wrist;
         kinematics = new Kinematics(this);
-        if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
-            SmartDashboard.putNumber("supersystem test x", 0);
-            SmartDashboard.putNumber("supersystem test y", 0);
-            SmartDashboard.putNumber("supersystem test z", 0);
-        }
+        // if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
+        //     SmartDashboard.putNumber("supersystem test x", 0);
+        //     SmartDashboard.putNumber("supersystem test y", 0);
+        //     SmartDashboard.putNumber("supersystem test z", 0);
+        // }
     }
 
     /**
@@ -285,19 +283,19 @@ public class Supersystem extends SubsystemBase {
     public Subsystem[] getRequirements(){
         return new Subsystem[]{this, turret, pivot, wrist, arm};
     }
-    //SIMULATION TESTING:
-    Translation3d previousTestSetpoint = new Translation3d();
-    private final boolean PERIODIC_CONTROL_SIMULATION = false;
-    @Override
-    public void simulationPeriodic(){
-        var newSetpoint = new Translation3d(
-                SmartDashboard.getNumber("supersystem test x", 0),
-                SmartDashboard.getNumber("supersystem test y", 0),
-                SmartDashboard.getNumber("supersystem test z", 0)
-        );
-        if(!newSetpoint.equals(previousTestSetpoint) && PERIODIC_CONTROL_SIMULATION) {
-            setPlacePosition(newSetpoint, new Rotation2d());
-            previousTestSetpoint = newSetpoint;
-        }
-    }
+    // //SIMULATION TESTING:
+    // Translation3d previousTestSetpoint = new Translation3d();
+    // private final boolean PERIODIC_CONTROL_SIMULATION = false;
+    // @Override
+    // public void simulationPeriodic(){
+    //     var newSetpoint = new Translation3d(
+    //             SmartDashboard.getNumber("supersystem test x", 0),
+    //             SmartDashboard.getNumber("supersystem test y", 0),
+    //             SmartDashboard.getNumber("supersystem test z", 0)
+    //     );
+    //     if(!newSetpoint.equals(previousTestSetpoint) && PERIODIC_CONTROL_SIMULATION) {
+    //         setPlacePosition(newSetpoint, new Rotation2d());
+    //         previousTestSetpoint = newSetpoint;
+    //     }
+    // }
 }

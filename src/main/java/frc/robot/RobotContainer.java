@@ -11,21 +11,19 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.auto.paths.PathFollower;
-import frc.robot.commands.drive.TestVelocity;
-import frc.robot.commands.supersystem.DefaultStatemachine;
-import frc.robot.commands.testing.TestBasic;
-import frc.robot.commands.testing.TestChickenHead;
-import frc.robot.commands.testing.TestPosition;
-import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.PeaccyDrive;
-import frc.robot.commands.util.FindStdDevs;
+import frc.robot.commands.drive.TestVelocity;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.Supersystem;
+import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Wrist;
 
 
 /**
@@ -52,6 +50,7 @@ public class RobotContainer {
   //OI
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
+  private final SendableChooser<Command> autoSelector = new SendableChooser<Command>();
 
   //commands
   private final PeaccyDrive peaccyDrive = new PeaccyDrive(
@@ -93,19 +92,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    new JoystickButton(driverJoystick, 11).toggleOnTrue(new FindStdDevs(robotState));
-    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
-      var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
-      if(path != null) path.schedule();
-    }, driveTrain));
-    turret.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
-    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-    supersystem.setDefaultCommand(new DefaultStatemachine(
-      supersystem,
-      () -> robotXInRange(0, 4.5),
-      () -> robotXInRange(12, 30),
-      () -> robotState.getOdometryPose().getRotation().getRadians()
-    ));
+
   }
 
   public boolean robotXInRange(double low, double high){
@@ -118,8 +105,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return testPaths.ohshitpath(robotState);
+    if (autoSelector.getSelected() != null) {
+      return autoSelector.getSelected();
+    } else {
+      return null;
+    }
   }
 
   public void setDriveTrainCommand() {
