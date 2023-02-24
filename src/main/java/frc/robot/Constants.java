@@ -130,7 +130,7 @@ public final class Constants {
 
     public static final class Arm {
         //ports
-        public static final int MASTER_PORT = 95; //TODO Arbitrary number to not conflict
+        public static final int MASTER_PORT = 12; //DOCS IGUS Extension Falcon 0 //TODO is this the right motor
 
         //physical constants
         public static final double  CARRAIGE_MASS = 5, //kg
