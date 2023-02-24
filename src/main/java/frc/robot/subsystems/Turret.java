@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
+import frc.robot.DashboardManager;
 import frc.robot.Constants.SupersystemTolerance;
 
 public class Turret extends DCMotorSystemBase {
@@ -23,10 +24,14 @@ public class Turret extends DCMotorSystemBase {
   public Turret() {
     super(SYSTEM_CONSTANTS);
     turretMaster.setInverted(false);
+    setPeriodicFunction(this::updateDashboard);
     // if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
     // DankPids.registerDankTalon(turretMaster);
   }
 
+ private void updateDashboard(){
+    DashboardManager.getInstance().drawTurret(this);
+ }
 
   /**
    * set the turret speed, Positive Values should be Counter Clock Wise

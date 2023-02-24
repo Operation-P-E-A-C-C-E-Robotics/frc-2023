@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.trajectory.Trajectory;
 import frc.lib.trajectory.TrapezoidalMotion;
+import frc.robot.DashboardManager;
 
 import java.util.ArrayList;
 import java.util.function.DoubleConsumer;

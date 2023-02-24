@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.Util;
+import frc.robot.DashboardManager;
 import frc.robot.Constants.SupersystemTolerance;
 import static frc.robot.Constants.Pivot.*;
 
@@ -40,6 +41,7 @@ public class Pivot extends ArmSystemBase {
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
     setBrakeEnabled(true);
+    setPeriodicFunction(this::updateDashboard);
     // brakeSolenoid.initSendable(null);
 
     // if(Robot.isSimulation()) {
@@ -58,6 +60,10 @@ public class Pivot extends ArmSystemBase {
 //    });
     // DankPids.registerDankTalon(pivotMaster);
     // DankPids.registerDankTalon(pivotSlave);
+  }
+
+  private void updateDashboard(){
+    DashboardManager.getInstance().drawPivot(this);
   }
 
   /**
@@ -87,7 +93,7 @@ public class Pivot extends ArmSystemBase {
 
   }
 
-  public static boolean getBrakeEnabled() {
+  public boolean getBrakeEnabled() {
     return brakeState;
   }
 

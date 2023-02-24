@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
+import frc.robot.DashboardManager;
 import frc.robot.Constants.SupersystemTolerance;
 import java.util.function.DoubleSupplier;
 
@@ -17,10 +18,15 @@ public class Arm extends DCMotorSystemBase {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 
+
+
     // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
         super(SYSTEM_CONSTANTS);
+
+        setPeriodicFunction(this::updateDashboard);
+
         // if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("arm setpoint", 0);
         //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
 //        addFeedforward((double pos, double vel) -> {
@@ -32,6 +38,10 @@ public class Arm extends DCMotorSystemBase {
 //            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
 //        });
         // DankPids.registerDankTalon(armMaster);
+    }
+
+    private void updateDashboard() {
+        DashboardManager.getInstance().drawArm(this);
     }
 
     /**

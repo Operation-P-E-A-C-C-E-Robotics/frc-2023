@@ -1,33 +1,26 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.DCMotorSystemBase;
-import frc.lib.util.DankPids;
 import frc.lib.util.Util;
-import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
-import frc.robot.Robot;
-
+import frc.robot.Constants.SupersystemTolerance;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Wrist.*;
 
 public class Wrist extends DCMotorSystemBase {
-    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
+    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR); 
+    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE);
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
-    private final Timer wristTimer = new Timer();
+    private final static Timer wristTimer = new Timer();
 
     public Wrist(DoubleSupplier pivotAngle){
         super(SYSTEM_CONSTANTS);
@@ -36,8 +29,14 @@ public class Wrist extends DCMotorSystemBase {
 
         this.pivotAngle = pivotAngle;
 
-        if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
-        DankPids.registerDankTalon(wristMaster);
+        setPeriodicFunction(this::dashboardUpdater);
+
+        // if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
+        // DankPids.registerDankTalon(wristMaster);
+    }
+
+    public void dashboardUpdater() {
+        DashboardManager.getInstance().drawWrist(this);
     }
 
     /**
@@ -74,11 +73,14 @@ public class Wrist extends DCMotorSystemBase {
         previousFlipState = flipped;
     }
 
+    /**
+     * is the wrist flipped or not?
+     * @return
+     */
     public boolean flipping(){
         if (wristTimer.get() > WRIST_FLIP_TIME){
             return false;
         }
-        System.out.println("Flipping the bird"); //we do a little trolling
         return true;
     }
 
@@ -97,6 +99,7 @@ public class Wrist extends DCMotorSystemBase {
         var rotation = Util.countsToRotations(wristMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
         return new Rotation2d(Units.rotationsToRadians(rotation));
     }
+    
 
     public Rotation2d getVelocity(){
         var rotation = Util.countsToRotations(wristMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
@@ -111,49 +114,51 @@ public class Wrist extends DCMotorSystemBase {
         return getVelocity().getRadians();
     }
 
+
+
     //SIMULATION:
-    private final SingleJointedArmSim wristSim = new SingleJointedArmSim(
-            SYSTEM_CONSTANTS.motor,
-            SYSTEM_CONSTANTS.gearing,
-            SYSTEM_CONSTANTS.inertia,
-            LENGTH,
-            -100,
-            100,
-            MASS,
-            true
-    );
-    private final TalonFXSimCollection wristMotorSim = wristMaster.getSimCollection();
+    // private final SingleJointedArmSim wristSim = new SingleJointedArmSim(
+    //         SYSTEM_CONSTANTS.motor,
+    //         SYSTEM_CONSTANTS.gearing,
+    //         SYSTEM_CONSTANTS.inertia,
+    //         LENGTH,
+    //         -100,
+    //         100,
+    //         MASS,
+    //         true
+    // );
+    // private final TalonFXSimCollection wristMotorSim = wristMaster.getSimCollection();
     double prevSetpoint = 0;
 
-    @Override
-    public void simulationPeriodic(){
-        //update from the dashboard setpoint:
-        var setpoint = SmartDashboard.getNumber("wrist setpoint", 0);
-        if (setpoint != prevSetpoint){
-            setPercent(setpoint);
-            prevSetpoint = setpoint;
-        }
-        SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
-        DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
+    // @Override
+    // public void simulationPeriodic(){
+    //     //update from the dashboard setpoint:
+    //     var setpoint = SmartDashboard.getNumber("wrist setpoint", 0);
+    //     if (setpoint != prevSetpoint){
+    //         setPercent(setpoint);
+    //         prevSetpoint = setpoint;
+    //     }
+    //     SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
+    //     DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
 
-        wristSim.setInputVoltage(wristMaster.get() * RobotController.getBatteryVoltage());
-        wristSim.update(0.02);
+    //     wristSim.setInputVoltage(wristMaster.get() * RobotController.getBatteryVoltage());
+    //     wristSim.update(0.02);
 
-        wristMotorSim.setIntegratedSensorRawPosition(
-                (int) Util.rotationsToCounts(
-                        Units.radiansToRotations(wristSim.getAngleRads()
-                                + (Math.PI / 2)
-                                - (pivotAngle.getAsDouble() - Math.PI)),
-                        SYSTEM_CONSTANTS.cpr,
-                        SYSTEM_CONSTANTS.gearing
-                )
-        );
-        wristMotorSim.setIntegratedSensorVelocity(
-                (int) Util.rotationsToCounts(
-                        Units.radiansToRotations(wristSim.getVelocityRadPerSec()),
-                        SYSTEM_CONSTANTS.cpr,
-                        SYSTEM_CONSTANTS.gearing
-                )
-        );
-    }
+    //     wristMotorSim.setIntegratedSensorRawPosition(
+    //             (int) Util.rotationsToCounts(
+    //                     Units.radiansToRotations(wristSim.getAngleRads()
+    //                             + (Math.PI / 2)
+    //                             - (pivotAngle.getAsDouble() - Math.PI)),
+    //                     SYSTEM_CONSTANTS.cpr,
+    //                     SYSTEM_CONSTANTS.gearing
+    //             )
+    //     );
+    //     wristMotorSim.setIntegratedSensorVelocity(
+    //             (int) Util.rotationsToCounts(
+    //                     Units.radiansToRotations(wristSim.getVelocityRadPerSec()),
+    //                     SYSTEM_CONSTANTS.cpr,
+    //                     SYSTEM_CONSTANTS.gearing
+    //             )
+    //     );
+    // }
 }

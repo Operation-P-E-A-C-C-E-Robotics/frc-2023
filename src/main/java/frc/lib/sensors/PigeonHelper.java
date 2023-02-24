@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class PigeonHelper {
     private final PigeonIMU pg;
     private final BasePigeonSimCollection sim;
-
     // private boolean bumped = false;
 
     public PigeonHelper(PigeonIMU pigeon){

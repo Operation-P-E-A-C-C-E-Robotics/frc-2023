@@ -78,12 +78,15 @@ public class RobotContainer {
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
+    SmartDashboard.putData("Auto Selector", autoSelector);
   }
 
   public void update(){
     robotState.update();
     DashboardManager.getInstance().update();
   }
+
+
 
   /**
    * Use this method to define your button->command mappings. Buttons can be created by
