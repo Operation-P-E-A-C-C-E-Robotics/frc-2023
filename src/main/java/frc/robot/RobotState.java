@@ -65,7 +65,7 @@ public class RobotState {
         return distanceOkay && velocityOkay;
     }
 
-    public Value<Pose3d> getConePose(){
+    public Value<Pose3d> getConePoseFromDrivetrainLimelight(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
 
@@ -77,7 +77,7 @@ public class RobotState {
         return new Value<>(pose);
     }
 
-    public Value<Pose3d> getCubePose(){
+    public Value<Pose3d> getCubePoseFromDrivetrainLimelight(){
         var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
 
@@ -85,6 +85,30 @@ public class RobotState {
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
         if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+
+        return new Value<>(pose);
+    }
+
+    public Value<Pose3d> getCubePose(){
+        var poseRelativeToCamera = armCamera.getCubePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+
+        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+
+        return new Value<>(pose);
+    }
+
+    public Value<Pose3d> getConePose(){
+        var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+
+        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
 
         return new Value<>(pose);
     }
@@ -103,7 +127,7 @@ public class RobotState {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         }
 
-        var conePose = getConePose().get(new Pose3d());
+        var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
