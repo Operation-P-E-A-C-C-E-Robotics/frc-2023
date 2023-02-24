@@ -1,4 +1,4 @@
-package frc.lib.util;
+package frc.lib.safety;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;

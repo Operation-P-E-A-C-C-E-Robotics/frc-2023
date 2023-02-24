@@ -23,13 +23,13 @@ import frc.lib.util.DCMotorSystemBase.SystemConstants;
 public final class Constants {
     public static final class DriveTrain {
         //ports
-        public static final int LEFT_MASTER  = 2, //DOCS Drive Falcon 0
-                                LEFT_SLAVE   = 3, //DOCS Drive Falcon 1
-                                RIGHT_MASTER = 0, //DOCS Drive Falcon 3
-                                RIGHT_SLAVE  = 1, //DOCS Drive Falcon 2
+        public static final int LEFT_MASTER  = 0, //DOCS Drive Falcon 0
+                                LEFT_SLAVE   = 1, //DOCS Drive Falcon 1
+                                RIGHT_MASTER = 3, //DOCS Drive Falcon 3
+                                RIGHT_SLAVE  = 2, //DOCS Drive Falcon 2
                                 PIGEON_IMU   = 5,
-                                SHIFT_HIGH_PORT = 0,
-                                SHIFT_LOW_PORT = 1;
+                                SHIFT_HIGH_PORT = 1,
+                                SHIFT_LOW_PORT = 0;
 
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,

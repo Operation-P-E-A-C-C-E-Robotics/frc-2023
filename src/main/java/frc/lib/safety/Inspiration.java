@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 
 public class Inspiration {

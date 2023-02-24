@@ -29,9 +29,9 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.safety.DankPids;
 import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
-import frc.lib.util.DankPids;
 import frc.lib.util.DriveSignal;
 import static frc.robot.Constants.DriveTrain.*;
 
@@ -54,7 +54,7 @@ public class DriveTrain extends SubsystemBase {
   private final PigeonHelper pigeon;
 
   //SHIFTING!:
-  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
+  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(6, PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
   private Gear gear = Gear.HIGH;
 
   //LQR velocity drive:
@@ -97,8 +97,8 @@ public class DriveTrain extends SubsystemBase {
 
     leftSlave.setInverted(InvertType.FollowMaster);
     rightSlave.setInverted(InvertType.FollowMaster);
-    leftMaster.setInverted(true);
-    rightMaster.setInverted(false);
+    leftMaster.setInverted(false);
+    rightMaster.setInverted(true);
 
     setNeutralMode(NeutralMode.Brake);
 
@@ -332,12 +332,12 @@ public class DriveTrain extends SubsystemBase {
     this.gear = gear;
     if(gear == Gear.LOW){
       shiftSolenoid.set(Value.kReverse);
-      leftMaster.setInverted(false);
-      rightMaster.setInverted(true);
-    } else {
-      shiftSolenoid.set(Value.kForward);
       leftMaster.setInverted(true);
       rightMaster.setInverted(false);
+    } else {
+      leftMaster.setInverted(false);
+      rightMaster.setInverted(true);
+      shiftSolenoid.set(Value.kForward);
     }
   }
 

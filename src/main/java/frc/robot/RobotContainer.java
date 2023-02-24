@@ -6,12 +6,14 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticHub;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.auto.paths.PathFollower;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.testing.TestBasic;
@@ -40,6 +42,8 @@ public class RobotContainer {
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight apriltagLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("limelight"); //TODO
+
+  private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -74,6 +78,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    compressor.enableAnalog(60, 80);
     configureBindings();
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
