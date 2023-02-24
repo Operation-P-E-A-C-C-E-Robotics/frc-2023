@@ -81,6 +81,9 @@ public class PhotonicHRI {
         //SEAN: what is the best update time (in seconds) for this effect?
         //AI: 0.05
         //SEAN TO OTHER HUMANS: holy crap that link actually is a thing!
+        
+        //Logan: What in the fuck happened here?
+        
         return new PhotonicLingualElement(() -> {
             var heat = new int[buffer.getLength()];
             for (var i = 0; i < buffer.getLength(); i++) {
