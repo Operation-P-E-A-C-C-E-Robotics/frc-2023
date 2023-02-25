@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -15,7 +16,10 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.drive.TestVelocity;
+import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.DefaultStatemachine;
+import frc.robot.commands.supersystem.GoToFieldPoint;
+import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestChickenHead;
 import frc.robot.commands.testing.TestPosition;
@@ -98,13 +102,11 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    new JoystickButton(driverJoystick, 11).toggleOnTrue(new FindStdDevs(robotState));
-    new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
-      var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
-      if(path != null) path.schedule();
-    }, driveTrain));
-    turret.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
-    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+    new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeConeNoVision(supersystem, PlaceLevel.MID, robotState));
+    // new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
+    //   var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
+    //   if(path != null) path.schedule();
+    // }, driveTrain));
     supersystem.setDefaultCommand(new DefaultStatemachine(
       supersystem,
       () -> robotXInRange(0, 4.5),

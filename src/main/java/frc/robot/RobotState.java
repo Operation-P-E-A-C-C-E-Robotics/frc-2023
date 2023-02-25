@@ -49,7 +49,7 @@ public class RobotState {
     }
 
     public static final double PLACE_DISTANCE = 2; //TODO meters
-    public static final double PLACE_MAX_VELOCITY = 0.1; //TODO meters per second
+    public static final double PLACE_MAX_VELOCITY = 1; //TODO meters per second
 
     /**
      * determine whether the drivetrain is near enough a target to start placing or intaking

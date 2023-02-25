@@ -368,12 +368,12 @@ public class DriveTrain extends SubsystemBase {
     VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
   @Override
   public void simulationPeriodic(){
-    driveSim.setInputs(leftMaster.get() * RobotController.getBatteryVoltage(), rightMaster.get() * RobotController.getBatteryVoltage());
+    driveSim.setInputs(rightMaster.get() * RobotController.getBatteryVoltage(), leftMaster.get() * RobotController.getBatteryVoltage());
     driveSim.update(0.02);
-    leftMasterSim.setIntegratedSensorRawPosition(-(int)metersToCounts(driveSim.getRightPositionMeters()));
-    rightMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getLeftPositionMeters()));
-    leftMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
-    rightMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
+    leftMasterSim.setIntegratedSensorRawPosition((int)metersToCounts(driveSim.getRightPositionMeters()));
+    rightMasterSim.setIntegratedSensorRawPosition(-(int)metersToCounts(driveSim.getLeftPositionMeters()));
+    leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
+    rightMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
     pigeon.setSimHeading(driveSim.getHeading().getDegrees());
   }
 

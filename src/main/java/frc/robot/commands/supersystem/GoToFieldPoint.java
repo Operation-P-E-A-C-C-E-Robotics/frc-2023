@@ -39,7 +39,8 @@ public class GoToFieldPoint extends CommandBase {
     public void execute(){
         var target = targetLocation.get();
         if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
-        supersystem.setPlacePositionFieldRelative(target, robotState);
+        var robotRelative = robotState.fieldToDrivetrain(new Pose3d(target, new Rotation3d()));
+        supersystem.setSupersystemPosition(robotRelative.getTranslation());
     }
 
     @Override

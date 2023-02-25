@@ -7,7 +7,6 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.Supersystem;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 /**
@@ -15,8 +14,8 @@ import java.util.ArrayList;
  */
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(-0.3, 0, 0.3); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0.3, 0, 0.3); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(-0.3, 0, 0.3); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0); //TODO
 
     /**
      * A command that moves the supersystem into position to place a cube.
