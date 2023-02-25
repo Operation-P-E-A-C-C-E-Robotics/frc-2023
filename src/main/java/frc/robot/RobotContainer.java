@@ -57,6 +57,10 @@ public class RobotContainer {
   private final Wrist wrist = new Wrist(pivot::getAngleRadians);
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
+  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
+  private final Paths testPaths = new Paths(robotState, driveTrain);
+  private final Constraints constraints = new Constraints(supersystem.getKinematics());
+
   //OI
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
@@ -64,7 +68,7 @@ public class RobotContainer {
   //commands
   private final PeaccyDrive peaccyDrive = new PeaccyDrive(
     driveTrain,
-    driverJoystick::getY,
+    () -> {return constraints.constrainJoystickFwdJerk(driverJoystick.getY());},
     driverJoystick::getX,
     () -> driverJoystick.getRawButton(1),
     () -> driverJoystick.getRawButton(2)
@@ -76,9 +80,6 @@ public class RobotContainer {
     driverJoystick::getX,
     () -> driverJoystick.getRawButton(2)
   );
-
-  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
-  private final Paths testPaths = new Paths(robotState, driveTrain);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -112,7 +113,8 @@ public class RobotContainer {
       () -> robotXInRange(0, 4.5),
       () -> robotXInRange(12, 30),
       () -> robotState.getOdometryPose().getRotation().getRadians()
-    ));
+   ));
+      // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   public boolean robotXInRange(double low, double high){
@@ -126,7 +128,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return testPaths.ohshitpath(robotState);
+    return testPaths.testPath(robotState);
   }
 
   public void setDriveTrainCommand() {

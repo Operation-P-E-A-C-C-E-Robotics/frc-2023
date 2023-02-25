@@ -3,12 +3,16 @@ package frc.robot;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.lib.util.Util;
+import frc.robot.Constants.Arm;
+import frc.robot.subsystems.Supersystem;
 
 import static frc.robot.Constants.Constraints.*;
 
 public class Constraints {
     SlewRateLimiter normalDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_NORMAL);
     SlewRateLimiter liftExtendedDriveLimiter = new SlewRateLimiter(DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED);
+    boolean decelerating = false;
+    double prevFwd = 0;
     private Kinematics kinematics;
 
     /**
@@ -27,9 +31,11 @@ public class Constraints {
      * @return the corrected joystick forward position
      */
     public double constrainJoystickFwdJerk(double fwd){
+        if(Math.abs(prevFwd) > Math.abs(fwd)) return fwd;
+        prevFwd = fwd;
         double normal = normalDriveLimiter.calculate(fwd);
         double extended = liftExtendedDriveLimiter.calculate(fwd);
-        return kinematics.getSupersystemPosition().getX() > LIFT_EXTENDED_THRESHOLD ? extended : normal;
+        return Util.interpolate(normal, extended, kinematics.getSupersystemState().getArmExtension() / Arm.MAX_EXTENSION); //todo interpolate
     }
 
     public static double ARM_EXTENSION_4FT = 0; //TODO how far the arm is extended to reach out 4 feet

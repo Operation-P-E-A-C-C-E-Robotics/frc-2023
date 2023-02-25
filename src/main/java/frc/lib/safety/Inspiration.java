@@ -8,6 +8,7 @@ import java.util.Random;
 
 public class Inspiration {
     public static boolean initializeInspiration(){
+
         slowPrint("WAT IS UP DRIVVERS!!!");
         slowPrint("or is it still just us dumb programmers?");
         slowPrint("I guess we'll never know");
@@ -98,6 +99,7 @@ public class Inspiration {
             slowPrint("GO, GO, GO!!!");
             slowPrint("GO, GO, GO, GO, GO!!!");
             slowPrint("I HOPE THE PROGRAMMERS DON'T WRECK THE MATCH IN AUTO!!!");
+            //P3N!5
         } else {
             slowPrint("oh no, we're in auto");
             slowPrint("everybody panic");

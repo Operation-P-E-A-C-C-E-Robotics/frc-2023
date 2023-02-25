@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -25,6 +26,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -52,6 +54,8 @@ public class DriveTrain extends SubsystemBase {
   private final PIDController leftController;
   private final PIDController rightController;
   private final PigeonHelper pigeon;
+  private final Timer shiftClutchTimer = new Timer();
+  private boolean shiftClutchDepressed = false;
 
   //SHIFTING!:
   private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(6, PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
@@ -61,7 +65,8 @@ public class DriveTrain extends SubsystemBase {
   //STATES: [left velocity, right velocity]
   //INPUTS: [left voltage, right voltage]
   //OUTPUTS: [left velocity, right velocity]
-  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, 2, 0.2, TRACK_WIDTH); //TODO angular kV and kA
+  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, 1, 0.1
+  , TRACK_WIDTH); //TODO angular kV and kA
   private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
           drivePlant,
           VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
@@ -137,9 +142,9 @@ public class DriveTrain extends SubsystemBase {
    * @param rightSpeed the speed to set the right motors to (Double)
    */
   public void tankDrive(double leftSpeed, double rightSpeed) {
+    if(shiftClutchDepressed) return;
     leftMaster.set(leftSpeed);
     rightMaster.set(rightSpeed);
-    differentialDrive.feed();
   }
 
 
@@ -155,9 +160,9 @@ public class DriveTrain extends SubsystemBase {
    * @param rightVolts voltage to send to the right side of the drive train
    */
   public void tankDriveVolts(double leftVolts, double rightVolts){
-        leftMaster.setVoltage(leftVolts);
-        rightMaster.setVoltage(rightVolts);
-        differentialDrive.feed();
+    if(shiftClutchDepressed) return;
+    leftMaster.setVoltage(leftVolts);
+    rightMaster.setVoltage(rightVolts);
   }
 
   /**
@@ -168,7 +173,6 @@ public class DriveTrain extends SubsystemBase {
    */
   public void arcadeDrive(double forward, double wheel) {
     tankDrive(new DriveSignal(forward + wheel, forward - wheel));
-    differentialDrive.feed();
   }
 
   public void resetVelocityDrive(){
@@ -330,6 +334,10 @@ public class DriveTrain extends SubsystemBase {
   public void setGear(Gear gear){
     if(gear == this.gear) return;
     this.gear = gear;
+    shiftClutchDepressed = true;
+    shiftClutchTimer.reset();
+    shiftClutchTimer.start();
+    setNeutralMode(NeutralMode.Coast);
     if(gear == Gear.LOW){
       shiftSolenoid.set(Value.kReverse);
       leftMaster.setInverted(true);
@@ -350,6 +358,27 @@ public class DriveTrain extends SubsystemBase {
       return GEARBOX_RATIO_LOW;
     } else {
       return GEARBOX_RATIO_HIGH;
+    }
+  }
+
+  @Override
+  public void periodic(){
+    differentialDrive.feed();
+    if(shiftClutchTimer.get() < 0.7){
+      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
+      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
+    } else {
+      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
+      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
+    }
+    if(shiftClutchDepressed){
+      if(shiftClutchTimer.get() > 0.5){
+        shiftClutchDepressed = false;
+        setNeutralMode(NeutralMode.Brake);
+        return;
+      }
+      leftMaster.stopMotor();
+      rightMaster.stopMotor();
     }
   }
 
@@ -382,6 +411,3 @@ public class DriveTrain extends SubsystemBase {
     LOW
   }
 }
-
-
-

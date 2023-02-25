@@ -7,3 +7,15 @@ Started field points
     not finished! needs actual points
 
 DID A LOTTA STUFF
+
+TODO as of 2/25:
+ - Get drivetrain shifting like butter
+ - Vision-based cone placement
+ - test cube/cone placement
+ - cubes/cones from either camera??
+ - test all the position controllers
+ - auto modes
+ - actual UI button bindings
+ - tune drivetrain constants
+ - the whole intake
+    - color sensor

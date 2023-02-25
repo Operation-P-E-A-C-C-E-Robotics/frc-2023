@@ -12,7 +12,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class DefaultStatemachine extends CommandBase {
-    private final double TARGET_ROTATION = 0, PICKUP_ROTATION = Math.PI;
+    private final double TARGET_ROTATION = Math.PI, PICKUP_ROTATION = 0;
     private final Kinematics.SupersystemState restingState = new Kinematics.SupersystemState(0, 0, Constants.Arm.MIN_EXTENSION, Math.PI/2);
     private final Translation3d tiltTranslationForward = new Translation3d(0.3, 0, Constants.Arm.MIN_EXTENSION);
     private final BooleanSupplier tiltTowardsTargetSupplier, tiltTowardsPickupSupplier;

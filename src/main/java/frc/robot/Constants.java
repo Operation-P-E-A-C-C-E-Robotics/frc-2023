@@ -41,7 +41,7 @@ public final class Constants {
                 TRACK_WIDTH = 0.6096; //m
 
         //state space constants
-        public static final double  LQR_ERROR_TOLERANCE = 0.1,
+        public static final double  LQR_ERROR_TOLERANCE = 0.5,
                 LQR_EFFORT = 12.0,
                 KALMAN_MODEL_ACCURACY = 3,
                 KALMAN_SENSOR_ACCURACY = 0.1;
@@ -198,8 +198,8 @@ public final class Constants {
 
     public static final class Constraints{
         public static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
-                                  DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 0, //todo
-                                  LIFT_EXTENDED_THRESHOLD = 0.4; //todo
+                                  DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 1, //todo
+                                  ARM_EXTENSION_SPEED_LIMIT = 0.5; //todo
     }
 
     public static final class OperatorInterface {
