@@ -35,7 +35,7 @@ public class Pivot extends ArmSystemBase {
 
 
   /** Creates a new ExampleSubsystem. */
-  public Pivot() {
+  public Pivot(boolean withBrake) {
     super(SYSTEM_CONSTANTS, LENGTH, MASS);
 
     WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
@@ -49,7 +49,6 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
-    setBrakeEngaged(true);
     // brakeSolenoid.initSendable(null);
 
     if(Robot.isSimulation()) {
@@ -57,8 +56,11 @@ public class Pivot extends ArmSystemBase {
       SmartDashboard.putNumber("pivot setpoint angle", 0);
       SmartDashboard.putNumber("pivot setpoint percent", 0);
     }
-
-    setPeriodicFunction(this::updateBrakePeriodic);
+    if(withBrake) {
+      setBrakeEngaged(true);
+      setPeriodicFunction(this::updateBrakePeriodic);
+    }
+    setBrakeEngaged(false);
 
     DankPids.registerDankTalon(pivotMaster);
     DankPids.registerDankTalon(pivotSlave);

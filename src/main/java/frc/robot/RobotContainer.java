@@ -50,7 +50,7 @@ public class RobotContainer {
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
-  private final Pivot pivot = new Pivot();
+  private final Pivot pivot = new Pivot(false);
   private final Arm arm = new Arm(pivot::getAngleRadians);
   private final Wrist wrist = new Wrist(pivot::getAngleRadians);
   private final EndEffector endEffector = new EndEffector();
