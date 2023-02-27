@@ -65,8 +65,13 @@ public class DriveTrain extends SubsystemBase {
   //STATES: [left velocity, right velocity]
   //INPUTS: [left voltage, right voltage]
   //OUTPUTS: [left velocity, right velocity]
-  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(kV, kA, 1, 0.1
-  , TRACK_WIDTH); //TODO angular kV and kA
+  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(
+          kV_LINEAR,
+          kA_LINEAR,
+          kV_ANGULAR,
+          kA_ANGULAR,
+          TRACK_WIDTH
+  ); //TODO angular kV and kA
   private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
           drivePlant,
           VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
@@ -125,7 +130,7 @@ public class DriveTrain extends SubsystemBase {
     );
 
     //configure PID: TODO get rid of PID
-    feedforward = new SimpleMotorFeedforward(kS, kV, kA);
+    feedforward = new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
 
@@ -219,12 +224,12 @@ public class DriveTrain extends SubsystemBase {
     leftFeedforward = feedforward.calculate(
             speeds.leftMetersPerSecond,
             (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
-    ) + (kA * Math.sin(tilt));
+    ) + (kA_LINEAR * Math.sin(tilt));
 
     rightFeedforward = feedforward.calculate(
             speeds.rightMetersPerSecond,
             (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
-    ) + (kA * Math.sin(tilt));
+    ) + (kA_LINEAR * Math.sin(tilt));
 
     left = leftFeedforward + leftController.calculate(
             getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond

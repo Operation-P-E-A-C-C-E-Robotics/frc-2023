@@ -15,9 +15,9 @@ import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.Constants.Intake.*;
+import static frc.robot.Constants.EndEffector.*;
 
-public class Intake extends SubsystemBase {
+public class EndEffector extends SubsystemBase {
   private final CANSparkMax leftMotor = new CANSparkMax(LEFT_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax rightMotor = new CANSparkMax(RIGHT_MOTOR_ID, MotorType.kBrushless);
 
@@ -29,9 +29,10 @@ public class Intake extends SubsystemBase {
 
   private IntakeState state = IntakeState.RESTING;
   private Timer ejectTimer = new Timer();
+  private Timer clawTimer = new Timer();
 
   /** Creates a new Intake. */
-  public Intake() {
+  public EndEffector() {
     leftMotor.setInverted(false);
     rightMotor.setInverted(false);
 
@@ -96,15 +97,20 @@ public class Intake extends SubsystemBase {
    * @param open true to open the claw, false to close it
    */
   public void setClaw(boolean open){
-    if(open){
-      clawSolenoid.set(DoubleSolenoid.Value.kForward);
-    } else {
-      clawSolenoid.set(DoubleSolenoid.Value.kReverse);
+    var newDirection = open ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse;
+    clawSolenoid.set(newDirection);
+    if(newDirection != clawSolenoid.get()) {
+      clawTimer.reset();
+      clawTimer.start();
     }
   }
 
   public boolean isClawOpen(){
-    return clawSolenoid.get() == DoubleSolenoid.Value.kForward;
+    return clawSolenoid.get() == DoubleSolenoid.Value.kForward && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+  }
+
+  public boolean isClawClosed(){
+    return clawSolenoid.get() == DoubleSolenoid.Value.kReverse && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean hasCube(){

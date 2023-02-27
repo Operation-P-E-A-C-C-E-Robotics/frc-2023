@@ -35,7 +35,7 @@ public class Paths {
         this.driveTrain = driveTrain;
         //this.robotState = robotState;
         constraint = new DifferentialDriveVoltageConstraint(
-            new SimpleMotorFeedforward(kS, kV, kA),
+            new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR),
             DRIVE_KINEMATICS,
             AUTO_VOLTAGE_MAX
         );

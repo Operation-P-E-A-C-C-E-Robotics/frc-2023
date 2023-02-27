@@ -25,13 +25,11 @@ import frc.robot.commands.testing.TestChickenHead;
 import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.PeaccyDrive;
-import frc.robot.commands.util.FindStdDevs;
 
 
 /**
@@ -55,6 +53,7 @@ public class RobotContainer {
   private final Pivot pivot = new Pivot();
   private final Arm arm = new Arm(pivot::getAngleRadians);
   private final Wrist wrist = new Wrist(pivot::getAngleRadians);
+  private final EndEffector endEffector = new EndEffector();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
   private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
@@ -103,7 +102,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeConeNoVision(supersystem, PlaceLevel.MID, robotState));
+    new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeConeNoVision(supersystem, endEffector, PlaceLevel.MID, robotState));
     // new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
     //   var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
     //   if(path != null) path.schedule();

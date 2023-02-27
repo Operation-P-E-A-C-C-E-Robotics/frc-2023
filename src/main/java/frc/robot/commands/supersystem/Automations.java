@@ -5,6 +5,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.field.FieldConstants;
 import frc.robot.Constants;
 import frc.robot.RobotState;
+import frc.robot.commands.endeffector.DropGamepiece;
+import frc.robot.commands.endeffector.SpitGamepiece;
+import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Supersystem;
 
 import java.util.ArrayList;
@@ -45,11 +48,11 @@ public class Automations {
         );
     }
 
-    public static Command placeCube(Supersystem supersystem, PlaceLevel level, RobotState robotState){
-        return goToCubePosition(supersystem, level, robotState).raceWith(/*TODO eject when ready command*/);
+    public static Command placeCube(Supersystem supersystem, EndEffector endEffector, PlaceLevel level, RobotState robotState){
+        return goToCubePosition(supersystem, level, robotState).raceWith(new SpitGamepiece(endEffector));
     }
 
-    public static Command placeConeNoVision(Supersystem supersystem, PlaceLevel level, RobotState robotState){
+    public static Command placeConeNoVision(Supersystem supersystem, EndEffector endEffector, PlaceLevel level, RobotState robotState){
         var tolerance = switch(level){
             case HIGH -> Constants.SupersystemTolerance.PLACE_HIGH;
             case MID -> Constants.SupersystemTolerance.PLACE_MID;
@@ -76,7 +79,7 @@ public class Automations {
                 robotState,
                 false
         );
-        return goToPrePlace.andThen(goToPlace.raceWith(/*TODO eject when ready command*/));
+        return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
     }
 
     public enum PlaceLevel{

@@ -52,8 +52,10 @@ public final class Constants {
 
         //velocity constants:
         public static final double  kS = 0.10351, //Volts
-                kV = 2.4155, //Volts per meter per second
-                kA = 0.2751, //Volts per meter per second squared
+                kV_LINEAR = 2.4155, //Volts per meter per second
+                kA_LINEAR = 0.2751, //Volts per meter per second squared
+                kV_ANGULAR = 0.0001, //Volts per radian per second
+                kA_ANGULAR = 0.0001, //Volts per radian per second squared
                 kP = 0.24921,
                 kI = 0,
                 kD = 0,
@@ -191,14 +193,15 @@ public final class Constants {
         );
     }
 
-    public static final class Intake {
-        public static final int LEFT_MOTOR_ID = 0,
-                             RIGHT_MOTOR_ID = 0,
-                             GRIP_CLOSED_PNEUMATICS_PORT = 0,
-                             GRIP_OPEN_PNEUMATICS_PORT = 0,
+    public static final class EndEffector {
+        public static final int LEFT_MOTOR_ID = 90,
+                             RIGHT_MOTOR_ID = 91,
+                             GRIP_CLOSED_PNEUMATICS_PORT = 5,
+                             GRIP_OPEN_PNEUMATICS_PORT = 6,
                              BEAM_BRAKE_PORT = 0;
 
-        public static final double TIME_TO_EJECT = 0; //TODO
+        public static final double TIME_TO_EJECT = 0.2; //TODO
+        public static final double TIME_FOR_CLAW_TO_OPEN = 0.2; //TODO
         public static final Color CUBE_COLOR = new Color(0,0,0), CONE_COLOR = new Color(0,0,0);
     }
     public static final class Kinematics {

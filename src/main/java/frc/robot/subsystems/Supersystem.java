@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
@@ -217,7 +218,8 @@ public class Supersystem extends SubsystemBase {
      */
     public Supersystem setWristParallelToGround(){
         var pivot = getSupersystemState().getPivotAngle();
-        var newWrist = (Math.PI/2 * Math.signum(pivot)) + pivot;
+        var newWrist = (Math.PI/2  + pivot) * Math.signum(pivot);
+        if(Util.epsilonEquals(pivot, 0, 0.1)) newWrist = 0;
         setWrist(new Rotation2d(newWrist));
         return this;
     }
