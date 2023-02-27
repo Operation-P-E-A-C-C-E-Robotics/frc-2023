@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: edu.wpi.first.apriltag:apriltag-java:2023.2.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/edu.wpi.first.apriltag/apriltag-java/2023.2.1/129f9848c7bf556a015b2810232d2fc324bb26d6/apriltag-java-2023.2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/edu.wpi.first.apriltag/apriltag-java/2023.2.1/f079bb1e93bdaeb73a57aef94b5bc9f0a2abc40/apriltag-java-2023.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

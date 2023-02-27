@@ -6,6 +6,41 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Launch Motion",
+      "request": "launch",
+      "mainClass": "frc.lib.trajectory.Motion",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
+      "name": "Launch RealTimeTrapezoidalMotion",
+      "request": "launch",
+      "mainClass": "frc.lib.trajectory.RealTimeTrapezoidalMotion",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
+      "name": "Launch Pivot",
+      "request": "launch",
+      "mainClass": "frc.robot.subsystems.Pivot",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
+      "name": "Launch ChargeStation",
+      "request": "launch",
+      "mainClass": "frc.lib.field.ChargeStation",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
+      "name": "Launch Kinematics",
+      "request": "launch",
+      "mainClass": "frc.robot.Kinematics",
+      "projectName": "frc-2023"
+    },
+    {
+      "type": "java",
       "name": "Launch RedField",
       "request": "launch",
       "mainClass": "frc.lib.field.RedField",
