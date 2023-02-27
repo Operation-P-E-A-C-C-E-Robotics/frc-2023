@@ -8,26 +8,26 @@ package frc.lib.util;
  */
 public class CheesyDriveHelper {
 
-    private static final double kThrottleDeadband = 0.02;
-    private static final double kWheelDeadband = 0.02;
+    private static final double THROTTLE_DEADBAND = 0.02;
+    private static final double WHEEL_DEADBAND = 0.02;
 
-    // These factor determine how fast the wheel traverses the "non linear" sine curve.
-    private static final double kHighWheelNonLinearity = 0.7;
-    private static final double kLowWheelNonLinearity = 0.5;
+    // These factor determine how fast the wheel traverses the "non-linear" sine curve.
+    private static final double HIGH_WHEEL_NON_LINEARITY = 0.7;
+    private static final double LOW_WHEEL_NON_LINEARITY = 0.5;
 
-    private static final double kHighNegInertiaScalar = 1.8;
+    private static final double kHighNegInertiaScalar = 5;
 
-    private static final double kLowNegInertiaThreshold = 0.65;
-    private static final double kLowNegInertiaTurnScalar = 3.5;
-    private static final double kLowNegInertiaCloseScalar = 4.0;
-    private static final double kLowNegInertiaFarScalar = 5.0;
+    private static final double LOW_NEG_INERTIA_THRESHOLD = 0.65;
+    private static final double LOW_NEG_INERTIA_TURN_SCALAR = 3.5;
+    private static final double LOW_NEG_INERTIA_CLOSE_SCALAR = 4.0;
+    private static final double LOW_NEG_INERTIA_FAR_SCALAR = 5.0;
 
-    private static final double kHighSensitivity = 0.65;
+    private static final double kHighSensitivity = 0.8;
     private static final double kLowSensitiity = 0.65;
 
-    private static final double kQuickStopDeadband = 0.5;
-    private static final double kQuickStopWeight = 0.1;
-    private static final double kQuickStopScalar = 5.0;
+    private static final double QUICK_STOP_DEADBAND = 0.5;
+    private static final double QUICK_STOP_WEIGHT = 0.1;
+    private static final double QUICK_STOP_SCALAR = 5.0;
 
     private double mOldWheel = 0.0;
     private double mQuickStopAccumlator = 0.0;
@@ -36,21 +36,21 @@ public class CheesyDriveHelper {
     public DriveSignal cheesyDrive(double throttle, double wheel, boolean isQuickTurn,
                                    boolean isHighGear) {
 
-        wheel = handleDeadband(wheel, kWheelDeadband);
-        throttle = handleDeadband(throttle, kThrottleDeadband);
+        wheel = handleDeadband(wheel, WHEEL_DEADBAND);
+        throttle = handleDeadband(throttle, THROTTLE_DEADBAND);
 
         double negInertia = wheel - mOldWheel;
         mOldWheel = wheel;
 
         double wheelNonLinearity;
         if (isHighGear) {
-            wheelNonLinearity = kHighWheelNonLinearity;
+            wheelNonLinearity = HIGH_WHEEL_NON_LINEARITY;
             final double denominator = Math.sin(Math.PI / 2.0 * wheelNonLinearity);
             // Apply a sin function that's scaled to make it feel better.
             wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
             wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
         } else {
-            wheelNonLinearity = kLowWheelNonLinearity;
+            wheelNonLinearity = LOW_WHEEL_NON_LINEARITY;
             final double denominator = Math.sin(Math.PI / 2.0 * wheelNonLinearity);
             // Apply a sin function that's scaled to make it feel better.
             wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
@@ -72,13 +72,13 @@ public class CheesyDriveHelper {
         } else {
             if (wheel * negInertia > 0) {
                 // If we are moving away from 0.0, aka, trying to get more wheel.
-                negInertiaScalar = kLowNegInertiaTurnScalar;
+                negInertiaScalar = LOW_NEG_INERTIA_TURN_SCALAR;
             } else {
                 // Otherwise, we are attempting to go back to 0.0.
-                if (Math.abs(wheel) > kLowNegInertiaThreshold) {
-                    negInertiaScalar = kLowNegInertiaFarScalar;
+                if (Math.abs(wheel) > LOW_NEG_INERTIA_THRESHOLD) {
+                    negInertiaScalar = LOW_NEG_INERTIA_FAR_SCALAR;
                 } else {
-                    negInertiaScalar = kLowNegInertiaCloseScalar;
+                    negInertiaScalar = LOW_NEG_INERTIA_CLOSE_SCALAR;
                 }
             }
             sensitivity = kLowSensitiity;
@@ -98,10 +98,10 @@ public class CheesyDriveHelper {
 
         // Quickturn!
         if (isQuickTurn) {
-            if (Math.abs(linearPower) < kQuickStopDeadband) {
-                double alpha = kQuickStopWeight;
+            if (Math.abs(linearPower) < QUICK_STOP_DEADBAND) {
+                double alpha = QUICK_STOP_WEIGHT;
                 mQuickStopAccumlator = (1 - alpha) * mQuickStopAccumlator
-                        + alpha * Util.limit(wheel, 1.0) * kQuickStopScalar;
+                        + alpha * Util.limit(wheel, 1.0) * QUICK_STOP_SCALAR;
             }
             overPower = 0.5;
             angularPower = wheel;
