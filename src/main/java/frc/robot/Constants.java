@@ -54,8 +54,8 @@ public final class Constants {
         public static final double  kS = 0.10351, //Volts
                 kV_LINEAR = 2.4155, //Volts per meter per second
                 kA_LINEAR = 0.2751, //Volts per meter per second squared
-                kV_ANGULAR = 0.0001, //Volts per radian per second
-                kA_ANGULAR = 0.0001, //Volts per radian per second squared
+                kV_ANGULAR = 2, //Volts per radian per second
+                kA_ANGULAR = 0.2, //Volts per radian per second squared
                 kP = 0.24921,
                 kI = 0,
                 kD = 0,
@@ -223,9 +223,11 @@ public final class Constants {
     public static final class SupersystemTolerance{
         public final double turret, pivot, wrist, arm;
         public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PIVOT_BRAKE = new SupersystemTolerance(50, 0.05, 50, 50);
         public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.1, 0.1, 0.3);
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public SupersystemTolerance(double turret, double pivot, double wrist, double arm){

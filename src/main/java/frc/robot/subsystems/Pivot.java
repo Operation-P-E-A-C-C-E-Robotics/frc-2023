@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -20,7 +19,6 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ArmSystemBase;
-import frc.lib.util.DCMotorSystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -32,7 +30,7 @@ public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, BRAKE_SOLENOID_FORWARD, BRAKE_SOLENOID_BACKWARD);
   private final Timer brakeTimer = new Timer();
-  private static boolean brakeState = true;
+  private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE; // TODO - make break tolerance in constants
   private double setpoint = 0;
 
 
@@ -51,7 +49,7 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
-    setBrakeEnabled(true);
+    setBrakeEngaged(true);
     // brakeSolenoid.initSendable(null);
 
     if(Robot.isSimulation()) {
@@ -60,14 +58,8 @@ public class Pivot extends ArmSystemBase {
       SmartDashboard.putNumber("pivot setpoint percent", 0);
     }
 
-//    addFeedforward((double pos, double vel) -> {
-//      var force = (MASS * 9.80665) * LENGTH * Math.cos(pos - Math.PI*0.5);
-//      //account for gearing:
-//      force /= SYSTEM_CONSTANTS.gearing;
-//      SmartDashboard.putNumber("pivot force", force);
-//      //calculate voltage needed to counteract force:
-//      return (SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12.0);
-//    });
+    setPeriodicFunction(this::updateBrakePeriodic);
+
     DankPids.registerDankTalon(pivotMaster);
     DankPids.registerDankTalon(pivotSlave);
   }
@@ -81,26 +73,27 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.set(speed);
   }
 
-  public void setBrakeEnabled(boolean engageBrake) {
-      brakeTimer.start();
-      if (engageBrake){
-        brakeState = true; //Notify the bool that we are engaging the break so nothing else can move the system
-        brakeSolenoid.set(Value.kForward); //Forward = Break On
-      } else {
-        brakeSolenoid.set(Value.kReverse); //Reverse = Break Off
-        if(brakeTimer.hasElapsed(TIME_FOR_BRAKE_TO_ENGAGE)) { //wait for the break to release before allowing other methods to control the motor
-          brakeState = false;  //Notify the bool that we are disengaging the break so everything else can move the system
-          brakeTimer.stop();
+  private void setBrakeEngaged(boolean engageBrake) {
+      var brakeDirection = engageBrake ? Value.kForward : Value.kReverse;
+      if(brakeSolenoid.get() != brakeDirection) {
+          brakeSolenoid.set(brakeDirection);
           brakeTimer.reset();
-        }
+          brakeTimer.start();
       }
-      // A boolean can't be anything besides true or false, so the code you put here would have never run.
-//      DashboardManager.getInstance().drawPivotBrakeBool(brakeState); //this function doesn't seem to exist rn, that's why I commented it out.
-
   }
 
-  public static boolean getBrakeEnabled() {
-    return brakeState;
+  private void updateBrakePeriodic(){
+    if(!isLooping()) setBrakeEngaged(false);
+    else setBrakeEngaged(withinTolerance(brakeTolerance));
+    if(isBrakeEngaged()){
+      disableLoop();
+      setVoltage(0);
+    }
+    SmartDashboard.putBoolean("PIVOT BRAKE ENGAGED", isBrakeEngaged());
+  }
+
+  public boolean isBrakeEngaged() {
+      return brakeSolenoid.get() == Value.kForward && brakeTimer.get() > TIME_FOR_BRAKE_TO_ENGAGE;
   }
 
   /**
@@ -122,6 +115,7 @@ public class Pivot extends ArmSystemBase {
    */
   public void setAngle(Rotation2d angle){
     setpoint = angle.getRadians();
+    if(isBrakeEngaged()) return;
     enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
     goToState(angle.getRadians(), 0);
   }
@@ -183,13 +177,13 @@ public class Pivot extends ArmSystemBase {
   //SIMULATION: (DON'T TOUCH)
   //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
   //I have to figure out how to make it call 0deg straight down.
-   private TalonFXSimCollection turretMotorSim;
+   private TalonFXSimCollection pivotMotorSim;
    private static SingleJointedArmSim pivotSim;
    private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
 
   public void initializeSimulation(){
-    turretMotorSim = pivotMaster.getSimCollection();
+    pivotMotorSim = pivotMaster.getSimCollection();
     pivotSim = new SingleJointedArmSim(
             SYSTEM_CONSTANTS.motor,
             SYSTEM_CONSTANTS.gearing,
@@ -210,7 +204,7 @@ public class Pivot extends ArmSystemBase {
 
      //write the simulation data to the motor sim
      //convert angle from sim to encoder tics:
-     turretMotorSim.setIntegratedSensorRawPosition(
+     pivotMotorSim.setIntegratedSensorRawPosition(
              (int) Util.rotationsToCounts(
                      //account for the fact that the sim calls -90deg straight down by adding 270deg
                      Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
@@ -218,7 +212,7 @@ public class Pivot extends ArmSystemBase {
                      SYSTEM_CONSTANTS.gearing
              )
      );
-     turretMotorSim.setIntegratedSensorVelocity(
+     pivotMotorSim.setIntegratedSensorVelocity(
              (int) Util.rotationsToCounts(
                      Units.radiansToRotations(pivotSim.getVelocityRadPerSec()),
                      SYSTEM_CONSTANTS.cpr,

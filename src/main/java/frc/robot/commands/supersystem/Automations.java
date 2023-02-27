@@ -77,7 +77,7 @@ public class Automations {
                         .plus(conePlaceOffset),
                 tolerance,
                 robotState,
-                false
+                true
         );
         return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
     }
