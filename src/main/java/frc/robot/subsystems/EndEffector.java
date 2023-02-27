@@ -119,6 +119,10 @@ public class Intake extends SubsystemBase {
     return state == IntakeState.EJECTING_CONE || state == IntakeState.EJECTING_CUBE || state == IntakeState.EJECTING_NOTHING;
   }
 
+  public boolean beamBroken(){
+    return beamBrakeSensor.get();
+  }
+
   public IntakeState getState(){
     return state;
   }
