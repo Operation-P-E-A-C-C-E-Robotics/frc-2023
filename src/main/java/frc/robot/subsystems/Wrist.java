@@ -120,7 +120,7 @@ public class Wrist extends DCMotorSystemBase {
             -100,
             100,
             MASS,
-            true
+            false
     );
     private final TalonFXSimCollection wristMotorSim = wristMaster.getSimCollection();
     double prevSetpoint = 0;
@@ -130,7 +130,7 @@ public class Wrist extends DCMotorSystemBase {
         //update from the dashboard setpoint:
         var setpoint = SmartDashboard.getNumber("wrist setpoint", 0);
         if (setpoint != prevSetpoint){
-            setPercent(setpoint);
+            setAngle(new Rotation2d(setpoint));
             prevSetpoint = setpoint;
         }
         SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());

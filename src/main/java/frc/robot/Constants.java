@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.lib.util.DCMotorSystemBase.SystemConstants;
 
 /**
@@ -77,8 +78,8 @@ public final class Constants {
                 5,
                 100 * 5, //100:1 versaplanetary, 5:1 driving gear
                 2048,
-                5,
-                10,
+                3,
+                3,
                 3.0,
                 3.0,
                 0.01,
@@ -190,6 +191,16 @@ public final class Constants {
         );
     }
 
+    public static final class Intake {
+        public static final int LEFT_MOTOR_ID = 0,
+                             RIGHT_MOTOR_ID = 0,
+                             GRIP_CLOSED_PNEUMATICS_PORT = 0,
+                             GRIP_OPEN_PNEUMATICS_PORT = 0,
+                             BEAM_BRAKE_PORT = 0;
+
+        public static final double TIME_TO_EJECT = 0; //TODO
+        public static final Color CUBE_COLOR = new Color(0,0,0), CONE_COLOR = new Color(0,0,0);
+    }
     public static final class Kinematics {
         public static final double  PIVOT_HEIGHT = 0,
                                     END_EFFECTOR_LENGTH = 0.15,

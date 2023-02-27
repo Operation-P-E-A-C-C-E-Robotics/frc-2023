@@ -125,8 +125,7 @@ public class DCMotorSystemBase extends SubsystemBase {
     /**
      * generate a trajectory from the current position to the given position,
      * and start following it
-     * @param position position setpoint
-     * @param velocity velocity setpoint
+     * @param position position setpoin
      */
     public void goToState(double position) { //TODO get rid of velocity parameter
         if(!looping){

@@ -31,11 +31,6 @@ public class Supersystem extends SubsystemBase {
         this.turret = turret;
         this.wrist = wrist;
         kinematics = new Kinematics(this);
-        if(Robot.isSimulation() && PERIODIC_CONTROL_SIMULATION) {
-            SmartDashboard.putNumber("supersystem test x", 0);
-            SmartDashboard.putNumber("supersystem test y", 0);
-            SmartDashboard.putNumber("supersystem test z", 0);
-        }
     }
 
     /**
@@ -55,15 +50,6 @@ public class Supersystem extends SubsystemBase {
      */
     public Kinematics getKinematics(){
         return kinematics;
-    }
-
-    //TODO change to tolerance based thing
-    public boolean finishedMotion(){
-        return false;
-        // return arm.finishedMotion()
-        //     && pivot.finishedMotion()
-        //     && turret.finishedMotion()
-        //     && wrist.withinTolerance()
     }
 
     /**
@@ -231,10 +217,15 @@ public class Supersystem extends SubsystemBase {
      */
     public Supersystem setWristParallelToGround(){
         var pivot = getSupersystemState().getPivotAngle();
-        var newWrist = Math.PI/2 * Math.signum(pivot) +  pivot;
+        var newWrist = (Math.PI/2 * Math.signum(pivot)) + pivot;
         setWrist(new Rotation2d(newWrist));
         return this;
     }
+
+    // public Supersystem setDefaultWrist(){
+    //     var pivot = getSupersystemState().getPivotAngle();
+    //     var 
+    // }
 
     public Supersystem addTurretOffset(double offset){
         setTurret(new Rotation2d(getSupersystemState().getTurretAngle() + offset));
@@ -296,17 +287,7 @@ public class Supersystem extends SubsystemBase {
     }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();
-    private final boolean PERIODIC_CONTROL_SIMULATION = false;
     @Override
     public void simulationPeriodic(){
-        var newSetpoint = new Translation3d(
-                SmartDashboard.getNumber("supersystem test x", 0),
-                SmartDashboard.getNumber("supersystem test y", 0),
-                SmartDashboard.getNumber("supersystem test z", 0)
-        );
-        if(!newSetpoint.equals(previousTestSetpoint) && PERIODIC_CONTROL_SIMULATION) {
-            setPlacePosition(newSetpoint, new Rotation2d());
-            previousTestSetpoint = newSetpoint;
-        }
     }
 }
