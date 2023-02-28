@@ -38,6 +38,10 @@ public class Wrist extends ServoMotor {
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
         DankPids.registerDankTalon(wristMaster);
+
+        setPeriodicFunction(this::flipWristPeriodic);
+
+        wristTimer.start();
     }
 
     /**
@@ -83,7 +87,7 @@ public class Wrist extends ServoMotor {
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
-        return Util.epsilonEquals(getAngle().getRadians(), setpoint, tolerance.wrist);
+        return Util.epsilonEquals(getAngle().getRadians(), setpoint, tolerance.wrist) && !flipping();
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance){
@@ -111,6 +115,10 @@ public class Wrist extends ServoMotor {
         return getVelocity().getRadians();
     }
 
+    public void flipWristPeriodic(){
+        setFlipped(pivotAngle.getAsDouble() > 0);
+    }
+
     //SIMULATION:
     private final SingleJointedArmSim wristSim = new SingleJointedArmSim(
             SYSTEM_CONSTANTS.motor,
@@ -134,6 +142,8 @@ public class Wrist extends ServoMotor {
             prevSetpoint = setpoint;
         }
         SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
+        SmartDashboard.putBoolean("wrist flipped", wristSolenoid.get() == DoubleSolenoid.Value.kForward);
+        SmartDashboard.putBoolean("wrist flipping", flipping());
         DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
 
         wristSim.setInputVoltage(wristMaster.get() * RobotController.getBatteryVoltage());
