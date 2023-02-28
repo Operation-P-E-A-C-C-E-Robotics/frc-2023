@@ -14,13 +14,13 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.trajectory.Trajectory;
-import frc.lib.util.DCMotorSystemBase.SystemConstants;
+import frc.lib.motion.Trajectory;
+import frc.lib.util.ServoMotor.SystemConstants;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
-public class ArmSystemBase extends SubsystemBase {
+public class ServoArm extends SubsystemBase {
     private final LinearSystem<N2, N1, N1> plant;
     private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
@@ -41,7 +41,7 @@ public class ArmSystemBase extends SubsystemBase {
      * @param armLength The length of the arm (m)
      * @param armMass The mass of the arm (kg)
      */
-    public ArmSystemBase(SystemConstants constants, double armLength, double armMass) {
+    public ServoArm(SystemConstants constants, double armLength, double armMass) {
         this.constants = constants;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
         KalmanFilter<N2, N1, N1> observer = new KalmanFilter<N2, N1, N1>(

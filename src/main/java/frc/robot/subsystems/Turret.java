@@ -10,9 +10,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoderSimCollection;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
@@ -20,15 +18,14 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
-import frc.robot.Robot;
 
 import static frc.robot.Constants.Turret.*;
 
-public class Turret extends DCMotorSystemBase {
+public class Turret extends ServoMotor {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
   private final WPI_CANCoder turretEncoder = new WPI_CANCoder(ENCODER_PORT);
   private double setpoint = 0;

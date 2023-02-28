@@ -1,4 +1,4 @@
-package frc.lib.trajectory;
+package frc.lib.motion;
 
 import frc.lib.util.Util;
 

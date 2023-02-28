@@ -11,7 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -20,7 +20,7 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends DCMotorSystemBase {
+public class Arm extends ServoMotor {
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
     private double setpoint = 0;
 

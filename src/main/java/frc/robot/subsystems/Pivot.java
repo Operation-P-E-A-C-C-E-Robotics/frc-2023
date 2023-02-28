@@ -9,7 +9,6 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderSimCollection;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +21,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
-import frc.lib.util.ArmSystemBase;
+import frc.lib.util.ServoArm;
 import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
@@ -31,7 +30,7 @@ import frc.robot.Robot;
 
 import static frc.robot.Constants.Pivot.*;
 
-public class Pivot extends ArmSystemBase {
+public class Pivot extends ServoArm {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
           Constants.PNEUMATICS_MODULE_CAN_ID,

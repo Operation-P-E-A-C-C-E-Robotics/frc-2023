@@ -1,11 +1,8 @@
-package frc.lib.trajectory;
+package frc.lib.motion;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 
 import java.util.ArrayList;
-
-import static edu.wpi.first.math.trajectory.TrapezoidProfile.*;
 
 public class Trajectory {
     private Motion[] waypoints;

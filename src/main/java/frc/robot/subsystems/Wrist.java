@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
@@ -22,7 +22,7 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Wrist.*;
 
-public class Wrist extends DCMotorSystemBase {
+public class Wrist extends ServoMotor {
     private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
     private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
     private final DoubleSupplier pivotAngle;

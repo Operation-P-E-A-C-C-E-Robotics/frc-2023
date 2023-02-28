@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
-import frc.lib.util.DCMotorSystemBase.SystemConstants;
+import frc.lib.util.ServoMotor.SystemConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean

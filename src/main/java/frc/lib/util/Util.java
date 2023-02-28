@@ -2,7 +2,6 @@ package frc.lib.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -345,7 +344,7 @@ public class Util {
         return countsToRotations(counts, cpr, gearRatio) * wheelDiameter * Math.PI;
     }
 
-    public static double countsToRotations(double counts, DCMotorSystemBase.SystemConstants constants){
+    public static double countsToRotations(double counts, ServoMotor.SystemConstants constants){
         return countsToRotations(counts, constants.cpr, constants.gearing);
     }
     /**
@@ -392,7 +391,7 @@ public class Util {
         return rotationsToCounts(rotations, cpr, gearRatio) / (wheelDiameter * Math.PI);
     }
 
-    public static double rotationsToCounts(double rotations, DCMotorSystemBase.SystemConstants constants){
+    public static double rotationsToCounts(double rotations, ServoMotor.SystemConstants constants){
         return rotationsToCounts(rotations, constants.cpr, constants.gearing);
     }
     public static void main(String args[]){
