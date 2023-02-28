@@ -8,6 +8,9 @@ import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.CANCoderSimCollection;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -20,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ArmSystemBase;
 import frc.lib.util.Util;
+import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 import frc.robot.Robot;
@@ -28,9 +32,15 @@ import static frc.robot.Constants.Pivot.*;
 
 public class Pivot extends ArmSystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
-  private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, BRAKE_SOLENOID_FORWARD, BRAKE_SOLENOID_BACKWARD);
+  private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
+          Constants.PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.REVPH,
+          BRAKE_SOLENOID_FORWARD,
+          BRAKE_SOLENOID_REVERSE
+  );
+  private final CANCoder pivotEncoder = new CANCoder(PIVOT_ENCODER);
   private final Timer brakeTimer = new Timer();
-  private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE; // TODO - make break tolerance in constants
+  private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE;
   private double setpoint = 0;
 
 
@@ -49,6 +59,7 @@ public class Pivot extends ArmSystemBase {
     pivotMaster.setInverted(false);
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
+    pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
     // brakeSolenoid.initSendable(null);
 
     if(Robot.isSimulation()) {
@@ -148,10 +159,7 @@ public class Pivot extends ArmSystemBase {
    * @return a Rotation2d with the current angle.
    */
   public Rotation2d getRotation(){
-    var rotation = Units.rotationsToRadians(
-            Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
-    );
-    return new Rotation2d(rotation);
+    return Rotation2d.fromDegrees(pivotEncoder.getAbsolutePosition());
   }
 
   /**
@@ -171,21 +179,21 @@ public class Pivot extends ArmSystemBase {
    * @return a double with the current angular velocity in radians per second.
    */
   public double getAngularVelocityRadiansPerSecond(){
-    return Units.rotationsToRadians(
-            Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing)
-    );
+    return Units.degreesToRadians(pivotEncoder.getVelocity());
   }
 
   //SIMULATION: (DON'T TOUCH)
   //NOTE: the pivot sim calls -90deg straight down (where gravity pull to).
   //I have to figure out how to make it call 0deg straight down.
    private TalonFXSimCollection pivotMotorSim;
+  private CANCoderSimCollection pivotEncoderSim;
    private static SingleJointedArmSim pivotSim;
    private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
 
   public void initializeSimulation(){
     pivotMotorSim = pivotMaster.getSimCollection();
+    pivotEncoderSim = pivotEncoder.getSimCollection();
     pivotSim = new SingleJointedArmSim(
             SYSTEM_CONSTANTS.motor,
             SYSTEM_CONSTANTS.gearing,
@@ -210,15 +218,29 @@ public class Pivot extends ArmSystemBase {
              (int) Util.rotationsToCounts(
                      //account for the fact that the sim calls -90deg straight down by adding 270deg
                      Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
-                     SYSTEM_CONSTANTS.cpr,
+                     2048,
                      SYSTEM_CONSTANTS.gearing
+             )
+     );
+     pivotEncoderSim.setRawPosition(
+             (int) Util.rotationsToCounts(
+                     Units.radiansToRotations(pivotSim.getAngleRads() + (Math.PI * 1.5)),
+                     SYSTEM_CONSTANTS.cpr,
+                     1
              )
      );
      pivotMotorSim.setIntegratedSensorVelocity(
              (int) Util.rotationsToCounts(
                      Units.radiansToRotations(pivotSim.getVelocityRadPerSec()),
-                     SYSTEM_CONSTANTS.cpr,
+                     2048,
                      SYSTEM_CONSTANTS.gearing
+             )
+     );
+     pivotEncoderSim.setVelocity(
+             (int) Util.rotationsToCounts(
+                     Units.radiansToRotations(pivotSim.getVelocityRadPerSec()/10),
+                     SYSTEM_CONSTANTS.cpr,
+                     1
              )
      );
 

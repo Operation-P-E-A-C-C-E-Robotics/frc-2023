@@ -100,8 +100,9 @@ public final class Constants {
         //port numbers
         public static final int PIVOT_MASTER = 8, //DOCS Pivot Falcon 0
                                 PIVOT_SLAVE  = 10, //DOCS Pivot Falcon 1
+                                PIVOT_ENCODER = 25, //TODO
                       BRAKE_SOLENOID_FORWARD = 5,
-                     BRAKE_SOLENOID_BACKWARD = 6;
+                     BRAKE_SOLENOID_REVERSE = 6;
         //constraints
         public static final double  MAX_ANGLE_RAD = Math.PI, //TODO actual constraints
                                     MIN_ANGLE_RAD = -Math.PI,
@@ -114,8 +115,8 @@ public final class Constants {
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(2),
                 5, //6.67
-                200,
-                2048,
+                400,
+                4096,
                 0.5,
                 0.5, //0.735
                 0.1,
@@ -196,8 +197,8 @@ public final class Constants {
     public static final class EndEffector {
         public static final int LEFT_MOTOR_ID = 90,
                              RIGHT_MOTOR_ID = 91,
-                             GRIP_CLOSED_PNEUMATICS_PORT = 5,
-                             GRIP_OPEN_PNEUMATICS_PORT = 6,
+                             GRIP_CLOSED_PNEUMATICS_PORT = 10,
+                             GRIP_OPEN_PNEUMATICS_PORT = 11,
                              BEAM_BRAKE_PORT = 0;
 
         public static final double TIME_TO_EJECT = 0.2; //TODO
@@ -239,4 +240,5 @@ public final class Constants {
     }
 
     public static final boolean TUNING_MODE = true;
+    public static final int PNEUMATICS_MODULE_CAN_ID = 6;
 }

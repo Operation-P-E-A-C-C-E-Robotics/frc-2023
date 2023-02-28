@@ -35,6 +35,8 @@ import frc.lib.safety.DankPids;
 import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
+import frc.robot.Constants;
+
 import static frc.robot.Constants.DriveTrain.*;
 
 public class DriveTrain extends SubsystemBase {
@@ -58,7 +60,12 @@ public class DriveTrain extends SubsystemBase {
   private boolean shiftClutchDepressed = false;
 
   //SHIFTING!:
-  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(6, PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
+  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(
+          Constants.PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.REVPH,
+          SHIFT_HIGH_PORT,
+          SHIFT_LOW_PORT
+  );
   private Gear gear = Gear.HIGH;
 
   //LQR velocity drive:

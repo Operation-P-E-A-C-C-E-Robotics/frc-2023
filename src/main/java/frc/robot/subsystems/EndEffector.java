@@ -15,13 +15,20 @@ import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
 import static frc.robot.Constants.EndEffector.*;
 
 public class EndEffector extends SubsystemBase {
   private final CANSparkMax leftMotor = new CANSparkMax(LEFT_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax rightMotor = new CANSparkMax(RIGHT_MOTOR_ID, MotorType.kBrushless);
 
-  private final DoubleSolenoid clawSolenoid = new DoubleSolenoid(6, PneumaticsModuleType.REVPH, GRIP_OPEN_PNEUMATICS_PORT, GRIP_CLOSED_PNEUMATICS_PORT); //TODO
+  private final DoubleSolenoid clawSolenoid = new DoubleSolenoid(
+          Constants.PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.REVPH,
+          GRIP_OPEN_PNEUMATICS_PORT,
+          GRIP_CLOSED_PNEUMATICS_PORT
+  ); //TODO
   
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
   private final ColorMatch colorMatcher = new ColorMatch();

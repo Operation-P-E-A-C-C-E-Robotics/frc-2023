@@ -110,9 +110,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * set the place point to a field relative point
      * @param position the point on the field
-     * @param robotPose the robot's pose
-     * @param height the height above the field translation
-     * @param wristAngle the angle of the wrist - 0 is straight up.
+     * @param robotState the robot state
      */
     public void setPlacePositionFieldRelative(Translation3d position, RobotState robotState){
         var drivetrainRelativePosition = robotState.fieldToDrivetrain(new Pose3d(position, new Rotation3d()));
@@ -220,6 +218,7 @@ public class Supersystem extends SubsystemBase {
         var pivot = getSupersystemState().getPivotAngle();
         var newWrist = (Math.PI/2  + pivot) * Math.signum(pivot);
         if(Util.epsilonEquals(pivot, 0, 0.1)) newWrist = 0;
+        System.out.println("PIVOT: " + pivot + " WRIST: " + newWrist);
         setWrist(new Rotation2d(newWrist));
         return this;
     }
