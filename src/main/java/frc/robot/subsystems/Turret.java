@@ -181,7 +181,7 @@ public class Turret extends DCMotorSystemBase {
     turretEncoderSim.setVelocity(
             (int)Util.rotationsToCounts(
                     Units.radiansToRotations(
-                            turretSim.getOutput(1)
+                            turretSim.getOutput(1)/10
                     ),
                     SYSTEM_CONSTANTS.cpr,
                     1
