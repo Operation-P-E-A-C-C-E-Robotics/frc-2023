@@ -30,6 +30,7 @@ public class Kinematics {
      * resets caching of values to prevent unnecesarry computation
      */
     public void reset(){
+        state = null;
         liftPosition = null;
         endEffectorPosition = null;
     } //TODO make sure calling every loop

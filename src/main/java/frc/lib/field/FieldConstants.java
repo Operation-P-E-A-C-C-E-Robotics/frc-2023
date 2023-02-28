@@ -25,8 +25,8 @@ import java.util.Map;
  * methods to flip these values based on the current alliance color.
  */
 public final class FieldConstants {
-    public static final double fieldLength = Units.inchesToMeters(651.25);
-    public static final double fieldWidth = Units.inchesToMeters(315.5);
+    public static final double fieldLength = Units.inchesToMeters(651.25); //16.54 m
+    public static final double fieldWidth = Units.inchesToMeters(315.5); //8.01 m
     public static final double tapeWidth = Units.inchesToMeters(2.0);
     public static final double aprilTagWidth = Units.inchesToMeters(6.0);
 

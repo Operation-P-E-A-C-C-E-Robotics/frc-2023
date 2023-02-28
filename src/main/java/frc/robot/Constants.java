@@ -233,6 +233,7 @@ public final class Constants {
         public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.1, 0.1, 0.3);
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance TARGET_VISION = new SupersystemTolerance(0.5, 0.5, 0.5, 0.3);
         public SupersystemTolerance(double turret, double pivot, double wrist, double arm){
             this.turret = turret;
             this.pivot = pivot;

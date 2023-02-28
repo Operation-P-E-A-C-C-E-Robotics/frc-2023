@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.auto.Autos;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.DefaultStatemachine;
@@ -103,8 +104,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeConeNoVision(supersystem, endEffector, PlaceLevel.MID, robotState));
-    new JoystickButton(driverJoystick, 4).whileTrue(Setpoints.goToSetpoint(Setpoints.placeHighCube, supersystem, Constants.SupersystemTolerance.DEFAULT));
+    new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeCube(supersystem, endEffector, PlaceLevel.MID, robotState));
+    new JoystickButton(driverJoystick, 4).toggleOnTrue(Automations.placeConeNoVision(supersystem, endEffector, PlaceLevel.MID, robotState));
     // new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
     //   var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
     //   if(path != null) path.schedule();
@@ -129,7 +130,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return testPaths.testPath(robotState);
+    return Autos.testAuto1(testPaths, robotState, supersystem);
   }
 
   public void setDriveTrainCommand() {

@@ -1,12 +1,15 @@
 package frc.robot.commands.supersystem;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.RobotState;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
 
 import java.util.function.Supplier;
@@ -40,11 +43,41 @@ public class GoToFieldPoint extends CommandBase {
         var target = targetLocation.get();
         if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
         var robotRelative = robotState.fieldToDrivetrain(new Pose3d(target, new Rotation3d()));
-        supersystem.setSupersystemPosition(robotRelative.getTranslation());
+        supersystem.setPlacePosition(robotRelative.getTranslation(), getWristAngle());
+    }
+
+    public Rotation2d getWristAngle(){
+        var pivot = supersystem.getSupersystemState().getPivotAngle();
+        if(Math.abs(pivot) < 0.1) return new Rotation2d();
+        var wrist = pivot < 0 ? -Math.PI/2 : Math.PI/2;
+        wrist -= pivot;
+        return new Rotation2d(wrist);
     }
 
     @Override
     public boolean isFinished(){
         return supersystem.withinTolerance(tolerance) && stopWhenInTolerance;
+    }
+
+    //TODO this is very wrong but i'm tired i'll fix it later
+    public static Command targetWithVisionCommand(Supersystem supersystem,
+                                                  Translation3d initialTargetLocation,
+                                                  Constants.SupersystemTolerance tolerance,
+                                                  RobotState robotState,
+                                                  Limelight armLimelight,
+                                                  boolean stopWhenInTolerance) {
+        Translation2d offset = new Translation2d(0, 0);
+        return new GoToFieldPoint(supersystem, () -> {
+            //return the initial if we are too far away to see the target
+            if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return initialTargetLocation;
+
+            //return the initial if there is an error getting the target
+            var target = armLimelight.getVisionTargetPoseRelativeToCamera();
+            if(!target.isNormal()) return initialTargetLocation;
+
+            //return the x and y of the vision tape, and the initial z.
+            var translation = target.get(new Translation2d(initialTargetLocation.getX(), initialTargetLocation.getY()));
+            return new Translation3d(translation.getX(), translation.getY(), initialTargetLocation.getZ());
+        }, tolerance, robotState, stopWhenInTolerance);
     }
 }

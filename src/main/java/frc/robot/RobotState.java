@@ -117,6 +117,7 @@ public class RobotState {
      * update drivetrain odometry
      */
     public void update(){
+        supersystem.getKinematics().reset(); //TODO better place for this?
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
@@ -125,6 +126,9 @@ public class RobotState {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+            var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
+            var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
+            DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
         }
 
         var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());

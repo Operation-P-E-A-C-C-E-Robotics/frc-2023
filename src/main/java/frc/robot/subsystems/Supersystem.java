@@ -290,5 +290,6 @@ public class Supersystem extends SubsystemBase {
     Translation3d previousTestSetpoint = new Translation3d();
     @Override
     public void simulationPeriodic(){
+
     }
 }

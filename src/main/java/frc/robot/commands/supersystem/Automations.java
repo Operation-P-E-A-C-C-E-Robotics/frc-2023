@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * A class to hold all the little automation commands that are mostly chains of other commands.
  */
 public class Automations {
-    public static Translation3d cubePlaceOffset = new Translation3d(-0.3, 0, 0.3); //TODO
+    public static Translation3d cubePlaceOffset = new Translation3d(0.3, 0, 0.3); //TODO
     public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
     public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0); //TODO
 

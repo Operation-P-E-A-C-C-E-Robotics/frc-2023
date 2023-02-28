@@ -46,6 +46,10 @@ public class DashboardManager {
         field.getObject("trajectory").setTrajectory(trajectory);
     }
 
+    public void drawEndEffector(Pose2d pose){
+        field.getObject("endeffector").setPose(pose);
+    }
+
     public  void drawDrivetrain(DifferentialDrive differentialDrive, Pose2d robotPose) {
         // this.differentialDrive = differentialDrive;
         field.setRobotPose(robotPose.getX(), robotPose.getY(), robotPose.getRotation());
