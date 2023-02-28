@@ -69,7 +69,8 @@ public final class Constants {
     }
 
     public static final class Turret {
-        public static final int MOTOR_PORT = 4;
+        public static final int MOTOR_PORT = 4,
+                                ENCODER_PORT = 27;
 
         //constraints:
         public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(270), //TODO actual constraints
@@ -79,7 +80,7 @@ public final class Constants {
                 DCMotor.getFalcon500(1),
                 5,
                 100 * 5, //100:1 versaplanetary, 5:1 driving gear
-                2048,
+                4096,
                 3,
                 3,
                 3.0,
@@ -113,7 +114,8 @@ public final class Constants {
                                     MASS = 10;
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
-                DCMotor.getFalcon500(2),
+                DCMotor.getFalcon500(
+                    2),
                 5, //6.67
                 400,
                 4096,

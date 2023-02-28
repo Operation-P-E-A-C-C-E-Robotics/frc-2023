@@ -11,6 +11,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderSimCollection;
+import com.ctre.phoenix.sensors.WPI_CANCoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -38,7 +39,7 @@ public class Pivot extends ArmSystemBase {
           BRAKE_SOLENOID_FORWARD,
           BRAKE_SOLENOID_REVERSE
   );
-  private final CANCoder pivotEncoder = new CANCoder(PIVOT_ENCODER);
+  private final WPI_CANCoder pivotEncoder = new WPI_CANCoder(PIVOT_ENCODER);
   private final Timer brakeTimer = new Timer();
   private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE;
   private double setpoint = 0;
