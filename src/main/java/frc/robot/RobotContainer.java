@@ -20,6 +20,7 @@ import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.supersystem.GoToFieldPoint;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
+import frc.robot.commands.supersystem.Setpoints;
 import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestChickenHead;
 import frc.robot.commands.testing.TestPosition;
@@ -103,6 +104,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
     new JoystickButton(driverJoystick, 3).toggleOnTrue(Automations.placeConeNoVision(supersystem, endEffector, PlaceLevel.MID, robotState));
+    new JoystickButton(driverJoystick, 4).whileTrue(Setpoints.goToSetpoint(Setpoints.placeHighCube, supersystem, Constants.SupersystemTolerance.DEFAULT));
     // new JoystickButton(driverJoystick, 3).onTrue(new RunCommand(() -> {
     //   var path = testPaths.driveToConeCommand(robotState, driveTrain).get(null);
     //   if(path != null) path.schedule();
