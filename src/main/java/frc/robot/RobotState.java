@@ -18,7 +18,9 @@ import frc.robot.subsystems.Supersystem;
 public class RobotState {
     private final DriveTrain driveTrain;
     private final PigeonHelper imu;
-    private final AveragePose conePoseSmoothed = new AveragePose();
+    private final AveragePose conePoseSmoothed = new AveragePose(),
+            cubePoseSmoothed = new AveragePose(),
+            visionTargetPoseSmoothed = new AveragePose();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private final Limelight apriltagCamera, armCamera;
@@ -84,14 +86,26 @@ public class RobotState {
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
-        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        if(apriltagCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
 
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePose(){
         var poseRelativeToCamera = armCamera.getCubePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        if(!poseRelativeToCamera.isNormal()) return getCubePoseFromDrivetrainLimelight();
+
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+
+        if(armCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
+
+        return new Value<>(pose);
+    }
+
+    public Value<Pose3d> getConePose(){
+        var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
@@ -101,14 +115,16 @@ public class RobotState {
         return new Value<>(pose);
     }
 
-    public Value<Pose3d> getConePose(){
-        var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
+    public Value<Pose3d> getVisionTargetPose(double z){
+        var poseRelativeToCamera = armCamera.getVisionTargetPoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(
+                Util.toPose3d(poseRelativeToCamera.get(new Translation2d()), z)
+        ))));
 
-        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        if(armCamera.hasTarget()) pose = visionTargetPoseSmoothed.calculate(pose);
 
         return new Value<>(pose);
     }

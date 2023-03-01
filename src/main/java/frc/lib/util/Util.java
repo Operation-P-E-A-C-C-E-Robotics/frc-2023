@@ -192,6 +192,9 @@ public class Util {
     public static Pose3d toPose3d(Translation2d translation) {
         return toPose3d(new Pose2d(translation, new Rotation2d()));
     }
+    public static Pose3d toPose3d(Translation2d translation, double z) {
+        return toPose3d(new Pose2d(translation, new Rotation2d()), z, 0, 0);
+    }
 
     /**
      * convert a Pose2d to a Pose3d

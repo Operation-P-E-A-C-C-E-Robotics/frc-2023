@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.Limelight;
@@ -66,18 +67,17 @@ public class GoToFieldPoint extends CommandBase {
                                                   RobotState robotState,
                                                   Limelight armLimelight,
                                                   boolean stopWhenInTolerance) {
-        Translation2d offset = new Translation2d(0, 0);
         return new GoToFieldPoint(supersystem, () -> {
             //return the initial if we are too far away to see the target
             if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return initialTargetLocation;
 
             //return the initial if there is an error getting the target
-            var target = armLimelight.getVisionTargetPoseRelativeToCamera();
+            var target = robotState.getVisionTargetPose(initialTargetLocation.getZ());
             if(!target.isNormal()) return initialTargetLocation;
 
             //return the x and y of the vision tape, and the initial z.
-            var translation = target.get(new Translation2d(initialTargetLocation.getX(), initialTargetLocation.getY()));
-            return new Translation3d(translation.getX(), translation.getY(), initialTargetLocation.getZ());
+            var translation = target.get(new Pose3d(initialTargetLocation, new Rotation3d()));
+            return translation.getTranslation();
         }, tolerance, robotState, stopWhenInTolerance);
     }
 }
