@@ -78,17 +78,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                5,
-                100 * 5, //100:1 versaplanetary, 5:1 driving gear
-                4096,
+                2,
+                20 * 5, //20:1 versaplanetary, 5:1 driving gear
+                2048,
                 3,
                 3,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.5,
-                1,
+                0.1,
+                0.1,
                 12,
                 0,
                 12,

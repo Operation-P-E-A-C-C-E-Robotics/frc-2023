@@ -238,7 +238,7 @@ public class ServoMotor extends SubsystemBase {
     }
 
     public static final class SystemConstants {
-        public final double inertia,
+        public double inertia,
                 gearing,
                 cpr,
                 maxVelocity,
