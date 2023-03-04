@@ -15,6 +15,7 @@ public class PhotonicHRI {
     AddressableLEDBuffer buffer;
     Random positionRandom = new Random();
     Random colorRandom = new Random();
+    PhotonicLingualElement running;
 
     /**
      * the Photonic Human Robot Interface
@@ -24,6 +25,14 @@ public class PhotonicHRI {
         buffer = new AddressableLEDBuffer(length);
         led.setLength(buffer.getLength());
         led.start();
+    }
+
+    public void runElement(PhotonicLingualElement element) {
+        if (running != null) {
+            running.stop();
+        }
+        running = element;
+        running.start();
     }
 
     public PhotonicLingualElement setSolidColor(int r, int g, int b) {
@@ -56,6 +65,18 @@ public class PhotonicHRI {
             rainbowFirstPixelHue %= 180;
             led.setData(buffer);
         }, 0.05);
+
+    public PhotonicLingualElement blink(int r, int g, int b, double period) {
+        final boolean[] on = {false}; //not sure why this should be an array, but my editor says it should be
+        return new PhotonicLingualElement(() -> {
+            if (on[0]) {
+                setSolidColor(r, g, b);
+            } else {
+                setSolidColor(0, 0, 0);
+            }
+            on[0] = !on[0];
+        }, period);
+    }
 
     public PhotonicLingualElement fire(){
         //fancy moving flame pattern:
@@ -136,19 +157,19 @@ public class PhotonicHRI {
         }, 0.05);
     }
 
-    int rainbowTwinkleFirstPixelHue = 0;
     public PhotonicLingualElement rainbowTwinkle(){
+        final int[] rainbowTwinkleFirstPixelHue = {0};
         return new PhotonicLingualElement(() -> {
             for(var i = 0; i < buffer.getLength(); i++){
-                final var hue = (rainbowTwinkleFirstPixelHue + (i * 180 / buffer.getLength())) % 180;
+                final var hue = (rainbowTwinkleFirstPixelHue[0] + (i * 180 / buffer.getLength())) % 180;
                 if (Math.random() * 255 < 8) {
                     buffer.setHSV(i, hue, 255, 128);
                 } else {
                     buffer.setRGB(i, 0, 0, 0);
                 }
             }
-            rainbowTwinkleFirstPixelHue += 3;
-            rainbowTwinkleFirstPixelHue %= 180;
+            rainbowTwinkleFirstPixelHue[0] += 3;
+            rainbowTwinkleFirstPixelHue[0] %= 180;
             led.setData(buffer);
         }, 0.05);
     }
@@ -167,6 +188,8 @@ public class PhotonicHRI {
     }
 
     public void off() {
+        running.stop();
+        running = null;
         for (var i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, 0, 0, 0);
         }

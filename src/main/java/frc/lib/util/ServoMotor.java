@@ -218,7 +218,7 @@ public class ServoMotor extends SubsystemBase {
 
         // if we're following a profile, calculate the next reference
         if(followingProfile){
-            var output = trajectory.calculate(time + 0.1);
+            var output = trajectory.calculate(time + (constants.dt/2));
             setNextR(output.position, output.velocity);
             for (var i : feedforwards) {
                 feedforward += i.calculate(output.position, output.velocity);

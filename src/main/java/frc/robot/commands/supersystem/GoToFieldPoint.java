@@ -60,23 +60,68 @@ public class GoToFieldPoint extends CommandBase {
         return supersystem.withinTolerance(tolerance) && stopWhenInTolerance;
     }
 
-    //TODO this is very wrong but i'm tired i'll fix it later
-    public static Command targetWithVisionCommand(Supersystem supersystem,
+    public static Command targetVisionTape(Supersystem supersystem,
                                                   Translation3d initialTargetLocation,
                                                   Constants.SupersystemTolerance tolerance,
                                                   RobotState robotState,
                                                   Limelight armLimelight,
                                                   boolean stopWhenInTolerance) {
+        Translation3d[] targetLocation = {initialTargetLocation}; //recall the target location from the last time we saw the target
         return new GoToFieldPoint(supersystem, () -> {
             //return the initial if we are too far away to see the target
-            if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return initialTargetLocation;
+            if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return targetLocation[0];
 
             //return the initial if there is an error getting the target
             var target = robotState.getVisionTargetPose(initialTargetLocation.getZ());
-            if(!target.isNormal()) return initialTargetLocation;
+            if(!target.isNormal()) return targetLocation[0];
 
             //return the x and y of the vision tape, and the initial z.
-            var translation = target.get(new Pose3d(initialTargetLocation, new Rotation3d()));
+            var translation = target.get(new Pose3d(targetLocation[0], new Rotation3d()));
+            targetLocation[0] = translation.getTranslation();
+            return translation.getTranslation();
+        }, tolerance, robotState, stopWhenInTolerance);
+    }
+
+    public static Command targetCone(Supersystem supersystem,
+                                     Translation3d initialTargetLocation,
+                                     Constants.SupersystemTolerance tolerance,
+                                     RobotState robotState,
+                                     boolean stopWhenInTolerance) {
+        final Translation3d[] targetLocation = {initialTargetLocation}; //recall the target location from the last time we saw the target
+        return new GoToFieldPoint(supersystem, () -> {
+            //return the initial if we are too far away to see the target
+            if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return targetLocation[0];
+
+            //return the initial if there is an error getting the target
+            var target = robotState.getConePose();
+            if(!target.isNormal()) return targetLocation[0];
+
+            //return the x and y of the vision tape, and the initial z.
+            var translation = target.get(new Pose3d(targetLocation[0], new Rotation3d()));
+            translation = new Pose3d(translation.getX(), translation.getY(), initialTargetLocation.getZ(), translation.getRotation());
+            targetLocation[0] = translation.getTranslation();
+            return translation.getTranslation();
+        }, tolerance, robotState, stopWhenInTolerance);
+    }
+
+    public static Command targetCube(Supersystem supersystem,
+                                     Translation3d initialTargetLocation,
+                                     Constants.SupersystemTolerance tolerance,
+                                     RobotState robotState,
+                                     boolean stopWhenInTolerance) {
+        final Translation3d[] targetLocation = {initialTargetLocation}; //recall the target location from the last time we saw the target
+        return new GoToFieldPoint(supersystem, () -> {
+            //return the initial if we are too far away to see the target
+            if(!supersystem.withinTolerance(Constants.SupersystemTolerance.TARGET_VISION)) return targetLocation[0];
+
+            //return the initial if there is an error getting the target
+            var target = robotState.getCubePose();
+            if(!target.isNormal()) return targetLocation[0];
+
+            //return the x and y of the vision tape, and the initial z.
+            var translation = target.get(new Pose3d(targetLocation[0], new Rotation3d()));
+            translation = new Pose3d(translation.getX(), translation.getY(), initialTargetLocation.getZ(), translation.getRotation());
+            targetLocation[0] = translation.getTranslation();
             return translation.getTranslation();
         }, tolerance, robotState, stopWhenInTolerance);
     }

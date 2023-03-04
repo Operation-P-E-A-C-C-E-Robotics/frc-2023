@@ -11,7 +11,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class LimelightHelper {
-    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters
+    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters // (distance * pixels) / size
     NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
     NetworkTable limelight;
 

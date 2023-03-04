@@ -2,6 +2,7 @@ package frc.robot.commands.supersystem;
 
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.lib.field.FieldConstants;
 import frc.robot.Constants;
 import frc.robot.RobotState;
@@ -19,15 +20,22 @@ public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0.3, 0, 0.3); //TODO
     public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
     public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0); //TODO
+    private final Supersystem supersystem;
+    private final RobotState robotState;
+    private final EndEffector endEffector;
+
+    public Automations(Supersystem supersystem, RobotState robotState, EndEffector endEffector){
+        this.supersystem = supersystem;
+        this.robotState = robotState;
+        this.endEffector = endEffector;
+    }
 
     /**
      * A command that moves the supersystem into position to place a cube.
-     * @param supersystem the supersystem to move
      * @param level the level to place the cube on
-     * @param robotState the robot state
      * @return a command that moves the supersystem into position to place a cube
      */
-    public static Command goToCubePosition(Supersystem supersystem, PlaceLevel level, RobotState robotState){
+    public Command goToCubePosition(PlaceLevel level){
         var tolerance = switch(level){
             case HIGH -> Constants.SupersystemTolerance.PLACE_HIGH;
             case MID -> Constants.SupersystemTolerance.PLACE_MID;
@@ -48,11 +56,11 @@ public class Automations {
         );
     }
 
-    public static Command placeCube(Supersystem supersystem, EndEffector endEffector, PlaceLevel level, RobotState robotState){
-        return goToCubePosition(supersystem, level, robotState).raceWith(new SpitGamepiece(endEffector));
+    public Command placeCube(PlaceLevel level){
+        return goToCubePosition(level).raceWith(new SpitGamepiece(endEffector));
     }
 
-    public static Command placeConeNoVision(Supersystem supersystem, EndEffector endEffector, PlaceLevel level, RobotState robotState){
+    public Command placeConeNoVision(PlaceLevel level){
         var tolerance = switch(level){
             case HIGH -> Constants.SupersystemTolerance.PLACE_HIGH;
             case MID -> Constants.SupersystemTolerance.PLACE_MID;
@@ -80,6 +88,17 @@ public class Automations {
                 true
         );
         return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
+    }
+
+    public Command pickUpConeFloor(){
+        //TODO OOOOOOO
+        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND);
+    }
+
+    //TODO: will this work?????????????????????????
+    public Command place(PlaceLevel level){
+        return (placeConeNoVision(level).unless(() -> endEffector.getState() != EndEffector.IntakeState.HAS_CONE)).alongWith(
+                placeCube(level).unless(() -> endEffector.getState() != EndEffector.IntakeState.HAS_CUBE));
     }
 
     public enum PlaceLevel{
