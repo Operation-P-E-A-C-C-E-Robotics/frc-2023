@@ -15,6 +15,7 @@ import frc.lib.safety.DankPids;
 import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
+import frc.robot.Constants;
 import frc.robot.DashboardManager;
 import frc.robot.Robot;
 
@@ -24,7 +25,7 @@ import static frc.robot.Constants.Wrist.*;
 
 public class Wrist extends ServoMotor {
     private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
+    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();

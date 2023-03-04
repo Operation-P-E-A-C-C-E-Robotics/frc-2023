@@ -24,8 +24,8 @@ public class EndEffector extends SubsystemBase {
   private final CANSparkMax rightMotor = new CANSparkMax(RIGHT_MOTOR_ID, MotorType.kBrushless);
 
   private final DoubleSolenoid clawSolenoid = new DoubleSolenoid(
-          Constants.PNEUMATICS_MODULE_CAN_ID,
-          PneumaticsModuleType.REVPH,
+          Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.CTREPCM,
           GRIP_OPEN_PNEUMATICS_PORT,
           GRIP_CLOSED_PNEUMATICS_PORT
   ); //TODO

@@ -99,9 +99,9 @@ public final class Constants {
 
     public static final class Pivot{
         //port numbers
-        public static final int PIVOT_MASTER = 8, //DOCS Pivot Falcon 0
-                                PIVOT_SLAVE  = 10, //DOCS Pivot Falcon 1
-                                PIVOT_ENCODER = 25, //TODO
+        public static final int PIVOT_MASTER = 9, //DOCS Pivot Falcon 0
+                                PIVOT_SLAVE  = 11, //DOCS Pivot Falcon 1
+                                PIVOT_ENCODER = 12, //TODO
                       BRAKE_SOLENOID_FORWARD = 5,
                      BRAKE_SOLENOID_REVERSE = 6;
         //constraints
@@ -136,7 +136,7 @@ public final class Constants {
 
     public static final class Arm {
         //ports
-        public static final int MASTER_PORT = 12; //DOCS IGUS Extension Falcon 0 //TODO is this the right motor
+        public static final int MASTER_PORT = 13; //DOCS IGUS Extension Falcon 0
 
         //physical constants
         public static final double  CARRAIGE_MASS = 5, //kg
@@ -165,7 +165,7 @@ public final class Constants {
 
     public static final class Wrist {
         //ports
-        public static final int WRIST_MOTOR = 13, //DOCS Wrist Falcon 0
+        public static final int WRIST_MOTOR = 14, //DOCS Wrist Falcon 0
                         WRIST_FLIP_FORWARD  = 2, //TODO Get PH port
                         WRIST_FLIP_REVERSE  = 3; //TODO get PH port
 
@@ -197,8 +197,8 @@ public final class Constants {
     }
 
     public static final class EndEffector {
-        public static final int LEFT_MOTOR_ID = 90,
-                             RIGHT_MOTOR_ID = 91,
+        public static final int LEFT_MOTOR_ID = 15,
+                             RIGHT_MOTOR_ID = 16,
                              GRIP_CLOSED_PNEUMATICS_PORT = 10,
                              GRIP_OPEN_PNEUMATICS_PORT = 11,
                              BEAM_BRAKE_PORT = 0;
@@ -244,5 +244,6 @@ public final class Constants {
     }
 
     public static final boolean TUNING_MODE = true;
-    public static final int PNEUMATICS_MODULE_CAN_ID = 6;
+    public static final int LOWER_PNEUMATICS_MODULE_CAN_ID = 6,
+                            UPPER_PNEUMATICS_MODULE_CAN_ID = 7;
 }

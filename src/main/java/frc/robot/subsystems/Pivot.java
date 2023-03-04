@@ -33,8 +33,8 @@ import static frc.robot.Constants.Pivot.*;
 public class Pivot extends ServoArm {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
-          Constants.PNEUMATICS_MODULE_CAN_ID,
-          PneumaticsModuleType.REVPH,
+          Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.CTREPCM,
           BRAKE_SOLENOID_FORWARD,
           BRAKE_SOLENOID_REVERSE
   );

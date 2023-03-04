@@ -61,7 +61,7 @@ public class DriveTrain extends SubsystemBase {
 
   //SHIFTING!:
   private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(
-          Constants.PNEUMATICS_MODULE_CAN_ID,
+          Constants.LOWER_PNEUMATICS_MODULE_CAN_ID,
           PneumaticsModuleType.REVPH,
           SHIFT_HIGH_PORT,
           SHIFT_LOW_PORT
@@ -192,7 +192,6 @@ public class DriveTrain extends SubsystemBase {
     rightController.reset();
   }
 
-  //EXPERIMENTAL
   public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
     //use the LQR to calculate the voltages needed to get to the desired speeds
     loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
