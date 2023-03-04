@@ -97,7 +97,7 @@ public class Automations {
 
     //TODO: will this work?????????????????????????
     public Command place(PlaceLevel level){
-        return (placeConeNoVision(level).unless(() -> endEffector.getState() != EndEffector.IntakeState.HAS_CONE)).alongWith(
+        return (placeConeNoVision(level).unless(() -> endEffector.getState() != EndEffector.IntakeState.HAS_CONE)).andThen(
                 placeCube(level).unless(() -> endEffector.getState() != EndEffector.IntakeState.HAS_CUBE));
     }
 

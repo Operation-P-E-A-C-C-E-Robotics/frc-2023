@@ -159,7 +159,8 @@ public class Pivot extends ServoArm {
    * @return a Rotation2d with the current angle.
    */
   public Rotation2d getRotation(){
-    return Rotation2d.fromDegrees(pivotEncoder.getAbsolutePosition());
+    return Rotation2d.fromRotations(Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS));
+    // return Rotation2d.fromDegrees(pivotEncoder.getAbsolutePosition());
   }
 
   /**
@@ -179,7 +180,8 @@ public class Pivot extends ServoArm {
    * @return a double with the current angular velocity in radians per second.
    */
   public double getAngularVelocityRadiansPerSecond(){
-    return Units.degreesToRadians(pivotEncoder.getVelocity());
+    return Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS) * 10;
+    // return Units.degreesToRadians(pivotEncoder.getVelocity());
   }
 
   //SIMULATION: (DON'T TOUCH)
@@ -205,6 +207,7 @@ public class Pivot extends ServoArm {
             true
     );
   }
+
    @Override
    public void simulationPeriodic() {
      //update the simulation

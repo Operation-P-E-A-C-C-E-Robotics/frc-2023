@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.motion.Trajectory;
 import frc.lib.util.ServoMotor.SystemConstants;
+import frc.robot.Constants;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
@@ -34,7 +35,7 @@ public class ServoArm extends SubsystemBase {
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
-    private final double armLength, armMass;
+    private double armLength, armMass; //TODO make final once we're done tuning.
     /**
      * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
@@ -67,7 +68,10 @@ public class ServoArm extends SubsystemBase {
         );
         this.armLength = armLength;
         this.armMass = armMass;
-        SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 1);
+        if(Constants.TUNING_MODE){
+            SmartDashboard.putNumber("Arm Mass", armMass);
+            SmartDashboard.putNumber("Arm Length", armLength);
+        }
     }
 
     /**
@@ -120,11 +124,8 @@ public class ServoArm extends SubsystemBase {
                                 * constants.inertia
                                 / (armMass * armLength * armLength)
                                 * Math.cos(position - Math.PI*1.5);
-        SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
         //account for gearing:
         force /= constants.gearing;
-
-        SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
         //calculate voltage needed to counteract force:
         return constants.motor.getVoltage(force, velocity);
     }
@@ -195,6 +196,11 @@ public class ServoArm extends SubsystemBase {
 
     @Override
     public final void periodic() {
+        //update the weight and length of the arm from the dashboard if we're in tuning mode:
+        if(Constants.TUNING_MODE){
+            armMass = SmartDashboard.getNumber("Arm Mass", armMass);
+            armLength = SmartDashboard.getNumber("Arm Length", armLength);
+        }
          // run the subsystem's periodic code
          if(superPeriodic != null) superPeriodic.run();
          if(!looping) return; // don't run the feedback loop if it's not enabled
@@ -202,8 +208,6 @@ public class ServoArm extends SubsystemBase {
          var time = profileTimer.get(); // get the time since the profile started
          double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
 
-         SmartDashboard.putNumber("DCMotor Velocity", velocity);
-         SmartDashboard.putNumber("DCMotor Position", position);
          var feedforward = 0.0;
 
          if(recalculateTrajectory){
@@ -216,8 +220,6 @@ public class ServoArm extends SubsystemBase {
  //            var output = profile.calculate(time);
              var output = trajectory.calculate(time + 0.1);
              setNextR(output.position, output.velocity);
-             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
-             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);
             //  for (var i : feedforwards) {
             //      feedforward += i.calculate(output.position, output.velocity);
             //  }
