@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -23,6 +24,7 @@ import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.testing.TestBasic;
+import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.sensors.PigeonHelper;
@@ -42,7 +44,7 @@ public class RobotContainer {
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight apriltagLimelight = new Limelight("limelight"),
-                          armLimelight = new Limelight("limelight"); //TODO
+                          armLimelight = new Limelight("sdsfg"); //TODO
 
   private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
 
@@ -84,6 +86,7 @@ public class RobotContainer {
   private final OIEntry[] testDriverOI = {
           SimpleButton.toggle(automations.placeCube(PlaceLevel.HIGH), 3),
           SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 4),
+          SimpleButton.toggle(new RunCommand(() -> robotState.resetOdometry(new Pose2d())), 11)
   };
 
   private final OIEntry[] mainOperatorOI = {
@@ -96,7 +99,8 @@ public class RobotContainer {
           SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 5),
           SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
-          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8)
+          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8),
+          SimpleButton.onHold(new TestPosition(arm, pivot, turret, wrist), 1)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -132,7 +136,8 @@ public class RobotContainer {
   //     () -> robotXInRange(12, 30),
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
-      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+      // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+      pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   }
 
   public boolean robotXInRange(double low, double high){

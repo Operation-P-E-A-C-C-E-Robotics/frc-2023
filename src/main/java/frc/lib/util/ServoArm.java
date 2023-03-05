@@ -127,7 +127,7 @@ public class ServoArm extends SubsystemBase {
         //account for gearing:
         force /= constants.gearing;
         //calculate voltage needed to counteract force:
-        return constants.motor.getVoltage(force, velocity);
+        return 0;// constants.motor.getVoltage(force, velocity);
     }
 
     /**

@@ -130,8 +130,8 @@ public final class Constants {
                                     TIME_FOR_BRAKE_TO_ENGAGE = 0.5; //TODO Meassure time for Break to engage
 
         //physical constants
-        public static final double  LENGTH = 0.5,
-                                    MASS = 10;
+        public static final double  LENGTH = 0.1,
+                                    MASS = 0.1;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 false,
@@ -143,11 +143,11 @@ public final class Constants {
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(
                     2),
-                5, //6.67
-                400,
+                10, //6.67
+                3*4*5*6.4,
                 2048,
-                0.5,
-                0.5, //0.735
+                1,
+                1, //0.735
                 0.1,
                 0.1,
                 0.1,
@@ -167,8 +167,13 @@ public final class Constants {
 
         //physical constants
         public static final double  CARRAIGE_MASS = 5, //kg
-                MIN_EXTENSION = 0.5, //m
-                MAX_EXTENSION = 1.5; //m
+                MIN_EXTENSION = 0.41, //m
+                MAX_EXTENSION = 1.4; //m
+
+        public static final double PULLY_DIAMETER = 0.044;//
+        public static final double PULLY_CIRCUMPHERENCE = Math.PI * Math.pow(PULLY_DIAMETER/2, 2);
+
+        public static final double FULLY_EXTENDED_COUNTS = 204000;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 false,
@@ -179,17 +184,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                5,
-                50,
-                2048,
-                4,
                 10,
+                30 / 0.13823,
+                2048,
+                0.5,
+                1.5,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.05,
-                0.05,
+                0.001,
+                0.01,
                 12,
                 0,
                 12,
@@ -219,17 +224,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                1,
-                50,
+                2,
+                7*5*4,
                 2048,
-                4,
-                10,
+                0.5,
+                0.5,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.05,
-                0.05,
+                0.01,
+                0.1,
                 12,
                 0,
                 12,
@@ -248,9 +253,9 @@ public final class Constants {
         public static final Color CUBE_COLOR = new Color(0,0,0), CONE_COLOR = new Color(0,0,0);
     }
     public static final class Kinematics {
-        public static final double  PIVOT_HEIGHT = 0,
-                                    END_EFFECTOR_LENGTH = 0.15,
-                                    END_EFFECTOR_LENGTH_TO_PLACE = 0.1;
+        public static final double  PIVOT_HEIGHT = 0.64,
+                                    END_EFFECTOR_LENGTH = 0.43,
+                                    END_EFFECTOR_LENGTH_TO_PLACE = 0.34;
     }
 
     public static final class Constraints{

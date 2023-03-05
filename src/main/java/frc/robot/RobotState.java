@@ -47,7 +47,7 @@ public class RobotState {
                 driveTrain.getRightMeters(),
                 new Pose2d(3, 3, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(1, 1, 0.5)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }

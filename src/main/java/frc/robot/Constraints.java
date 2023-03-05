@@ -35,7 +35,8 @@ public class Constraints {
         prevFwd = fwd;
         double normal = normalDriveLimiter.calculate(fwd);
         double extended = liftExtendedDriveLimiter.calculate(fwd);
-        return Util.interpolate(normal, extended, kinematics.getSupersystemState().getArmExtension() / Arm.MAX_EXTENSION); //todo interpolate
+        return normal;
+        // return Util.interpolate(normal, extended, kinematics.getSupersystemState().getArmExtension() / Arm.MAX_EXTENSION); //todo interpolate
     }
 
     public static double ARM_EXTENSION_4FT = 0; //TODO how far the arm is extended to reach out 4 feet

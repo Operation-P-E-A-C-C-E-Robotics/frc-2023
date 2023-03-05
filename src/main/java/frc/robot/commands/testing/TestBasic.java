@@ -41,14 +41,16 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
         SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
+        SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = testJoystick.getRawAxis(3);
         var pivotSpeed = testJoystick.getRawAxis(1);
         var turretSpeed = testJoystick.getRawAxis(0);
         var wristSpeed = testJoystick.getRawAxis(0);
         arm.setPercent(armSpeed);
-        pivot.setPercent(pivotSpeed);
+        // pivot.setPercent(pivotSpeed);
         // turret.setPercent(turretSpeed);
-        wrist.setPercent(wristSpeed);
+        // wrist.setPercent(wristSpeed);
+        SmartDashboard.putNumber("arm velocity", arm.getVelocity());
         SmartDashboard.putNumber("arm speed", armSpeed);
         SmartDashboard.putNumber("pivot speed", pivotSpeed);
         SmartDashboard.putNumber("turret speed", turretSpeed);

@@ -22,11 +22,11 @@ public class CheesyDriveHelper {
     private static final double LOW_NEG_INERTIA_CLOSE_SCALAR = 4.0;
     private static final double LOW_NEG_INERTIA_FAR_SCALAR = 5.0;
 
-    private static final double kHighSensitivity = 0.8;
+    private static final double kHighSensitivity = 0.7;
     private static final double kLowSensitiity = 0.65;
 
     private static final double QUICK_STOP_DEADBAND = 0.5;
-    private static final double QUICK_STOP_WEIGHT = 0.1;
+    private static final double QUICK_STOP_WEIGHT = 0.3;
     private static final double QUICK_STOP_SCALAR = 5.0;
 
     private double mOldWheel = 0.0;
@@ -103,7 +103,7 @@ public class CheesyDriveHelper {
                 mQuickStopAccumlator = (1 - alpha) * mQuickStopAccumlator
                         + alpha * Util.limit(wheel, 1.0) * QUICK_STOP_SCALAR;
             }
-            overPower = 0.5;
+            overPower = 0.3;
             angularPower = wheel;
         } else {
             overPower = 0.0;

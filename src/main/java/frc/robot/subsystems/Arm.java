@@ -39,7 +39,9 @@ public class Arm extends ServoMotor {
 //            //calculate voltage needed to counteract force:
 //            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
 //        });
+        armMaster.setInverted(true);
         armMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+        setPeriodicFunction(this::zeroFromLimitSwitchPeriodic);
         DankPids.registerDankTalon(armMaster);
     }
 
@@ -62,11 +64,15 @@ public class Arm extends ServoMotor {
      * @return lift extension meters
      */
     public double getExtension(){
-        return Util.countsToRotations(armMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        // return Util.countsToRotations(armMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        var counts = armMaster.getSelectedSensorPosition();
+        var percentOfMax = counts / FULLY_EXTENDED_COUNTS;
+        var extensionFromMin = percentOfMax * (MAX_EXTENSION - MIN_EXTENSION);
+        return MIN_EXTENSION + extensionFromMin;
     }
 
     public double getVelocity(){
-        return Util.countsToRotations(armMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        return ((armMaster.getSelectedSensorVelocity()*10) / SYSTEM_CONSTANTS.cpr) / SYSTEM_CONSTANTS.gearing;
     }
     /**
      * set the lift extension in meters between
@@ -84,6 +90,16 @@ public class Arm extends ServoMotor {
 
     public boolean withinTolerance(SupersystemTolerance tolerance){
         return withinTolerance(tolerance, setpoint);
+    }
+
+    public double getEncoderCounts(){
+        return armMaster.getSelectedSensorPosition();
+    }
+
+    public void zeroFromLimitSwitchPeriodic(){
+        if(armMaster.isFwdLimitSwitchClosed() == 1){
+            armMaster.setSelectedSensorPosition(0);
+        }
     }
 
 
