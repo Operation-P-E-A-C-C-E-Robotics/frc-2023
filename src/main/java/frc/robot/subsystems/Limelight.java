@@ -12,10 +12,13 @@ public class Limelight extends LimelightHelper {
                                 RETROREFLECTIVE_TAPE_HEIGHT = 0.254;
 
     @SuppressWarnings("unused")
-    private static final int APRILTAG_PIPELINE = 0,
-                             CONE_PIPELINE = 1,
-                             CUBE_PIPELINE = 2,
-                             VISION_TARGET_PIPELINE = 3;
+    private static final int APRILTAG_PIPELINE = 0;
+    @SuppressWarnings("unused")
+    public static final int CONE_PIPELINE = 1;
+    @SuppressWarnings("unused")
+    public static final int CUBE_PIPELINE = 2;
+    @SuppressWarnings("unused")
+    public static final int VISION_TARGET_PIPELINE = 3;
 
     public Limelight(String networktablesName) {
         super(networktablesName);

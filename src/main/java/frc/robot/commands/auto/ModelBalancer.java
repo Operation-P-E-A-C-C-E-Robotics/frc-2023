@@ -10,10 +10,13 @@ import frc.robot.subsystems.DriveTrain;
 
 public class ModelBalancer extends CommandBase{
     private static final ChargeStation model = new ChargeStation();
+    private static final double DEADBAND = 0.1; //radians from center
+    private static final double BANGBANGSPEED = 0.3; //drivetrain percentage
     private static final TrapezoidalMotion driveMotion = new TrapezoidalMotion(Constants.DriveTrain.AUTO_MAX_SPEED_METERS_PER_SECOND, Constants.DriveTrain.AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED);
     private final DriveTrain driveTrain;
     private final PigeonHelper imu;
     private double prevPitch = 0;
+    private double goalPosition = 0;
 
     public ModelBalancer(DriveTrain driveTrain, PigeonHelper imu) {
         this.driveTrain = driveTrain;
@@ -34,11 +37,12 @@ public class ModelBalancer extends CommandBase{
         prevPitch = currentPitch;
 
         if(Math.abs(pitchVelocity) < 0.1){
-            //TODO bad data if we're not moving fast enough.
-            driveTrain.tankDrive(0,0);
+            //model won't work if we aren't accelerating
+            bangBangController(currentPitch, DEADBAND, BANGBANGSPEED, driveTrain);
         }
 
         double currentPositionOnModel = model.calculateRobotPosition(currentPitch, pitchVelocity);
+
         driveMotion.setCurrentState(driveTrain.getAverageEncoderDistance(), driveTrain.getAverageVelocity());
         driveMotion.setGoalState(currentPositionOnModel, 0);
         DifferentialDriveWheelSpeeds speeds = new DifferentialDriveWheelSpeeds(
@@ -46,5 +50,20 @@ public class ModelBalancer extends CommandBase{
                 driveMotion.calculate(0.02).velocity
         );
         driveTrain.velocityDriveLQR(speeds);
+    }
+
+    static void bangBangController(double currentPitch, double deadband, double bangbangspeed, DriveTrain driveTrain) {
+        double left, right;
+        if (currentPitch > deadband) {
+            left = bangbangspeed;
+            right = -bangbangspeed;
+        } else if (currentPitch < -deadband) {
+            left = -bangbangspeed;
+            right = bangbangspeed;
+        } else {
+            left = 0;
+            right = 0;
+        }
+        driveTrain.tankDrive(left, right);
     }
 }

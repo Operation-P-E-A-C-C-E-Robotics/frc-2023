@@ -24,6 +24,8 @@ public class RobotState {
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private final Limelight apriltagCamera, armCamera;
+    private Pose3d prevConePose = new Pose3d();
+    private Pose3d prevCubePose = new Pose3d();
     private Pose2d prevRobotPose;
 
 
@@ -69,25 +71,25 @@ public class RobotState {
 
     public Value<Pose3d> getConePoseFromDrivetrainLimelight(){
         var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        if(!poseRelativeToCamera.isNormal()) return new Value<>(prevConePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
         if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
-
+        prevConePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePoseFromDrivetrainLimelight(){
         var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        if(!poseRelativeToCamera.isNormal()) return new Value<>(prevCubePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
         if(apriltagCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
-
+        prevCubePose = pose;
         return new Value<>(pose);
     }
 
@@ -111,7 +113,7 @@ public class RobotState {
         var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
 
         if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
-
+        prevConePose = pose;
         return new Value<>(pose);
     }
 
@@ -125,8 +127,26 @@ public class RobotState {
         ))));
 
         if(armCamera.hasTarget()) pose = visionTargetPoseSmoothed.calculate(pose);
-
+        prevCubePose = pose;
         return new Value<>(pose);
+    }
+
+    public Value<Double> getConeAngleFromCamera(){
+        armCamera.setPipeline(Limelight.CONE_PIPELINE);
+        if(armCamera.getPipeline() != Limelight.CONE_PIPELINE) return Value.notAvailable();
+
+        var angle = armCamera.getTargetX();
+        if(!angle.isNormal()) return Value.notAvailable();
+        return angle;
+    }
+
+    public Value<Double> getCubeAngleFromCamera(){
+        armCamera.setPipeline(Limelight.CUBE_PIPELINE);
+        if(armCamera.getPipeline() != Limelight.CUBE_PIPELINE) return Value.notAvailable();
+
+        var angle = armCamera.getTargetX();
+        if(!angle.isNormal()) return Value.notAvailable();
+        return angle;
     }
 
     /**

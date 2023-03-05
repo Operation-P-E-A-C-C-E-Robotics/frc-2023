@@ -60,6 +60,7 @@ public class Pivot extends ServoArm {
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
     pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
     // brakeSolenoid.initSendable(null);
 
     if(Robot.isSimulation()) {

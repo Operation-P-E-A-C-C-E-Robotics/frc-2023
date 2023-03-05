@@ -19,19 +19,7 @@ public class BangBangBalancer extends CommandBase {
     @Override
     public void execute() {
         double angle = robotState.getRobotPose().getRotation().getY();
-        double left, right;
-        if (angle > DEADBAND) {
-            left = SPEED;
-            right = -SPEED;
-        } else if (angle < -DEADBAND) {
-            left = -SPEED;
-            right = SPEED;
-        } else {
-            left = 0;
-            right = 0;
-        }
-        driveTrain.tankDrive(left, right);
-
+        ModelBalancer.bangBangController(angle, DEADBAND, SPEED, driveTrain);
     }
 
     @Override

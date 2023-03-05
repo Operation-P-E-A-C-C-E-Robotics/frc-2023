@@ -118,6 +118,7 @@ public class DriveTrain extends SubsystemBase {
     rightMaster.setInverted(true);
 
     setNeutralMode(NeutralMode.Brake);
+    setGear(Gear.HIGH);
 
     leftPosition = new RedundantSystem<>(
             new RedundantSystem.MultiCheck(
@@ -378,16 +379,16 @@ public class DriveTrain extends SubsystemBase {
     differentialDrive.feed();
 
     //try to make shifting smoother:
-    if(shiftClutchTimer.get() < 0.7){
+    if(shiftClutchTimer.get() < 0.2){
       //first 0.7 seconds after shifting limit current. Trying to keep the drivetrain from jerking.
-      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
-      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
+      leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+      rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
     } else {
-      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
-      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
+      leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+      rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
     }
     if(shiftClutchDepressed){
-      if(shiftClutchTimer.get() > 0.5){
+      if(shiftClutchTimer.get() > 0.1){
         //put the motors in coast mode and set them to zero for 0.5 seconds after shifting.
         //(setting to coast mode happens in the setGear method, so we just need to set back to brake mode after the timeout)
         shiftClutchDepressed = false;
