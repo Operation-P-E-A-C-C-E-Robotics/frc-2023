@@ -22,6 +22,7 @@ import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
+import frc.robot.commands.testing.TestBasic;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.sensors.PigeonHelper;
@@ -92,8 +93,10 @@ public class RobotContainer {
   };
 
   private final OIEntry[] manualOperatorOI = {
-          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 7),
-          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 8),
+          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 5),
+          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
+          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
+          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -119,16 +122,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
+    endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
     new ButtonMap(driverJoystick).map(testDriverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
-    new ButtonMap(operatorJoystick).map(manualOperatorOI);
-    supersystem.setDefaultCommand(new DefaultStatemachine(
-      supersystem,
-      () -> robotXInRange(0, 4.5),
-      () -> robotXInRange(12, 30),
-      () -> robotState.getOdometryPose().getRotation().getRadians()
-   ));
-      // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+    new ButtonMap(new Joystick(2)).map(manualOperatorOI);
+  //   supersystem.setDefaultCommand(new DefaultStatemachine(
+  //     supersystem,
+  //     () -> robotXInRange(0, 4.5),
+  //     () -> robotXInRange(12, 30),
+  //     () -> robotState.getOdometryPose().getRotation().getRadians()
+  //  ));
+      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   public boolean robotXInRange(double low, double high){

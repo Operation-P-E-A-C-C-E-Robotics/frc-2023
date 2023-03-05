@@ -102,7 +102,7 @@ public final class Constants {
         public static final int PIVOT_MASTER = 9, //DOCS Pivot Falcon 0
                                 PIVOT_SLAVE  = 11, //DOCS Pivot Falcon 1
                                 PIVOT_ENCODER = 12, //TODO
-                      BRAKE_SOLENOID_FORWARD = 5,
+                      BRAKE_SOLENOID_FORWARD = 7,
                      BRAKE_SOLENOID_REVERSE = 6;
         //constraints
         public static final double  MAX_ANGLE_RAD = Math.PI, //TODO actual constraints
@@ -199,8 +199,7 @@ public final class Constants {
     public static final class EndEffector {
         public static final int LEFT_MOTOR_ID = 15,
                              RIGHT_MOTOR_ID = 16,
-                             GRIP_CLOSED_PNEUMATICS_PORT = 10,
-                             GRIP_OPEN_PNEUMATICS_PORT = 11,
+                             GRIP_PNEUMATICS_PORT = 5,
                              BEAM_BRAKE_PORT = 0;
 
         public static final double TIME_TO_EJECT = 0.2; //TODO
@@ -245,5 +244,5 @@ public final class Constants {
 
     public static final boolean TUNING_MODE = true;
     public static final int LOWER_PNEUMATICS_MODULE_CAN_ID = 6,
-                            UPPER_PNEUMATICS_MODULE_CAN_ID = 7;
+                            UPPER_PNEUMATICS_MODULE_CAN_ID = 50;
 }

@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -32,6 +33,7 @@ public class Wrist extends ServoMotor {
 
     public Wrist(DoubleSupplier pivotAngle){
         super(SYSTEM_CONSTANTS);
+        wristMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 10));
 
         wristMaster.setInverted(false);
 

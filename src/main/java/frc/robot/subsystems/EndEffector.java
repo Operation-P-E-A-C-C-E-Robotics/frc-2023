@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -23,11 +24,10 @@ public class EndEffector extends SubsystemBase {
   private final CANSparkMax leftMotor = new CANSparkMax(LEFT_MOTOR_ID, MotorType.kBrushless);
   private final CANSparkMax rightMotor = new CANSparkMax(RIGHT_MOTOR_ID, MotorType.kBrushless);
 
-  private final DoubleSolenoid clawSolenoid = new DoubleSolenoid(
+  private final Solenoid clawSolenoid = new Solenoid(
           Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
           PneumaticsModuleType.CTREPCM,
-          GRIP_OPEN_PNEUMATICS_PORT,
-          GRIP_CLOSED_PNEUMATICS_PORT
+          GRIP_PNEUMATICS_PORT
   ); //TODO
   
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
@@ -42,6 +42,9 @@ public class EndEffector extends SubsystemBase {
   public EndEffector() {
     leftMotor.setInverted(false);
     rightMotor.setInverted(false);
+
+    leftMotor.setSmartCurrentLimit(20);
+    rightMotor.setSmartCurrentLimit(20);
 
     colorMatcher.addColorMatch(CUBE_COLOR); //TODO
     colorMatcher.addColorMatch(CONE_COLOR); //TODO
@@ -104,20 +107,21 @@ public class EndEffector extends SubsystemBase {
    * @param open true to open the claw, false to close it
    */
   public void setClaw(boolean open){
-    var newDirection = open ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse;
-    clawSolenoid.set(newDirection);
-    if(newDirection != clawSolenoid.get()) {
+    if(open != clawSolenoid.get()) {
       clawTimer.reset();
       clawTimer.start();
     }
+    clawSolenoid.set(open);
   }
 
   public boolean isClawOpen(){
-    return clawSolenoid.get() == DoubleSolenoid.Value.kForward && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+    return false;
+    // return clawSolenoid.get() == DoubleSolenoid.Value.kForward && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean isClawClosed(){
-    return clawSolenoid.get() == DoubleSolenoid.Value.kReverse && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+    return false;
+    // return clawSolenoid.get() == DoubleSolenoid.Value.kReverse && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean hasCube(){
