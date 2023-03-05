@@ -39,6 +39,7 @@ public class Arm extends ServoMotor {
 //            //calculate voltage needed to counteract force:
 //            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
 //        });
+        armMaster.configStatorCurrentLimit(CURRENT_LIMIT);
         DankPids.registerDankTalon(armMaster);
     }
 

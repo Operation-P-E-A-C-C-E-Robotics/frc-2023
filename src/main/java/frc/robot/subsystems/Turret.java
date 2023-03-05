@@ -36,6 +36,7 @@ public class Turret extends ServoMotor {
     turretEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
     turretEncoder.setPositionToAbsolute();
     turretMaster.setInverted(false);
+    turretMaster.configStatorCurrentLimit(CURRENT_LIMIT);
     if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
     DankPids.registerDankTalon(turretMaster);
   }

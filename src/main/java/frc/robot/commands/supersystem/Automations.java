@@ -1,10 +1,15 @@
 package frc.robot.commands.supersystem;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.lib.field.FieldConstants;
+import frc.lib.safety.Value;
 import frc.robot.Constants;
+import frc.robot.Kinematics;
 import frc.robot.RobotState;
 import frc.robot.commands.endeffector.DropGamepiece;
 import frc.robot.commands.endeffector.SpitGamepiece;
@@ -90,9 +95,44 @@ public class Automations {
         return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
     }
 
+    public Command targetConeFloor(){
+        return new RunCommand(() -> {
+            var conePose = robotState.getConePose();
+            targetPose(conePose);
+        }, supersystem.getRequirements());
+    }
+
+    public Command targetCubeFloor(){
+        return new RunCommand(() -> {
+            var cubePose = robotState.getCubePose();
+            targetPose(cubePose);
+        }, supersystem.getRequirements());
+    }
+
+    private void targetPose(Value<Pose3d> targetPose) {
+        if(!targetPose.isNormal()) return;
+
+        var pose = targetPose.get(new Pose3d());
+        var kinematics = Kinematics.inverseKinematicsFromPlacePoint(pose.getTranslation(), supersystem.getSupersystemState().getWristAngle());
+        var angle = kinematics.getTurretAngle();
+
+        if(kinematics.getArmExtension() < 0.7){
+            supersystem.setSupersystemState(kinematics);
+        }
+
+        supersystem.setTurret(new Rotation2d(angle));
+    }
+
     public Command pickUpConeFloor(){
         //TODO OOOOOOO
-        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND);
+        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND)
+                .andThen(targetConeFloor());
+    }
+
+    public Command pickUpCubeFloor(){
+        //TODO OOOOOOO
+        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND)
+                .andThen(targetCubeFloor());
     }
 
     //TODO: will this work?????????????????????????

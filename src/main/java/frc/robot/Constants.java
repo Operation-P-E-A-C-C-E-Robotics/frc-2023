@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -65,6 +66,18 @@ public final class Constants {
                 AUTO_MAX_SPEED_METERS_PER_SECOND = 1, //3
                 AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
 
+        public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                true,
+                50,
+                60,
+                0.5
+        );
+        public static final StatorCurrentLimitConfiguration SHIFTING_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                true,
+                10,
+                10,
+                0
+        );
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH);
     }
 
@@ -75,6 +88,13 @@ public final class Constants {
         //constraints:
         public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(270), //TODO actual constraints
                 MIN_ANGLE_RAD = -MAX_ANGLE_RAD;
+
+        public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                false,
+                50,
+                60,
+                0.5
+        );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
@@ -113,6 +133,13 @@ public final class Constants {
         public static final double  LENGTH = 0.5,
                                     MASS = 10;
 
+        public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                false,
+                50,
+                60,
+                0.5
+        );
+
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(
                     2),
@@ -142,6 +169,13 @@ public final class Constants {
         public static final double  CARRAIGE_MASS = 5, //kg
                 MIN_EXTENSION = 0.5, //m
                 MAX_EXTENSION = 1.5; //m
+
+        public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                false,
+                50,
+                60,
+                0.5
+        );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
@@ -175,6 +209,13 @@ public final class Constants {
         //physical constants
         public static final double LENGTH = 0.2, //meters
                 MASS = 0.1; //kg
+
+        public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                false,
+                50,
+                60,
+                0.5
+        );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),

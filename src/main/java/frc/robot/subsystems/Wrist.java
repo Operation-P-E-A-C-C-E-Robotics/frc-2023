@@ -36,6 +36,7 @@ public class Wrist extends ServoMotor {
         wristMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 10));
 
         wristMaster.setInverted(false);
+        wristMaster.configStatorCurrentLimit(CURRENT_LIMIT);
 
         this.pivotAngle = pivotAngle;
 
