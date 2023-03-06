@@ -29,19 +29,26 @@ public class CheesyDriveHelper {
     private static final double QUICK_STOP_WEIGHT = 0.3;
     private static final double QUICK_STOP_SCALAR = 5.0;
 
+    private static final double QUICK_TURN_SCALAR = 0.65;
+
     private double mOldWheel = 0.0;
     private double mQuickStopAccumlator = 0.0;
     private double mNegInertiaAccumlator = 0.0;
 
+    // Let me try to add comments to this so I can understand it better
+
     public DriveSignal cheesyDrive(double throttle, double wheel, boolean isQuickTurn,
                                    boolean isHighGear) {
 
+        // Handle deadbands
         wheel = handleDeadband(wheel, WHEEL_DEADBAND);
         throttle = handleDeadband(throttle, THROTTLE_DEADBAND);
 
+        // figure out the change in wheel, which tells how much extra oomph we need to get the robot turning fast enough.
         double negInertia = wheel - mOldWheel;
         mOldWheel = wheel;
 
+        // Apply the curve to the wheel, depending on whether we're in high or low gear.
         double wheelNonLinearity;
         if (isHighGear) {
             wheelNonLinearity = HIGH_WHEEL_NON_LINEARITY;
@@ -58,6 +65,7 @@ public class CheesyDriveHelper {
             wheel = Math.sin(Math.PI / 2.0 * wheelNonLinearity * wheel) / denominator;
         }
 
+        // overPower subtracts signals that are over 1 from the opposite side of the drivetrain, to keep turning consistent.
         double leftPwm, rightPwm, overPower;
         double sensitivity;
 
@@ -104,7 +112,7 @@ public class CheesyDriveHelper {
                         + alpha * Util.limit(wheel, 1.0) * QUICK_STOP_SCALAR;
             }
             overPower = 0.3;
-            angularPower = wheel;
+            angularPower = wheel * QUICK_TURN_SCALAR;
         } else {
             overPower = 0.0;
             angularPower = Math.abs(throttle) * wheel * sensitivity - mQuickStopAccumlator;

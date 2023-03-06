@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
@@ -72,34 +71,8 @@ public class DriveTrain extends SubsystemBase {
   //STATES: [left velocity, right velocity]
   //INPUTS: [left voltage, right voltage]
   //OUTPUTS: [left velocity, right velocity]
-  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(
-          kV_LINEAR,
-          kA_LINEAR,
-          kV_ANGULAR,
-          kA_ANGULAR,
-          TRACK_WIDTH
-  ); //TODO angular kV and kA
-  private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
-          drivePlant,
-          VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
-          VecBuilder.fill(LQR_EFFORT, LQR_EFFORT),
-          DT
-  );
-  private final KalmanFilter<N2, N2, N2> kalmanFilter = new KalmanFilter<>(
-          Nat.N2(),
-          Nat.N2(),
-          drivePlant,
-          VecBuilder.fill(KALMAN_MODEL_ACCURACY, KALMAN_MODEL_ACCURACY),
-          VecBuilder.fill(KALMAN_SENSOR_ACCURACY, KALMAN_SENSOR_ACCURACY),
-          DT
-  );
-  private final LinearSystemLoop<N2, N2, N2> loop = new LinearSystemLoop<>(
-          drivePlant,
-          driveLQR,
-          kalmanFilter,
-          12, //todo
-          DT
-  );
+  private final DriveVelocityController highVelocityController = new DriveVelocityController(kV_LINEAR, kA_LINEAR, kV_ANGULAR, kA_ANGULAR);
+  private final DriveVelocityController lowVelocityController = new DriveVelocityController(kV_LINEAR_LOW, kA_LINEAR_LOW, kV_ANGULAR_LOW, kA_ANGULAR_LOW);
 
 
 //TODO  low gear make the robot go backwards so like, do something about it
@@ -142,7 +115,6 @@ public class DriveTrain extends SubsystemBase {
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
 
-    driveLQR.latencyCompensate(drivePlant, 0.02, 0); //TODO
     DankPids.registerDankTalon(leftMaster);
     DankPids.registerDankTalon(rightMaster);
     DankPids.registerDankTalon(leftSlave);
@@ -161,8 +133,13 @@ public class DriveTrain extends SubsystemBase {
   }
 
 
-  public void tankDrive(DriveSignal cheesyDrive) {
-    tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
+  public void set(DriveSignal signal) {
+    setGear(signal.isHighGear() ? Gear.HIGH : Gear.LOW);
+    switch(signal.getControlMode()){
+      case OPEN_LOOP -> tankDrive(signal.getLeft(), signal.getRight());
+      case VOLTAGE -> tankDriveVolts(signal.getLeft(), signal.getRight());
+      case VELOCITY -> velocityDriveLQR(new DifferentialDriveWheelSpeeds(signal.getLeft(), signal.getRight()));
+    }
   }
 
   /**
@@ -185,7 +162,7 @@ public class DriveTrain extends SubsystemBase {
    *
    */
   public void arcadeDrive(double forward, double wheel) {
-    tankDrive(new DriveSignal(forward + wheel, forward - wheel));
+    set(new DriveSignal(forward + wheel, forward - wheel));
   }
 
   public void resetVelocityDrive(){
@@ -194,6 +171,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
+    var loop = gear == Gear.HIGH ? highVelocityController.loop : lowVelocityController.loop;
     //use the LQR to calculate the voltages needed to get to the desired speeds
     loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
     loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
@@ -225,7 +203,7 @@ public class DriveTrain extends SubsystemBase {
     tankDriveVolts(left, right);
   }
 
-  public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
+  public void velocityDriveGravityComp(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
     double leftFeedforward, rightFeedforward, left, right;
 
     leftFeedforward = feedforward.calculate(
@@ -405,7 +383,7 @@ public class DriveTrain extends SubsystemBase {
   private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
 
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
-    drivePlant,
+          highVelocityController.drivePlant,
     DCMotor.getFalcon500(4),
     1/GEARBOX_RATIO_HIGH,
     TRACK_WIDTH,
@@ -422,6 +400,44 @@ public class DriveTrain extends SubsystemBase {
     leftMasterSim.setIntegratedSensorVelocity((int)metersToCounts(driveSim.getRightVelocityMetersPerSecond()));
     rightMasterSim.setIntegratedSensorVelocity(-(int)metersToCounts(driveSim.getLeftVelocityMetersPerSecond()));
     pigeon.setSimHeading(driveSim.getHeading().getDegrees());
+  }
+
+  public static class DriveVelocityController{
+    public final LinearSystem<N2, N2, N2> drivePlant;
+    public final LinearQuadraticRegulator<N2, N2, N2> driveLQR;
+    public final KalmanFilter<N2, N2, N2> kalmanFilter;
+    public final LinearSystemLoop<N2, N2, N2> loop;
+
+    public DriveVelocityController(double kVLinear, double kALinear, double kVAngular, double kAAngular){
+        drivePlant = LinearSystemId.identifyDrivetrainSystem(
+                kVLinear,
+                kALinear,
+                kVAngular,
+                kAAngular,
+                TRACK_WIDTH
+        ); //TODO angular kV and kA
+        driveLQR = new LinearQuadraticRegulator<>(
+                drivePlant,
+                VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
+                VecBuilder.fill(LQR_EFFORT, LQR_EFFORT),
+                DT
+        );
+        kalmanFilter = new KalmanFilter<>(
+                Nat.N2(),
+                Nat.N2(),
+                drivePlant,
+                VecBuilder.fill(KALMAN_MODEL_ACCURACY, KALMAN_MODEL_ACCURACY),
+                VecBuilder.fill(KALMAN_SENSOR_ACCURACY, KALMAN_SENSOR_ACCURACY),
+                DT
+        );
+        loop = new LinearSystemLoop<>(
+                drivePlant,
+                driveLQR,
+                kalmanFilter,
+                12, //todo
+                DT
+        );
+    }
   }
 
   public enum Gear{

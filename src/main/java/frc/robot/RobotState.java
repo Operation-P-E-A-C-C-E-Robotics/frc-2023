@@ -171,6 +171,10 @@ public class RobotState {
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
+    public void zeroImuPitchRoll(){
+        imu.zeroPitchRoll();
+    }
+
     /**
      * get the robot's velocity in field space
      * @param dt time since last update

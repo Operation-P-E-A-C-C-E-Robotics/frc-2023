@@ -183,6 +183,11 @@ public class Util {
         return joystickPosition;
     }
 
+    public static double handleDeadbandWithSlopeIncrease(double joystickPosition, double deadband){
+        if(inRange(joystickPosition, deadband)) return 0;
+        return joystickPosition - deadband * Math.signum(joystickPosition);
+    }
+
     /**
      * convert a Translation2d to a Pose3d
      * by setting the z, roll, pitch, and yaw to zero

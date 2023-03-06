@@ -57,6 +57,10 @@ public final class Constants {
                 kA_LINEAR = 0.2751, //Volts per meter per second squared
                 kV_ANGULAR = 2, //Volts per radian per second
                 kA_ANGULAR = 0.2, //Volts per radian per second squared
+                kV_LINEAR_LOW = 2.4155, //Volts per meter per second
+                kA_LINEAR_LOW = 0.2751, //Volts per meter per second squared
+                kV_ANGULAR_LOW = 2, //Volts per radian per second
+                kA_ANGULAR_LOW = 0.2, //Volts per radian per second squared
                 kP = 0.24921,
                 kI = 0,
                 kD = 0,

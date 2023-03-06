@@ -21,16 +21,14 @@ import frc.lib.util.ButtonMap.SimpleButton;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
-import frc.robot.commands.supersystem.DefaultStatemachine;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
-import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
-import frc.robot.commands.drive.PeaccyDrive;
+import frc.robot.commands.drive.ChesyDriv;
 
 
 /**
@@ -68,7 +66,7 @@ public class RobotContainer {
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
   private final Automations automations = new Automations(supersystem, robotState, endEffector);
-  private final PeaccyDrive peaccyDrive = new PeaccyDrive(
+  private final ChesyDriv peaccyDrive = new ChesyDriv(
     driveTrain,
     () -> {return constraints.constrainJoystickFwdJerk(driverJoystick.getY());},
     driverJoystick::getX,
