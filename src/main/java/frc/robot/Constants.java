@@ -48,6 +48,8 @@ public final class Constants {
                 KALMAN_MODEL_ACCURACY = 3,
                 KALMAN_SENSOR_ACCURACY = 0.1;
 
+        public static final double wheelDiameter = 0.477522;
+
         //loop time
         public static final double DT = 0.02;
 

@@ -29,6 +29,7 @@ import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.ChesyDriv;
+import frc.robot.commands.drive.SeanyDrive;
 
 
 /**
@@ -66,6 +67,7 @@ public class RobotContainer {
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
   private final Automations automations = new Automations(supersystem, robotState, endEffector);
+  private final SeanyDrive testDrive = new SeanyDrive(driverJoystick, driveTrain, robotState);
   private final ChesyDriv peaccyDrive = new ChesyDriv(
     driveTrain,
     () -> {return constraints.constrainJoystickFwdJerk(driverJoystick.getY());},
@@ -107,6 +109,7 @@ public class RobotContainer {
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
+    teleopDriveMode.addOption("seany drive (test)", testDrive);
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();

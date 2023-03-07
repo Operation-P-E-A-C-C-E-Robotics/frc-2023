@@ -35,13 +35,16 @@ public class SeanyDrive extends CommandBase {
         this.driverJoystick = driverJoystick;
         this.driveTrain = driveTrain;
         this.robotState = robotState;
+
+        addRequirements(driveTrain);
     }
 
     @Override
     public void execute(){
         double throttle = driverJoystick.getY() * (invertFront ? 1 : -1);
-        double wheel = -driverJoystick.getX();
-        double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
+        double wheel = driverJoystick.getX();
+        // double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
+        var arcadeTwist = 0.0;
         boolean isHighGear = driverJoystick.getRawButton(1),
                 isFineControl = driverJoystick.getRawButton(2),
                 isFastAcceleration = driverJoystick.getRawButton(3),
@@ -52,8 +55,8 @@ public class SeanyDrive extends CommandBase {
                 zeroOdometry = driverJoystick.getRawButton(8),
                 zeroPigeon = driverJoystick.getRawButton(9);
 
-        double povAngle = driverJoystick.getPOV();
-        if((povAngle - robotState.getOdometryPose().getRotation().getDegrees()) > 90) invertFront = true;
+        // double povAngle = driverJoystick.getPOV();
+        // if((povAngle - robotState.getOdometryPose().getRotation().getDegrees()) > 90) invertFront = true;
 
         if (zeroOdometry) robotState.resetOdometry(new Pose2d());
         if (zeroPigeon) robotState.zeroImuPitchRoll();

@@ -74,6 +74,8 @@ public class DriveTrain extends SubsystemBase {
   private final DriveVelocityController highVelocityController = new DriveVelocityController(kV_LINEAR, kA_LINEAR, kV_ANGULAR, kA_ANGULAR);
   private final DriveVelocityController lowVelocityController = new DriveVelocityController(kV_LINEAR_LOW, kA_LINEAR_LOW, kV_ANGULAR_LOW, kA_ANGULAR_LOW);
 
+  private double leftPositionOffset, rightPositionOffset; //to keep position consistent across gears
+
 
 //TODO  low gear make the robot go backwards so like, do something about it
 
@@ -233,7 +235,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the left side of the drivetrain in meters per second
    */
   public double getLeftVelocity(){
-    return countsToMeters(leftMaster.getSelectedSensorVelocity());
+    return countsToMeters(leftMaster.getSelectedSensorVelocity() + metersToCounts(leftPositionOffset));
   }
 
   /**
@@ -241,7 +243,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the right side of the drivetrain in meters per second
    */
   public double getRightVelocity(){
-    return countsToMeters(rightMaster.getSelectedSensorVelocity());
+    return countsToMeters(rightMaster.getSelectedSensorVelocity() + metersToCounts(rightPositionOffset));
   }
 
   public double getAverageVelocity(){
@@ -324,6 +326,9 @@ public class DriveTrain extends SubsystemBase {
   public void setGear(Gear gear){
     if(gear == this.gear) return;
     this.gear = gear;
+    leftPositionOffset = getLeftMeters();
+    rightPositionOffset = getRightMeters();
+    resetEncoders(0, 0);
     shiftClutchDepressed = true;
     shiftClutchTimer.reset();
     shiftClutchTimer.start();
@@ -385,7 +390,7 @@ public class DriveTrain extends SubsystemBase {
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
           highVelocityController.drivePlant,
     DCMotor.getFalcon500(4),
-    1/GEARBOX_RATIO_HIGH,
+    1/(GEARBOX_RATIO_HIGH),
     TRACK_WIDTH,
     Units.inchesToMeters(3),
     // The standard deviations for measurement noise:
