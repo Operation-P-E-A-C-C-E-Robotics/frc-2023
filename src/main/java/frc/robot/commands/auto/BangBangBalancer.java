@@ -1,6 +1,7 @@
 package frc.robot.commands.auto;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.DriveSignal;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
@@ -24,6 +25,6 @@ public class BangBangBalancer extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        driveTrain.tankDrive(0, 0); //TODO maybe make this some hold position command
+        driveTrain.set(DriveSignal.DEFAULT); //TODO maybe make this some hold position command
     }
 }

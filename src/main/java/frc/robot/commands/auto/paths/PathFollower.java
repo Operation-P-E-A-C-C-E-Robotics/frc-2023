@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.DriveSignal;
 import frc.robot.DashboardManager;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
@@ -68,12 +69,12 @@ public class PathFollower extends CommandBase{
         speeds = new DifferentialDriveWheelSpeeds(speeds.rightMetersPerSecond, speeds.leftMetersPerSecond);
 
         //drive
-        driveTrain.velocityDriveLQR(speeds);
+        driveTrain.set(DriveSignal.velocityDrive(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond, true));
     }
 
     @Override
     public void end(boolean interrupted) {
-        driveTrain.tankDriveVolts(0, 0);
+        driveTrain.set(DriveSignal.DEFAULT);
         timer.reset();
     }
 

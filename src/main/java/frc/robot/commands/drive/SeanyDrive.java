@@ -71,7 +71,7 @@ public class SeanyDrive extends CommandBase {
                 throttle,
                 wheel,
                 driveTrain.getAverageVelocity(),
-                driveTrain.getGear() == DriveTrain.Gear.HIGH
+                driveTrain.isHighGear()
         );
         else driveSignal = driveHelper.curveDrive(
                 throttle,

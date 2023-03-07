@@ -403,21 +403,8 @@ public class Util {
         return rotationsToCounts(rotations, constants.cpr, constants.gearing);
     }
     public static void main(String args[]){
-        var localOrigin = new Pose3d(
-                1,0,0,
-                new Rotation3d(0.4,0, Units.degreesToRadians(130))
-        );
-        var pt = new Pose3d(
-                1,0,0,
-                new Rotation3d(0,0,0)
-        );
-        System.out.println(globalToLocalPose(localOrigin,localToGlobalPose(
-                localOrigin,
-                pt
-        )));
-        System.out.println(localToGlobalPose(
-                localOrigin,
-                pt
-        ));
+        for(double i = -1; i < 1; i += 0.02){
+            System.out.println(i + " " + Util.handleDeadbandWithSlopeIncrease(i, 0.4));
+        }
     }
 }

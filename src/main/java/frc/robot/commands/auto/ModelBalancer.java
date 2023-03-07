@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.field.ChargeStation;
 import frc.lib.motion.TrapezoidalMotion;
 import frc.lib.sensors.PigeonHelper;
+import frc.lib.util.DriveSignal;
 import frc.robot.Constants;
 import frc.robot.subsystems.DriveTrain;
 
@@ -49,7 +50,7 @@ public class ModelBalancer extends CommandBase{
                 driveMotion.calculate(0.02).velocity,
                 driveMotion.calculate(0.02).velocity
         );
-        driveTrain.velocityDriveLQR(speeds);
+        driveTrain.set(DriveSignal.velocityDrive(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond, true));
     }
 
     static void bangBangController(double currentPitch, double deadband, double bangbangspeed, DriveTrain driveTrain) {
@@ -64,6 +65,6 @@ public class ModelBalancer extends CommandBase{
             left = 0;
             right = 0;
         }
-        driveTrain.tankDrive(left, right);
+        driveTrain.set(DriveSignal.DEFAULT);
     }
 }

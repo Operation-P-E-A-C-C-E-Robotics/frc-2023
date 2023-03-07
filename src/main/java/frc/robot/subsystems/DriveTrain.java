@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -45,9 +46,6 @@ public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
 
-  //fancy redundancy stuff:
-  private final RedundantSystem<Double> leftPosition, rightPosition;
-
   //velocity drive - TODO if LQR velocity drive works, get rid of pid. also we may not need differential drive
   //with current auto setup.
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
@@ -56,7 +54,7 @@ public class DriveTrain extends SubsystemBase {
   private final PIDController rightController;
   private final PigeonHelper pigeon;
   private final Timer shiftClutchTimer = new Timer();
-  private boolean shiftClutchDepressed = false;
+  private boolean shiftClutchEngaged = false;
 
   //SHIFTING!:
   private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(
@@ -65,16 +63,18 @@ public class DriveTrain extends SubsystemBase {
           SHIFT_HIGH_PORT,
           SHIFT_LOW_PORT
   );
-  private Gear gear = Gear.HIGH;
+  private boolean isBrakeMode = true;
 
-  //LQR velocity drive:
-  //STATES: [left velocity, right velocity]
-  //INPUTS: [left voltage, right voltage]
-  //OUTPUTS: [left velocity, right velocity]
   private final DriveVelocityController highVelocityController = new DriveVelocityController(kV_LINEAR, kA_LINEAR, kV_ANGULAR, kA_ANGULAR);
   private final DriveVelocityController lowVelocityController = new DriveVelocityController(kV_LINEAR_LOW, kA_LINEAR_LOW, kV_ANGULAR_LOW, kA_ANGULAR_LOW);
 
   private double leftPositionOffset, rightPositionOffset; //to keep position consistent across gears
+
+  private double leftVelocitySetpoint = 0, rightVelocitySetpoint = 0;
+  private boolean isClosedLoop = false;
+
+  private static final Value HIGH_GEAR = Value.kForward;
+  private static final Value LOW_GEAR = Value.kReverse;
 
 
 //TODO  low gear make the robot go backwards so like, do something about it
@@ -91,26 +91,8 @@ public class DriveTrain extends SubsystemBase {
     rightSlave.setInverted(InvertType.FollowMaster);
     leftMaster.setInverted(false);
     rightMaster.setInverted(true);
-
-    setNeutralMode(NeutralMode.Brake);
-    setGear(Gear.HIGH);
-
-    leftPosition = new RedundantSystem<>(
-            new RedundantSystem.MultiCheck(
-                    new RedundantSystem.SlewRateCheck(10000),
-                    (Double value, boolean failed) -> failed || leftMaster.isAlive()
-            ),
-            leftMaster::getSelectedSensorPosition,
-            leftSlave::getSelectedSensorPosition
-    );
-    rightPosition = new RedundantSystem<>(
-            new RedundantSystem.MultiCheck(
-                    new RedundantSystem.SlewRateCheck(10000),
-                    (Double value, boolean failed) -> failed || rightMaster.isAlive()
-            ),
-            rightMaster::getSelectedSensorPosition,
-            rightSlave::getSelectedSensorPosition
-    );
+    set(DriveSignal.DEFAULT);
+    shiftClutchTimer.start();
 
     //configure PID: TODO get rid of PID
     feedforward = new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR);
@@ -123,109 +105,44 @@ public class DriveTrain extends SubsystemBase {
     DankPids.registerDankTalon(rightSlave);
   }
 
-  /**
-   * input 2 doubles to drive the drivetrain motors separately
-   * @param leftSpeed the speed to set the left motors to (Double)
-   * @param rightSpeed the speed to set the right motors to (Double)
-   */
-  public void tankDrive(double leftSpeed, double rightSpeed) {
-    if(shiftClutchDepressed) return;
-    leftMaster.set(leftSpeed);
-    rightMaster.set(rightSpeed);
-  }
-
 
   public void set(DriveSignal signal) {
-    setGear(signal.isHighGear() ? Gear.HIGH : Gear.LOW);
+    setHighGear(signal.isHighGear());
+    setBrakeMode(signal.isBrakeMode());
+
+    if(shiftClutchTimer.get() < 0.2) return;
+
     switch(signal.getControlMode()){
-      case OPEN_LOOP -> tankDrive(signal.getLeft(), signal.getRight());
-      case VOLTAGE -> tankDriveVolts(signal.getLeft(), signal.getRight());
-      case VELOCITY -> velocityDriveLQR(new DifferentialDriveWheelSpeeds(signal.getLeft(), signal.getRight()));
+      case OPEN_LOOP -> {
+        setPercent(signal.getLeft(), signal.getRight());
+        isClosedLoop = false;
+      }
+      case VOLTAGE -> {
+        setVoltage(signal.getLeft(), signal.getRight());
+        isClosedLoop = false;
+      }
+      case VELOCITY -> {
+        leftVelocitySetpoint = signal.getLeft();
+        rightVelocitySetpoint = signal.getRight();
+        isClosedLoop = true;
+      }
     }
+    differentialDrive.feed();
   }
 
-  /**
-   * drive the motors at a specific voltage
-   * see {@link com.ctre.phoenix.motorcontrol.can.WPI_TalonFX#setVoltage(double)} for more details
-   * this is NOT a set and forget function!
-   * @param leftVolts voltage to send to the left side of the drive train
-   * @param rightVolts voltage to send to the right side of the drive train
-   */
-  public void tankDriveVolts(double leftVolts, double rightVolts){
-    if(shiftClutchDepressed) return;
-    leftMaster.setVoltage(leftVolts);
-    rightMaster.setVoltage(rightVolts);
+  private void setVoltage(double leftVoltage, double rightVoltage){
+    leftMaster.setVoltage(leftVoltage);
+    rightMaster.setVoltage(rightVoltage);
   }
 
-  /**
-   * drive the robot in Arcade mode using the built-in WPILib differential drive class
-   * @param forward joystick forward backward axis
-   * @param wheel joystick left right axis
-   *
-   */
-  public void arcadeDrive(double forward, double wheel) {
-    set(new DriveSignal(forward + wheel, forward - wheel));
+  private void setPercent(double leftPercent, double rightPercent){
+    leftMaster.set(leftPercent);
+    rightMaster.set(rightPercent);
   }
 
   public void resetVelocityDrive(){
     leftController.reset();
     rightController.reset();
-  }
-
-  public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
-    var loop = gear == Gear.HIGH ? highVelocityController.loop : lowVelocityController.loop;
-    //use the LQR to calculate the voltages needed to get to the desired speeds
-    loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
-    loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
-    loop.predict(0.02);
-    //set the voltages
-    tankDriveVolts(loop.getU(0), loop.getU(1));
-  }
-
-  public void velocityDrive(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt){
-    double leftFeedforward, rightFeedforward, left, right;
-
-    leftFeedforward = feedforward.calculate(
-      speeds.leftMetersPerSecond,
-      (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
-    );
-
-    rightFeedforward = feedforward.calculate(
-      speeds.rightMetersPerSecond,
-      (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
-    );
-
-    left = leftFeedforward + leftController.calculate(
-            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
-    );
-    right = rightFeedforward + rightController.calculate(
-            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
-    );
-
-    tankDriveVolts(left, right);
-  }
-
-  public void velocityDriveGravityComp(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
-    double leftFeedforward, rightFeedforward, left, right;
-
-    leftFeedforward = feedforward.calculate(
-            speeds.leftMetersPerSecond,
-            (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
-    ) + (kA_LINEAR * Math.sin(tilt));
-
-    rightFeedforward = feedforward.calculate(
-            speeds.rightMetersPerSecond,
-            (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
-    ) + (kA_LINEAR * Math.sin(tilt));
-
-    left = leftFeedforward + leftController.calculate(
-            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
-    );
-    right = rightFeedforward + rightController.calculate(
-            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
-    );
-
-    tankDriveVolts(left, right);
   }
 
   //WPILib built in odometry methods from docs
@@ -235,7 +152,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the left side of the drivetrain in meters per second
    */
   public double getLeftVelocity(){
-    return countsToMeters(leftMaster.getSelectedSensorVelocity() + metersToCounts(leftPositionOffset));
+    return countsToMeters(leftMaster.getSelectedSensorVelocity());
   }
 
   /**
@@ -243,7 +160,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the right side of the drivetrain in meters per second
    */
   public double getRightVelocity(){
-    return countsToMeters(rightMaster.getSelectedSensorVelocity() + metersToCounts(rightPositionOffset));
+    return countsToMeters(rightMaster.getSelectedSensorVelocity());
   }
 
   public double getAverageVelocity(){
@@ -266,16 +183,6 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
-   * @param mode com.ctre.phoenix.motorcontrol.NeuteralMode the mode to set the motors to
-   *
-   */
-  public void setNeutralMode(NeutralMode mode) {
-    leftMaster.setNeutralMode(mode);
-    rightMaster.setNeutralMode(mode);
-  }
-
-  /**
    * Gets the average distance of the two master encoders.
    *
    * @return the average of the two encoder readings
@@ -290,7 +197,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftMeters() {
-    return countsToMeters(leftPosition.get());
+    return countsToMeters(leftMaster.getSelectedSensorPosition()) + leftPositionOffset;
   }
 
   /**
@@ -299,16 +206,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightMeters() {
-    return countsToMeters(rightPosition.get());
-  }
-
-  /**
-   * Sets the max output of the drive. Useful for scaling the drive to drive more slowly.
-   *
-   * @param maxOutput the maximum output to which the drive will be constrained
-   */
-  public void setMaxOutput(double maxOutput) {
-    differentialDrive.setMaxOutput(maxOutput);
+    return countsToMeters(rightMaster.getSelectedSensorPosition()) + rightPositionOffset;
   }
 
   public DifferentialDrive getDifferentialDrive(){
@@ -319,67 +217,63 @@ public class DriveTrain extends SubsystemBase {
     return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * METERS_PER_ROTATION;
   }
 
+  public double countsToMeters(double encoderCounts, boolean isHighGear){
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * METERS_PER_ROTATION;
+  }
+
   public double metersToCounts(double meters){
     return ((meters / METERS_PER_ROTATION) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
   }
 
-  public void setGear(Gear gear){
-    if(gear == this.gear) return;
-    this.gear = gear;
-    leftPositionOffset = getLeftMeters();
-    rightPositionOffset = getRightMeters();
-    resetEncoders(0, 0);
-    shiftClutchDepressed = true;
-    shiftClutchTimer.reset();
-    shiftClutchTimer.start();
-    setNeutralMode(NeutralMode.Coast);
-    if(gear == Gear.LOW){
-      shiftSolenoid.set(Value.kReverse);
-      leftMaster.setInverted(true);
-      rightMaster.setInverted(false);
-    } else {
-      leftMaster.setInverted(false);
-      rightMaster.setInverted(true);
-      shiftSolenoid.set(Value.kForward);
+  private void setHighGear(boolean isHighGear){
+    if(isHighGear != isHighGear()){
+      leftPositionOffset = getLeftMeters() - countsToMeters(leftMaster.getSelectedSensorPosition(), isHighGear);
+      rightPositionOffset = getRightMeters() - countsToMeters(rightMaster.getSelectedSensorPosition(), isHighGear);
+
+      shiftSolenoid.set(isHighGear ? HIGH_GEAR : LOW_GEAR);
+
+      shiftClutchTimer.reset();
+      shiftClutchTimer.start();
+
+      shiftClutchEngaged = true;
+
+      leftMaster.setInverted(!isHighGear);
+      rightMaster.setInverted(isHighGear);
     }
   }
 
-  public Gear getGear(){
-    return gear;
+  private void setBrakeMode(boolean isBrakeMode){
+    if(isBrakeMode != this.isBrakeMode){
+      leftMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+      rightMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+      this.isBrakeMode = isBrakeMode;
+    }
+  }
+
+  public boolean isHighGear(){
+    return shiftSolenoid.get() == HIGH_GEAR;
   }
 
   public double getCurrentGearRatio(){
-    if(gear == Gear.LOW){
-      return GEARBOX_RATIO_LOW;
-    } else {
+    if(isHighGear()){
       return GEARBOX_RATIO_HIGH;
+    } else {
+      return GEARBOX_RATIO_LOW;
     }
   }
 
   @Override
   public void periodic(){
-    //feed watchdog. Maybe unsafe to do it here, but oh well.
-    differentialDrive.feed();
+    if(isClosedLoop){
+      var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
 
-    //try to make shifting smoother:
-    if(shiftClutchTimer.get() < 0.2){
-      //first 0.7 seconds after shifting limit current. Trying to keep the drivetrain from jerking.
-      leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
-      rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
-    } else {
-      leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-      rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-    }
-    if(shiftClutchDepressed){
-      if(shiftClutchTimer.get() > 0.1){
-        //put the motors in coast mode and set them to zero for 0.5 seconds after shifting.
-        //(setting to coast mode happens in the setGear method, so we just need to set back to brake mode after the timeout)
-        shiftClutchDepressed = false;
-        setNeutralMode(NeutralMode.Brake);
-        return;
-      }
-      leftMaster.stopMotor();
-      rightMaster.stopMotor();
+      loop.setNextR(VecBuilder.fill(leftVelocitySetpoint, rightVelocitySetpoint));
+      loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
+      loop.predict(0.02);
+
+      var left = loop.getU(0);
+      var right = loop.getU(1);
+      setVoltage(left, right);
     }
   }
 
@@ -443,10 +337,5 @@ public class DriveTrain extends SubsystemBase {
                 DT
         );
     }
-  }
-
-  public enum Gear{
-    HIGH,
-    LOW
   }
 }

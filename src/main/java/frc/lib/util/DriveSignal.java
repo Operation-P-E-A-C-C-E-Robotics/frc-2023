@@ -8,7 +8,7 @@ public class DriveSignal {
     protected boolean brakeMode, highGear;
     protected ControlMode mode;
 
-    private static final boolean DEFAULT_BRAKE_MODE = false;
+    private static final boolean DEFAULT_BRAKE_MODE = true;
 
     public DriveSignal(double left, double right) {
         this(left, right, DEFAULT_BRAKE_MODE);
@@ -32,6 +32,7 @@ public class DriveSignal {
 
     public static DriveSignal NEUTRAL = new DriveSignal(0, 0, false);
     public static DriveSignal BRAKE = new DriveSignal(0, 0, true);
+    public static DriveSignal DEFAULT = new DriveSignal(0, 0, DEFAULT_BRAKE_MODE, true, ControlMode.OPEN_LOOP);
 
     public double getLeft() {
         return left;
@@ -51,6 +52,22 @@ public class DriveSignal {
 
     public boolean isHighGear() {
         return highGear;
+    }
+
+    public static DriveSignal arcadeDrive(double throttle, double wheel, boolean highGear){
+        return new DriveSignal(throttle + wheel, throttle - wheel, DEFAULT_BRAKE_MODE, highGear, ControlMode.OPEN_LOOP);
+    }
+
+    public static DriveSignal voltDrive(double left, double right, boolean highGear){
+        return new DriveSignal(left, right, DEFAULT_BRAKE_MODE, highGear, ControlMode.VOLTAGE);
+    }
+
+    public static DriveSignal tankDrive(double left, double right, boolean highGear){
+        return new DriveSignal(left, right, DEFAULT_BRAKE_MODE, highGear, ControlMode.OPEN_LOOP);
+    }
+
+    public static DriveSignal velocityDrive(double left, double right, boolean highGear){
+        return new DriveSignal(left, right, DEFAULT_BRAKE_MODE, highGear, ControlMode.VELOCITY);
     }
 
     @Override

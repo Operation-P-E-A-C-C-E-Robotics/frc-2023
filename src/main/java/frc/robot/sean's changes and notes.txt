@@ -8,6 +8,12 @@ Started field points
 
 DID A LOTTA STUFF
 
+TESTING TODO LIST 3/6:
+ - presets
+ - presets with turret.
+ - preset with gamepiece targeting
+ - fancy stuff
+
 TODO as of 2/25:
  - Get drivetrain shifting like butter
  - Vision-based cone placement
