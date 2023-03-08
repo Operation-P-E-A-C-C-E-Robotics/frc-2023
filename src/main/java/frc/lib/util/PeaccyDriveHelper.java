@@ -68,8 +68,8 @@ public class PeaccyDriveHelper {
      * @return drive signal
      */
     public DriveSignal fineControl(double throttle, double wheel){
-        throttle = applySinCurve(throttle, false);
-        wheel = applySinCurve(wheel, false);
+//        throttle = applySinCurve(throttle, false);
+//        wheel = applySinCurve(wheel, false);
         throttle *= FINE_THROTTLE_SENSITIVITY;
         wheel *= FINE_TURN_SENSITIVITY;
         return new DriveSignal(throttle + wheel, throttle - wheel, false, false, DriveSignal.ControlMode.VELOCITY);
@@ -89,9 +89,9 @@ public class PeaccyDriveHelper {
         var left = fastAccelLimiterLeft.calculate(setpoints.getLeft() * FAST_ACCEL_SCALAR);
         var right = fastAccelLimiterRight.calculate(setpoints.getRight() * FAST_ACCEL_SCALAR);
 
-        if(velocity > FAST_ACCEL_UPSHIFT_THRESHOLD) return new DriveSignal(left, right, true, true, DriveSignal.ControlMode.VELOCITY);
-        else if(velocity < FAST_ACCEL_DOWNSHIFT_THRESHOLD) return new DriveSignal(left, right, true, false, DriveSignal.ControlMode.VELOCITY);
-        else return new DriveSignal(left, right, true, currentGear, DriveSignal.ControlMode.VELOCITY);
+        if(velocity > FAST_ACCEL_UPSHIFT_THRESHOLD) return new DriveSignal(left, right, false, true, DriveSignal.ControlMode.VELOCITY);
+        else if(velocity < FAST_ACCEL_DOWNSHIFT_THRESHOLD) return new DriveSignal(left, right, false, false, DriveSignal.ControlMode.VELOCITY);
+        else return new DriveSignal(left, right, false, currentGear, DriveSignal.ControlMode.VELOCITY);
     }
 
     /**

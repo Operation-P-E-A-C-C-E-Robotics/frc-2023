@@ -28,11 +28,13 @@ public class Automations {
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
+    private final Setpoints setpoints;
 
-    public Automations(Supersystem supersystem, RobotState robotState, EndEffector endEffector){
+    public Automations(Supersystem supersystem, RobotState robotState, EndEffector endEffector, Setpoints setpoints){
         this.supersystem = supersystem;
         this.robotState = robotState;
         this.endEffector = endEffector;
+        this.setpoints = setpoints;
     }
 
     /**
@@ -125,13 +127,13 @@ public class Automations {
 
     public Command pickUpConeFloor(){
         //TODO OOOOOOO
-        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND)
+        return setpoints.goToSetpoint(Setpoints.intakeFloor, Constants.SupersystemTolerance.INTAKE_GROUND)
                 .andThen(targetConeFloor());
     }
 
     public Command pickUpCubeFloor(){
         //TODO OOOOOOO
-        return Setpoints.goToSetpoint(Setpoints.intakeFloor, supersystem, Constants.SupersystemTolerance.INTAKE_GROUND)
+        return setpoints.goToSetpoint(Setpoints.intakeFloor, Constants.SupersystemTolerance.INTAKE_GROUND)
                 .andThen(targetCubeFloor());
     }
 

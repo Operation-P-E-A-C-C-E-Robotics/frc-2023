@@ -22,6 +22,7 @@ import frc.robot.commands.auto.Autos;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
+import frc.robot.commands.supersystem.Setpoints;
 import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -66,7 +67,8 @@ public class RobotContainer {
 
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
-  private final Automations automations = new Automations(supersystem, robotState, endEffector);
+  private final Setpoints setpoints = new Setpoints(supersystem, operatorJoystick::getX, operatorJoystick::getY, operatorJoystick::getZ, operatorJoystick::getThrottle);
+  private final Automations automations = new Automations(supersystem, robotState, endEffector, setpoints);
   private final SeanyDrive testDrive = new SeanyDrive(driverJoystick, driveTrain, robotState);
   private final ChesyDriv peaccyDrive = new ChesyDriv(
     driveTrain,

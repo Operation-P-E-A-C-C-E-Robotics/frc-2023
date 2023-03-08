@@ -9,15 +9,15 @@ import frc.robot.subsystems.Supersystem;
 
 public class Autos {
     public static Command testAuto1(Paths paths, RobotState robotState, Supersystem supersystem){
-        return paths.testPath(robotState)
-                .andThen(Setpoints.goToSetpoint(
-                        Setpoints.placeHighCube,
-                        supersystem,
-                        Constants.SupersystemTolerance.DEFAULT
-                ).withTimeout(1))
-                        .andThen(
-                                paths.testPath(robotState)
-                        );
+        return paths.testPath(robotState);
+//                .andThen(Setpoints.goToSetpoint(
+//                        Setpoints.placeHighCube,
+//                        supersystem,
+//                        Constants.SupersystemTolerance.DEFAULT
+//                ).withTimeout(1))
+//                        .andThen(
+//                                paths.testPath(robotState)
+//                        );
 
     }
 }

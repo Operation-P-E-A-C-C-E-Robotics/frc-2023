@@ -1,14 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
-import frc.robot.Robot;
 import frc.robot.RobotState;
 
 //TODO change to use RobotState
@@ -185,7 +183,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * set only the lift
      */
-    public Supersystem setLift(double extension){
+    public Supersystem setArm(double extension){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
                 state.getTurretAngle(),
@@ -234,7 +232,7 @@ public class Supersystem extends SubsystemBase {
     }
 
     public Supersystem addArmOffset(double offset){
-        setLift(getSupersystemState().getArmExtension() + offset);
+        setArm(getSupersystemState().getArmExtension() + offset);
         return this;
     }
 
