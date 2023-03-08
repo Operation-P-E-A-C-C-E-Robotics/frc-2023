@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
+import frc.robot.Constraints;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
 import frc.robot.RobotState;
@@ -56,10 +57,12 @@ public class Supersystem extends SubsystemBase {
      */
     public void setSupersystemState(SupersystemState state){
         state = Kinematics.optimize(state, getSupersystemState());
-        // arm.setExtension(state.getArmExtension());
+        state = Constraints.constrainArmExtension(state);
+        state = Constraints.constrainPivotCollision(state);
+        arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
-        // wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
+        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
     }
 
     public boolean withinTolerance(Constants.SupersystemTolerance tolerance){

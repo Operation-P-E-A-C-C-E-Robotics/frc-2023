@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.Limelight;
@@ -44,10 +43,10 @@ public class GoToFieldPoint extends CommandBase {
         var target = targetLocation.get();
         if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
         var robotRelative = robotState.fieldToDrivetrain(new Pose3d(target, new Rotation3d()));
-        supersystem.setPlacePosition(robotRelative.getTranslation(), getWristAngle());
+        supersystem.setPlacePosition(robotRelative.getTranslation(), getTargetWristAngle());
     }
 
-    public Rotation2d getWristAngle(){
+    public Rotation2d getTargetWristAngle(){
         var pivot = supersystem.getSupersystemState().getPivotAngle();
         if(Math.abs(pivot) < 0.1) return new Rotation2d();
         var wrist = pivot < 0 ? -Math.PI/2 : Math.PI/2;

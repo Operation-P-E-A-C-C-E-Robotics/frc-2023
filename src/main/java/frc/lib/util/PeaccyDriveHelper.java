@@ -6,7 +6,7 @@ public class PeaccyDriveHelper {
     private static final double THROTTLE_DEADBAND = 0.035, WHEEL_DEADBAND = 0.02;
     private static final double HIGH_WEEL_NON_LINEARITY = 0.6,
             HIGH_SENSITIVITY = 0.7,
-            HIGH_NEG_INERTIA_SCALAR = 3.0; //how sensitive the robot is to the change in wheel
+            HIGH_NEG_INERTIA_SCALAR = 5.0; //how sensitive the robot is to the change in wheel
     private static final double LOW_WHEEL_NON_LINEARITY = 0.5,
             LOW_SENSITIVITY = 0.65,
             LOW_NEG_INERTIA_THRESHOLD = 0.65,  //when we switch from the close scalar to the far scalar

@@ -6,10 +6,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.DankPids;
@@ -26,7 +23,7 @@ import static frc.robot.Constants.Wrist.*;
 
 public class Wrist extends ServoMotor {
     private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
+    private final Solenoid wristSolenoid = new Solenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_SOLENOID); //TODO
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();
@@ -74,7 +71,7 @@ public class Wrist extends ServoMotor {
     }
 
     public void setFlipped(boolean flipped){
-       wristSolenoid.set(flipped ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+       wristSolenoid.set(flipped);
        if (flipped != previousFlipState){
            wristTimer.reset();
            wristTimer.start();
@@ -146,7 +143,7 @@ public class Wrist extends ServoMotor {
             prevSetpoint = setpoint;
         }
         SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
-        SmartDashboard.putBoolean("wrist flipped", wristSolenoid.get() == DoubleSolenoid.Value.kForward);
+        SmartDashboard.putBoolean("wrist flipped", wristSolenoid.get());
         SmartDashboard.putBoolean("wrist flipping", flipping());
         DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
 

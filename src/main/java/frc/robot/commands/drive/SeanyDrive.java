@@ -55,8 +55,16 @@ public class SeanyDrive extends CommandBase {
                 zeroOdometry = driverJoystick.getRawButton(8),
                 zeroPigeon = driverJoystick.getRawButton(9);
 
-        // double povAngle = driverJoystick.getPOV();
-        // if((povAngle - robotState.getOdometryPose().getRotation().getDegrees()) > 90) invertFront = true;
+        //use the pov hat to determine the front of the robot.
+         double povAngle = driverJoystick.getPOV();
+         if(povAngle != -1) {
+             var robotRotationDeg = robotState.getOdometryPose().getRotation().getDegrees();
+             //compare pov angle to robot rotation - robot rotation is ccw positive, but pov is cw positive.
+             var povRobotMatched = -povAngle;
+             if(povRobotMatched < 180) povRobotMatched += 360;
+
+             invertFront = Math.abs(povRobotMatched - robotRotationDeg) > 90;
+         }
 
         if (zeroOdometry) robotState.resetOdometry(new Pose2d());
         if (zeroPigeon) robotState.zeroImuPitchRoll();

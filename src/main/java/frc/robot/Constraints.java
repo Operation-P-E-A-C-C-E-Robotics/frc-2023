@@ -57,7 +57,7 @@ public class Constraints {
      * @param state the supersystem state to constrain
      * @return the constrained supersystem state
      */
-    public Kinematics.SupersystemState constrainArmExtension(Kinematics.SupersystemState state){
+    public static Kinematics.SupersystemState constrainArmExtension(Kinematics.SupersystemState state){
         //limit maximum extension of the arm
         if(state.getArmExtension() > ARM_EXTENSION_4FT){
             //the arm could be too far out, so use the kinematics to find the actual end effector position

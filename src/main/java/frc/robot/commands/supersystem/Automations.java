@@ -114,14 +114,18 @@ public class Automations {
     private void targetPose(Value<Pose3d> targetPose) {
         if(!targetPose.isNormal()) return;
 
+        //get the kinematics for the pose
         var pose = targetPose.get(new Pose3d());
         var kinematics = Kinematics.inverseKinematicsFromPlacePoint(pose.getTranslation(), supersystem.getSupersystemState().getWristAngle());
-        var angle = kinematics.getTurretAngle();
+        var angle = kinematics.getTurretAngle(); // just the turret angle of the kinematics
 
+        //if the target is fairly close, just go grab it.
         if(kinematics.getArmExtension() < 0.7){
             supersystem.setSupersystemState(kinematics);
+            return;
         }
 
+        //otherwise, only move the turret
         supersystem.setTurret(new Rotation2d(angle));
     }
 
