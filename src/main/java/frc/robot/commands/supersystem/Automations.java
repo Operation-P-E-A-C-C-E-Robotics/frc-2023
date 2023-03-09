@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.lib.field.FieldConstants;
 import frc.lib.safety.Value;
 import frc.robot.Constants;
+import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.Kinematics;
 import frc.robot.RobotState;
 import frc.robot.commands.endeffector.DropGamepiece;
@@ -18,9 +19,6 @@ import frc.robot.subsystems.Supersystem;
 
 import java.util.ArrayList;
 
-/**
- * A class to hold all the little automation commands that are mostly chains of other commands.
- */
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0.3, 0, 0.3); //TODO
     public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
@@ -30,6 +28,13 @@ public class Automations {
     private final EndEffector endEffector;
     private final Setpoints setpoints;
 
+    /**
+     * A class to hold all the little automation commands that are mostly chains of other commands.
+     * @param supersystem the supersystem to use
+     * @param robotState the robot state to use
+     * @param endEffector the end effector to use
+     * @param setpoints the setpoints to use
+     */
     public Automations(Supersystem supersystem, RobotState robotState, EndEffector endEffector, Setpoints setpoints){
         this.supersystem = supersystem;
         this.robotState = robotState;
@@ -44,9 +49,9 @@ public class Automations {
      */
     public Command goToCubePosition(PlaceLevel level){
         var tolerance = switch(level){
-            case HIGH -> Constants.SupersystemTolerance.PLACE_HIGH;
-            case MID -> Constants.SupersystemTolerance.PLACE_MID;
-            case LOW -> Constants.SupersystemTolerance.PLACE_LOW;
+            case HIGH -> SupersystemTolerance.PLACE_HIGH;
+            case MID -> SupersystemTolerance.PLACE_MID;
+            case LOW -> SupersystemTolerance.PLACE_LOW;
         };
         ArrayList<Translation3d> scoreLocations = switch(level){
             case HIGH -> FieldConstants.Grids.highCubeTranslations;
@@ -63,15 +68,30 @@ public class Automations {
         );
     }
 
+    /**
+     * A command to place a cube (moves into position and then spits it out)
+     * @param level the level to place the cube on
+     * @return a command to place a cube
+     */
     public Command placeCube(PlaceLevel level){
-        return goToCubePosition(level).raceWith(new SpitGamepiece(endEffector));
+        return goToCubePosition(level)
+                .raceWith(new SpitGamepiece(
+                        endEffector,
+                        () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                ));
     }
 
+    /**
+     * place a cone with odometry. 3 step process: move to a position above the peg,
+     * move down so the cone is on the peg, then drop.
+     * @param level the level to place the cone on
+     * @return a command to place a cone
+     */
     public Command placeConeNoVision(PlaceLevel level){
         var tolerance = switch(level){
-            case HIGH -> Constants.SupersystemTolerance.PLACE_HIGH;
-            case MID -> Constants.SupersystemTolerance.PLACE_MID;
-            case LOW -> Constants.SupersystemTolerance.PLACE_LOW;
+            case HIGH -> SupersystemTolerance.PLACE_HIGH;
+            case MID -> SupersystemTolerance.PLACE_MID;
+            case LOW -> SupersystemTolerance.PLACE_LOW;
         };
         ArrayList<Translation3d> scoreLocations = switch(level){
             case HIGH -> FieldConstants.Grids.highConeTranslations;
@@ -97,6 +117,9 @@ public class Automations {
         return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
     }
 
+    /**
+     * @return a command to look for a cone on the floor, and if it's near enough reach out and grab it.
+     */
     public Command targetConeFloor(){
         return new RunCommand(() -> {
             var conePose = robotState.getConePose();
@@ -104,6 +127,9 @@ public class Automations {
         }, supersystem.getRequirements());
     }
 
+    /**
+     * @return a command to look for a cube on the floor, and if it's near enough reach out and grab it.
+     */
     public Command targetCubeFloor(){
         return new RunCommand(() -> {
             var cubePose = robotState.getCubePose();
@@ -111,6 +137,11 @@ public class Automations {
         }, supersystem.getRequirements());
     }
 
+    /**
+     * Not a command! a helper to be run from other commands.
+     * Points the turret at the target, and if it's close enough, moves the whole supersystem to the target.
+     * @param targetPose the target pose
+     */
     private void targetPose(Value<Pose3d> targetPose) {
         if(!targetPose.isNormal()) return;
 
@@ -131,13 +162,13 @@ public class Automations {
 
     public Command pickUpConeFloor(){
         //TODO OOOOOOO
-        return setpoints.goToSetpoint(Setpoints.intakeFloor, Constants.SupersystemTolerance.INTAKE_GROUND)
-                .andThen(targetConeFloor());
+        return setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND)
+                .andThen(targetConeFloor(), new RunCommand(() -> endEffector.setClaw(false), endEffector));
     }
 
     public Command pickUpCubeFloor(){
         //TODO OOOOOOO
-        return setpoints.goToSetpoint(Setpoints.intakeFloor, Constants.SupersystemTolerance.INTAKE_GROUND)
+        return setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND)
                 .andThen(targetCubeFloor());
     }
 

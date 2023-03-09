@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -85,16 +84,15 @@ public class RobotContainer {
     () -> driverJoystick.getRawButton(2)
   );
 
-  private final OIEntry[] testDriverOI = {
-          SimpleButton.toggle(automations.placeCube(PlaceLevel.HIGH), 3),
-          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 4),
-          SimpleButton.toggle(new RunCommand(() -> robotState.resetOdometry(new Pose2d())), 11)
+  private final OIEntry[] driverOI = {
   };
 
   private final OIEntry[] mainOperatorOI = {
-          SimpleButton.toggle(automations.place(PlaceLevel.HIGH), 4),
-          SimpleButton.toggle(automations.place(PlaceLevel.MID), 1),
-          SimpleButton.toggle(automations.place(PlaceLevel.LOW), 2),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW), 2),
+          SimpleButton.onPress(automations.pickUpConeFloor(), 5),
+          SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
   };
 
   private final OIEntry[] manualOperatorOI = {
@@ -102,7 +100,6 @@ public class RobotContainer {
           SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8),
-          SimpleButton.onHold(new TestPosition(arm, pivot, turret, wrist), 1)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -130,7 +127,7 @@ public class RobotContainer {
    */
   private void configureBindings() {
     endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
-    new ButtonMap(driverJoystick).map(testDriverOI);
+    new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(new Joystick(2)).map(manualOperatorOI);
   //   supersystem.setDefaultCommand(new DefaultStatemachine(

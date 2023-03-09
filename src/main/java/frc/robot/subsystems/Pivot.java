@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ServoArm;
 import frc.lib.util.Util;
@@ -30,7 +31,9 @@ import frc.robot.Robot;
 
 import static frc.robot.Constants.Pivot.*;
 
-public class Pivot extends ServoArm {
+public class Pivot extends SubsystemBase {
+  private final ServoArm servoController = new ServoArm(SYSTEM_CONSTANTS, LENGTH, MASS);
+
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
           Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
@@ -46,8 +49,6 @@ public class Pivot extends ServoArm {
 
   /** Creates a new ExampleSubsystem. */
   public Pivot(boolean withBrake) {
-    super(SYSTEM_CONSTANTS, LENGTH, MASS);
-
     WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
 
     pivotMaster.setNeutralMode(NeutralMode.Brake);
@@ -56,12 +57,19 @@ public class Pivot extends ServoArm {
     pivotSlave.follow(pivotMaster);
     pivotMaster.setNeutralMode(NeutralMode.Brake);
 
-    pivotMaster.setInverted(false);
+    pivotMaster.setInverted(Constants.Inversions.PIVOT);
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
     pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    pivotEncoder.setPositionToAbsolute();
+    pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
     pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-    // brakeSolenoid.initSendable(null);
+
+    pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), SYSTEM_CONSTANTS));
+    pivotMaster.configForwardSoftLimitEnable(true);
+    pivotMaster.configReverseSoftLimitEnable(true);
+    pivotMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MAX_ANGLE_RAD)));
+    pivotMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MIN_ANGLE_RAD)));
 
     if(Robot.isSimulation()) {
       initializeSimulation();
@@ -70,7 +78,7 @@ public class Pivot extends ServoArm {
     }
     if(withBrake) {
       setBrakeEngaged(true);
-      setPeriodicFunction(this::updateBrakePeriodic);
+      servoController.setPeriodicFunction(this::updateBrakePeriodic);
     }
     setBrakeEngaged(false);
 
@@ -83,7 +91,7 @@ public class Pivot extends ServoArm {
    * @param speed -1 to 1
    */
   public void setPercent(double speed){
-    disableLoop();
+    servoController.disableLoop();
     pivotMaster.set(speed);
   }
 
@@ -97,10 +105,10 @@ public class Pivot extends ServoArm {
   }
 
   private void updateBrakePeriodic(){
-    if(!isLooping()) setBrakeEngaged(false);
+    if(!servoController.isLooping()) setBrakeEngaged(false);
     else setBrakeEngaged(withinTolerance(brakeTolerance));
     if(isBrakeEngaged()){
-      disableLoop();
+      servoController.disableLoop();
       setVoltage(0);
     }
     SmartDashboard.putBoolean("PIVOT BRAKE ENGAGED", isBrakeEngaged());
@@ -130,8 +138,8 @@ public class Pivot extends ServoArm {
   public void setAngle(Rotation2d angle){
     setpoint = angle.getRadians();
     if(isBrakeEngaged()) return;
-    enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
-    goToState(angle.getRadians(), 0);
+    servoController.enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
+    servoController.goToState(angle.getRadians(), 0);
   }
 
   /**
@@ -160,8 +168,8 @@ public class Pivot extends ServoArm {
    * @return a Rotation2d with the current angle.
    */
   public Rotation2d getRotation(){
-    return Rotation2d.fromRotations(Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS));
-    // return Rotation2d.fromDegrees(pivotEncoder.getAbsolutePosition());
+//    return Rotation2d.fromRotations(Util.countsToRotations(pivotMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS));
+     return Rotation2d.fromDegrees(pivotEncoder.getAbsolutePosition());
   }
 
   /**
@@ -181,8 +189,8 @@ public class Pivot extends ServoArm {
    * @return a double with the current angular velocity in radians per second.
    */
   public double getAngularVelocityRadiansPerSecond(){
-    return Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS) * 10;
-    // return Units.degreesToRadians(pivotEncoder.getVelocity());
+//    return Util.countsToRotations(pivotMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS) * 10;
+     return Units.degreesToRadians(pivotEncoder.getVelocity());
   }
 
   //SIMULATION: (DON'T TOUCH)
@@ -192,7 +200,6 @@ public class Pivot extends ServoArm {
   private CANCoderSimCollection pivotEncoderSim;
    private static SingleJointedArmSim pivotSim;
    private double prevAngleSetpoint = 0, prevPercentSetpoint = 0;
-  private final boolean PERIODIC_CONTROL_SIMULATION = false;
 
   public void initializeSimulation(){
     pivotMotorSim = pivotMaster.getSimCollection();
@@ -250,6 +257,7 @@ public class Pivot extends ServoArm {
 
   //   //get new angle setpoint from dashboard
      var angleSetpoint = SmartDashboard.getNumber("pivot setpoint angle", 0);
+     boolean PERIODIC_CONTROL_SIMULATION = false;
      if(angleSetpoint != prevAngleSetpoint && PERIODIC_CONTROL_SIMULATION){
        setAngle(Rotation2d.fromDegrees(angleSetpoint));
        prevAngleSetpoint = angleSetpoint;

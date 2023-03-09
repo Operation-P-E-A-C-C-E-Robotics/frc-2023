@@ -88,7 +88,7 @@ public class ServoArm extends SubsystemBase {
      * @param getPosition The function to get the position
      * @param getVelocity The function to get the velocity
      */
-    protected void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
+    public void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
         this.voltDriveFunction = voltDriveFunction;
         this.getPosition = getPosition;
         this.getVelocity = getVelocity;

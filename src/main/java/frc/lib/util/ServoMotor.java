@@ -47,8 +47,11 @@ public class ServoMotor extends SubsystemBase {
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
      * @param constants The constants for the system
      */
-    public ServoMotor(SystemConstants constants) {
+    public ServoMotor(SystemConstants constants, DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
         this.constants = constants;
+        this.voltDriveFunction = voltDriveFunction;
+        this.getPosition = getPosition;
+        this.getVelocity = getVelocity;
 
         //set up teh statey spacey contraollr
         plant = LinearSystemId.createDCMotorSystem( //create the mathy calculator thingy
@@ -111,10 +114,7 @@ public class ServoMotor extends SubsystemBase {
      * @param getPosition The function to get the position
      * @param getVelocity The function to get the velocity
      */
-    protected void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
-        this.voltDriveFunction = voltDriveFunction;
-        this.getPosition = getPosition;
-        this.getVelocity = getVelocity;
+    public void enableLoop() {
         looping = true;
     }
 

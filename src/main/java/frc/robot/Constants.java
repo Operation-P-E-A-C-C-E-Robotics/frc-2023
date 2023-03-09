@@ -10,6 +10,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.lib.util.ServoMotor.SystemConstants;
+import frc.robot.commands.supersystem.Automations;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -23,6 +24,19 @@ import frc.lib.util.ServoMotor.SystemConstants;
 //TODO CAN ID's according to the Electrical Service Manual (https://docs.google.com/document/d/1KB8-KpFrxM39kcLAH9h3_pHSRaMYU2LS7VqXjaPE9zI/edit?usp=sharing)
 //CAN ID's in the order they are connected in the chain, 1st connection is ID 0, 2nd is ID 1, etc
 public final class Constants {
+
+    public static final class Inversions{
+        public static final boolean DRIVE_LEFT = false,
+                                    DRIVE_RIGHT = true,
+                                    TURRET = false,
+                                    TURRET_ENCODER = false,
+                                    PIVOT = false,
+                                    PIVOT_ENCODER = false,
+                                    ARM = true,
+                                    WRIST = false,
+                                    INTAKE_LEFT = false,
+                                    INTAKE_RIGHT = false;
+    }
     public static final class DriveTrain {
         //ports
         public static final int LEFT_MASTER  = 0, //DOCS Drive Falcon 0
@@ -66,8 +80,6 @@ public final class Constants {
                 kP = 0.24921,
                 kI = 0,
                 kD = 0,
-                RAMSETE_B = 2.0,
-                RAMSETE_ZETA = 0.3,
                 AUTO_VOLTAGE_MAX = 7,
                 AUTO_MAX_SPEED_METERS_PER_SECOND = 1, //3
                 AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
@@ -96,17 +108,17 @@ public final class Constants {
                 MIN_ANGLE_RAD = -MAX_ANGLE_RAD;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                false,
-                50,
-                60,
-                0.5
+                true,
+                10,
+                20,
+                0.1
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
                 2,
                 20 * 5, //20:1 versaplanetary, 5:1 driving gear
-                2048,
+                4096,
                 3,
                 3,
                 3.0,
@@ -133,17 +145,17 @@ public final class Constants {
         //constraints
         public static final double  MAX_ANGLE_RAD = Math.PI, //TODO actual constraints
                                     MIN_ANGLE_RAD = -Math.PI,
-                                    TIME_FOR_BRAKE_TO_ENGAGE = 0.5; //TODO Meassure time for Break to engage
+                                    TIME_FOR_BRAKE_TO_ENGAGE = 0.5; //TODO Measure time for Break to engage
 
         //physical constants
         public static final double  LENGTH = 0.1,
                                     MASS = 0.1;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                false,
-                50,
-                60,
-                0.5
+                true,
+                5,
+                10,
+                0
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
@@ -151,7 +163,7 @@ public final class Constants {
                     2),
                 10, //6.67
                 3*4*5*6.4,
-                2048,
+                4096,
                 1,
                 1, //0.735
                 0.1,
@@ -176,16 +188,16 @@ public final class Constants {
                 MIN_EXTENSION = 0.41, //m
                 MAX_EXTENSION = 1.4; //m
 
-        public static final double PULLY_DIAMETER = 0.044;//
+        public static final double PULLY_DIAMETER = 0.044;
         public static final double PULLY_CIRCUMPHERENCE = Math.PI * Math.pow(PULLY_DIAMETER/2, 2);
 
         public static final double FULLY_EXTENDED_COUNTS = 204000;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                false,
-                50,
-                60,
-                0.5
+                true,
+                20,
+                30,
+                0.2
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
@@ -220,10 +232,10 @@ public final class Constants {
                 MASS = 0.1; //kg
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                false,
-                50,
-                60,
-                0.5
+                true,
+                10,
+                15,
+                0.1
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
@@ -284,6 +296,14 @@ public final class Constants {
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance TARGET_VISION = new SupersystemTolerance(0.5, 0.5, 0.5, 0.3);
+
+        public static SupersystemTolerance forLevel(Automations.PlaceLevel level){
+            return switch (level) {
+                case HIGH -> PLACE_HIGH;
+                case MID -> PLACE_MID;
+                case LOW -> PLACE_LOW;
+            };
+        }
         public SupersystemTolerance(double turret, double pivot, double wrist, double arm){
             this.turret = turret;
             this.pivot = pivot;

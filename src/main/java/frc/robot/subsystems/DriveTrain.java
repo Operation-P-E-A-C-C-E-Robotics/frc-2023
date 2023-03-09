@@ -89,8 +89,8 @@ public class DriveTrain extends SubsystemBase {
 
     leftSlave.setInverted(InvertType.FollowMaster);
     rightSlave.setInverted(InvertType.FollowMaster);
-    leftMaster.setInverted(false);
-    rightMaster.setInverted(true);
+    leftMaster.setInverted(Constants.Inversions.DRIVE_LEFT);
+    rightMaster.setInverted(Constants.Inversions.DRIVE_RIGHT);
     set(DriveSignal.DEFAULT);
     shiftClutchTimer.start();
 

@@ -9,6 +9,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
@@ -18,10 +19,11 @@ import frc.robot.DashboardManager;
 import frc.robot.Robot;
 
 import java.util.function.DoubleSupplier;
-
 import static frc.robot.Constants.Wrist.*;
 
-public class Wrist extends ServoMotor {
+public class Wrist extends SubsystemBase {
+    private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getAngleRads, this::getVelocityRads);
+
     private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
     private final Solenoid wristSolenoid = new Solenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_SOLENOID); //TODO
     private final DoubleSupplier pivotAngle;
@@ -29,18 +31,22 @@ public class Wrist extends ServoMotor {
     private final Timer wristTimer = new Timer();
 
     public Wrist(DoubleSupplier pivotAngle){
-        super(SYSTEM_CONSTANTS);
         wristMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 10));
 
-        wristMaster.setInverted(false);
+        wristMaster.setInverted(Constants.Inversions.WRIST);
         wristMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+
+        wristMaster.configForwardSoftLimitEnable(true);
+        wristMaster.configReverseSoftLimitEnable(true);
+        wristMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(90), SYSTEM_CONSTANTS)); //TODO move to constants
+        wristMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(-90), SYSTEM_CONSTANTS));
 
         this.pivotAngle = pivotAngle;
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
         DankPids.registerDankTalon(wristMaster);
 
-        setPeriodicFunction(this::flipWristPeriodic);
+        servoController.setPeriodicFunction(this::flipWristPeriodic);
 
         wristTimer.start();
     }
@@ -50,6 +56,7 @@ public class Wrist extends ServoMotor {
      * go towards the front of the robot.
      */
     public void setPercent(double speed){
+        servoController.disableLoop();
         wristMaster.set(speed);
     }
 
@@ -57,7 +64,7 @@ public class Wrist extends ServoMotor {
      * set motor voltage
      * @param voltage positive values go towards the front of the robot.
      */
-    public void setVoltage(double voltage){
+    private void setVoltage(double voltage){
         wristMaster.setVoltage(voltage);
     }
 
@@ -66,8 +73,8 @@ public class Wrist extends ServoMotor {
      * @param angle 0 - inline with lift, positive values tilt toward front of robot.
      */
     public void setAngle(Rotation2d angle){
-        enableLoop(this::setVoltage, this::getAngleRads, this::getVelocityRads);
-        goToState(angle.getRadians());
+        servoController.enableLoop();
+        servoController.goToState(angle.getRadians());
     }
 
     public void setFlipped(boolean flipped){

@@ -17,26 +17,40 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
+import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 
+import static frc.robot.Constants.Pivot.MAX_ANGLE_RAD;
+import static frc.robot.Constants.Pivot.MIN_ANGLE_RAD;
+import static frc.robot.Constants.Pivot.SYSTEM_CONSTANTS;
 import static frc.robot.Constants.Turret.*;
 
-public class Turret extends ServoMotor {
+public class Turret extends SubsystemBase {
+  private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltageWithoutStoppingProfile, this::getAngleRadians, this::getAngularVelocityRadians);
+
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
   private final WPI_CANCoder turretEncoder = new WPI_CANCoder(ENCODER_PORT);
   private double setpoint = 0;
 
   /** Creates a new Turret. */
   public Turret() {
-    super(SYSTEM_CONSTANTS);
     turretEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
     turretEncoder.setPositionToAbsolute();
-    turretMaster.setInverted(false);
+    turretEncoder.configSensorDirection(Constants.Inversions.TURRET_ENCODER);
+    turretMaster.setInverted(Constants.Inversions.TURRET);
     turretMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+
+//    turretMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(turretEncoder.getAbsolutePosition()), SYSTEM_CONSTANTS));
+    turretMaster.configForwardSoftLimitEnable(true);
+    turretMaster.configReverseSoftLimitEnable(true);
+    turretMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MAX_ANGLE_RAD)));
+    turretMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MIN_ANGLE_RAD)));
+
     if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
     DankPids.registerDankTalon(turretMaster);
   }
@@ -45,7 +59,7 @@ public class Turret extends ServoMotor {
    * set the turret speed, Positive Values should be Counter Clock Wise
    */
   public void setPercent(double speed) {
-    disableLoop();
+    servoController.disableLoop();
     turretMaster.set(speed);
   }
 
@@ -53,7 +67,7 @@ public class Turret extends ServoMotor {
    * set the turret voltage, Positive Values should be Counter Clock Wise
    */
   public void setVoltage(double volts){
-    disableLoop();
+    servoController.disableLoop();
     setVoltageWithoutStoppingProfile(volts);
   }
 
@@ -61,7 +75,7 @@ public class Turret extends ServoMotor {
    * enable the feedback loop - takes over from the setPercent and setVoltage methods
    */
   public void enableFeedback(){
-    enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRadians, this::getAngularVelocityRadians);
+    servoController.enableLoop();
   }
 
   /**
@@ -72,7 +86,7 @@ public class Turret extends ServoMotor {
   public void setAngle(Rotation2d angle){
       setpoint = angle.getRadians();
       enableFeedback();
-      goToState(angle.getRadians());
+      servoController.goToState(angle.getRadians());
   }
 
   /**
@@ -89,9 +103,9 @@ public class Turret extends ServoMotor {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-   return Rotation2d.fromDegrees(rotation*360);
-    // return Rotation2d.fromDegrees(turretEncoder.getPosition());
+//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   return Rotation2d.fromDegrees(rotation*360);
+     return Rotation2d.fromDegrees(turretEncoder.getPosition());
   }
 
   /**
@@ -99,9 +113,9 @@ public class Turret extends ServoMotor {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngularVelocity(){
-   var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-   return Rotation2d.fromDegrees(velocity*360);
-    // return Rotation2d.fromDegrees(turretEncoder.getVelocity());
+//   var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   return Rotation2d.fromDegrees(velocity*360);
+     return Rotation2d.fromDegrees(turretEncoder.getVelocity());
   }
 
   /**
@@ -109,9 +123,9 @@ public class Turret extends ServoMotor {
    * @return radians, CCW is positive
    */
   public double getAngleRadians(){
-   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-   return Units.rotationsToRadians(rotation);
-   // return getAngle().getRadians();
+//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   return Units.rotationsToRadians(rotation);
+    return getAngle().getRadians();
   }
 
     /**
@@ -145,7 +159,7 @@ public class Turret extends ServoMotor {
   //SIMULATION:
   private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
   private final CANCoderSimCollection turretEncoderSim = turretEncoder.getSimCollection();
-  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem());
+  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(servoController.getSystem());
   private  double prevsetpt = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
   @Override
