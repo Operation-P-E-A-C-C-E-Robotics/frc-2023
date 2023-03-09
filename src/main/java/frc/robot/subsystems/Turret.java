@@ -103,7 +103,7 @@ public class Turret extends SubsystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
 //   return Rotation2d.fromDegrees(rotation*360);
      return Rotation2d.fromDegrees(turretEncoder.getPosition());
   }
@@ -113,7 +113,7 @@ public class Turret extends SubsystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngularVelocity(){
-//   var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
 //   return Rotation2d.fromDegrees(velocity*360);
      return Rotation2d.fromDegrees(turretEncoder.getVelocity());
   }
@@ -123,7 +123,7 @@ public class Turret extends SubsystemBase {
    * @return radians, CCW is positive
    */
   public double getAngleRadians(){
-//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
+//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
 //   return Units.rotationsToRadians(rotation);
     return getAngle().getRadians();
   }

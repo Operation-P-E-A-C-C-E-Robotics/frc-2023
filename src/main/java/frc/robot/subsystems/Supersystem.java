@@ -10,7 +10,6 @@ import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
 import frc.robot.RobotState;
 
-//TODO change to use RobotState
 public class Supersystem extends SubsystemBase {
     private final Arm arm;
     private final Pivot pivot;

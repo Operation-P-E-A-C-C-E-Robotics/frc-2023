@@ -24,8 +24,8 @@ import static frc.robot.Constants.Wrist.*;
 public class Wrist extends SubsystemBase {
     private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getAngleRads, this::getVelocityRads);
 
-    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final Solenoid wristSolenoid = new Solenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_SOLENOID); //TODO
+    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);
+    private final Solenoid wristSolenoid = new Solenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_SOLENOID);
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();
@@ -38,7 +38,7 @@ public class Wrist extends SubsystemBase {
 
         wristMaster.configForwardSoftLimitEnable(true);
         wristMaster.configReverseSoftLimitEnable(true);
-        wristMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(90), SYSTEM_CONSTANTS)); //TODO move to constants
+        wristMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(90), SYSTEM_CONSTANTS));
         wristMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(-90), SYSTEM_CONSTANTS));
 
         this.pivotAngle = pivotAngle;
@@ -106,12 +106,12 @@ public class Wrist extends SubsystemBase {
      * get the angle of the wrist
      */
     public Rotation2d getAngle(){
-        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
+        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
         return new Rotation2d(Units.rotationsToRadians(rotation));
     }
 
     public Rotation2d getVelocity(){
-        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
+        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
         return new Rotation2d(Units.rotationsToRadians(rotation));
     }
 

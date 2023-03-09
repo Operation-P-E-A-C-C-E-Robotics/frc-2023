@@ -46,7 +46,7 @@ public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
 
-  //velocity drive - TODO if LQR velocity drive works, get rid of pid. also we may not need differential drive
+  //velocity drive
   //with current auto setup.
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private final SimpleMotorFeedforward feedforward;
@@ -76,9 +76,6 @@ public class DriveTrain extends SubsystemBase {
   private static final Value HIGH_GEAR = Value.kForward;
   private static final Value LOW_GEAR = Value.kReverse;
 
-
-//TODO  low gear make the robot go backwards so like, do something about it
-
   /** Creates a new DriveTrain. */
   public DriveTrain(PigeonHelper pigeon) {
     this.pigeon = pigeon;
@@ -94,7 +91,7 @@ public class DriveTrain extends SubsystemBase {
     set(DriveSignal.DEFAULT);
     shiftClutchTimer.start();
 
-    //configure PID: TODO get rid of PID
+    //configure PID
     feedforward = new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR);
     leftController = new PIDController(kP, kI, kD);
     rightController = new PIDController(kP, kI, kD);
@@ -314,7 +311,7 @@ public class DriveTrain extends SubsystemBase {
                 kVAngular,
                 kAAngular,
                 TRACK_WIDTH
-        ); //TODO angular kV and kA
+        );
         driveLQR = new LinearQuadraticRegulator<>(
                 drivePlant,
                 VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
@@ -333,7 +330,7 @@ public class DriveTrain extends SubsystemBase {
                 drivePlant,
                 driveLQR,
                 kalmanFilter,
-                12, //todo
+                12,
                 DT
         );
     }

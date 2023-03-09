@@ -24,8 +24,8 @@ public class PeaccyDriveHelper {
 
     private static final SlewRateLimiter fastAccelLimiterLeft = new SlewRateLimiter(0.5); //TODO
     private static final SlewRateLimiter fastAccelLimiterRight = new SlewRateLimiter(0.5); //TODO
-    private static final double FAST_ACCEL_UPSHIFT_THRESHOLD = 0.5,
-            FAST_ACCEL_DOWNSHIFT_THRESHOLD = 0.3;
+    private static final double FAST_ACCEL_UPSHIFT_THRESHOLD = 50,
+            FAST_ACCEL_DOWNSHIFT_THRESHOLD = 30;
     private static final double FAST_ACCEL_SCALAR = 0.5; //TODO
 
     /**

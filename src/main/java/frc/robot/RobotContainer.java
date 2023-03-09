@@ -42,10 +42,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
-  private final Limelight apriltagLimelight = new Limelight("limelight"),
-                          armLimelight = new Limelight("sdsfg"); //TODO
-
-  private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
+  private final Limelight drivetrainLimelight = new Limelight("drivetrainLimelight"),
+                          armLimelight = new Limelight("armLimelight");
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -56,7 +54,7 @@ public class RobotContainer {
   private final EndEffector endEffector = new EndEffector();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
-  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
+  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, drivetrainLimelight, armLimelight);
   private final Constraints constraints = new Constraints(supersystem.getKinematics());
 
   //OI
@@ -104,7 +102,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    compressor.enableAnalog(60, 80); //TODO up pressure
+    Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
+    compressor.enableAnalog(100, 120);
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);

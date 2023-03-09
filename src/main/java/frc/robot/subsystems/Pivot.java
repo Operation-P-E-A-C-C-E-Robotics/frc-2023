@@ -130,7 +130,7 @@ public class Pivot extends SubsystemBase {
   /**
    * set the pivot angle - positive values move towards the front of the robot.
    * this enables feedback control.
-   * TODO - the arm sim calls -90deg straight down - I will change this to 180 deg straight down.
+   * the arm sim calls -90deg straight down - I will change this to 180 deg straight down.
    *    this function should call 180deg straight down. (zero degrees is straight up)
    *    what a mess. "I should have just used radians." (<--AI Wrote this)
    * @param angle a Rotation2d with the setpoint.

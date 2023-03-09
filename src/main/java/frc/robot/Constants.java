@@ -21,7 +21,7 @@ import frc.robot.commands.supersystem.Automations;
  * constants are needed, to reduce verbosity.
  */
 
-//TODO CAN ID's according to the Electrical Service Manual (https://docs.google.com/document/d/1KB8-KpFrxM39kcLAH9h3_pHSRaMYU2LS7VqXjaPE9zI/edit?usp=sharing)
+//CAN ID's according to the Electrical Service Manual (https://docs.google.com/document/d/1KB8-KpFrxM39kcLAH9h3_pHSRaMYU2LS7VqXjaPE9zI/edit?usp=sharing)
 //CAN ID's in the order they are connected in the chain, 1st connection is ID 0, 2nd is ID 1, etc
 public final class Constants {
 
@@ -52,8 +52,8 @@ public final class Constants {
                 GEARBOX_RATIO_HIGH = 10.66,//:1
                 GEARBOX_RATIO_LOW = 17.88,//:1
                 METERS_PER_ROTATION = 0.4844,
-                MOMENT_OF_INERTIA = 7.5, //J/m^2 //TODO
-                MASS = 68.0, //kg //TODO
+                MOMENT_OF_INERTIA = 7.5, //J/m^2
+                MASS = Units.lbsToKilograms(100), //kg
                 TRACK_WIDTH = 0.6096; //m
 
         //state space constants
@@ -104,7 +104,7 @@ public final class Constants {
                                 ENCODER_PORT = 27;
 
         //constraints:
-        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(270), //TODO actual constraints
+        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(180),
                 MIN_ANGLE_RAD = -MAX_ANGLE_RAD;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
@@ -143,9 +143,9 @@ public final class Constants {
                       BRAKE_SOLENOID_FORWARD = 7,
                      BRAKE_SOLENOID_REVERSE = 6;
         //constraints
-        public static final double  MAX_ANGLE_RAD = Math.PI, //TODO actual constraints
-                                    MIN_ANGLE_RAD = -Math.PI,
-                                    TIME_FOR_BRAKE_TO_ENGAGE = 0.5; //TODO Measure time for Break to engage
+        public static final double  MAX_ANGLE_RAD = Math.PI/2, //TODO actual constraints
+                                    MIN_ANGLE_RAD = -Math.PI/2,
+                                    TIME_FOR_BRAKE_TO_ENGAGE = 0.1;
 
         //physical constants
         public static final double  LENGTH = 0.1,
@@ -275,9 +275,8 @@ public final class Constants {
     }
 
     public static final class Constraints{
-        public static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10, //todo
-                                  DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 1, //todo
-                                  ARM_EXTENSION_SPEED_LIMIT = 0.5; //todo
+        public static final double DRIVE_SLEW_RATE_LIMIT_NORMAL = 10,
+                                  DRIVE_SLEW_RATE_LIMIT_LIFT_EXTENDED = 1;
     }
 
     public static final class OperatorInterface {

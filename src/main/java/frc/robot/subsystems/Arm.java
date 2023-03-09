@@ -25,10 +25,9 @@ import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
     private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getExtension, this::getVelocity);
-    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT);
     private double setpoint = 0;
 
-    // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
         armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 50, 60, 0.1));
