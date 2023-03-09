@@ -123,13 +123,11 @@ public class ButtonMap {
     public static class FancyPOVAndButton implements OIEntry{
         public final Command command;
         public final int buttonNumber;
-        public final int povAngle;
         public final TriggerType triggerType;
 
-        public FancyPOVAndButton(Command command, int buttonNumber, int povAngle, TriggerType triggerType){
+        public FancyPOVAndButton(Command command, int buttonNumber, TriggerType triggerType){
             this.command = command;
             this.buttonNumber = buttonNumber;
-            this.povAngle = povAngle;
             this.triggerType = triggerType;
         }
 
@@ -145,7 +143,7 @@ public class ButtonMap {
 
         @Override
         public Trigger getTrigger(Joystick joystick) {
-            Trigger povTrigger = new Trigger(() -> joystick.getPOV() == povAngle);
+            Trigger povTrigger = new Trigger(() -> joystick.getPOV() != -1);
             return new JoystickButton(joystick, buttonNumber).and(povTrigger);
         }
     }
