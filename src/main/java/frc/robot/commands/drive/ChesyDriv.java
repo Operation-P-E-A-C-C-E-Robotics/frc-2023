@@ -28,7 +28,7 @@ public class ChesyDriv extends CommandBase {
     @Override
     public void execute() {
         double throttle = -throttleSupplier.getAsDouble();
-        double wheel = -wheelSpplier.getAsDouble();
+        double wheel = wheelSpplier.getAsDouble();
         boolean quickturn = quickturnSupplier.getAsBoolean();
         boolean isHighGear = !gearSupplier.getAsBoolean();
         driveTrain.set(cheesyDriveHelper.cheesyDrive(throttle, wheel, quickturn, isHighGear));

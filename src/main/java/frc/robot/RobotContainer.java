@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.OIEntry;
 import frc.lib.util.ButtonMap.SimpleButton;
+import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
@@ -102,7 +103,8 @@ public class RobotContainer {
           SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8),
-          SimpleButton.onHold(new TestPosition(arm, pivot, turret, wrist), 1)
+          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 1),
+          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.DEFAULT), 2)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -129,10 +131,11 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
+    // endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
     new ButtonMap(driverJoystick).map(testDriverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(new Joystick(2)).map(manualOperatorOI);
+    // supersystem.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   //   supersystem.setDefaultCommand(new DefaultStatemachine(
   //     supersystem,
   //     () -> robotXInRange(0, 4.5),
@@ -140,7 +143,7 @@ public class RobotContainer {
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
       // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-      pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+      // pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   }
 
   public boolean robotXInRange(double low, double high){

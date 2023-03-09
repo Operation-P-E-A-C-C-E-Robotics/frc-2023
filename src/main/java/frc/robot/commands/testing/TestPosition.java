@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.Util;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Supersystem;
@@ -34,14 +35,8 @@ public class TestPosition extends CommandBase {
 
     @Override
     public void initialize(){
-        // System.out.println("Testing position control - initialized");
-        // SmartDashboard.putNumber("arm setpoint", arm.getExtension());
-        // SmartDashboard.putNumber("pivot setpoint (deg)", pivot.getAngleRadians());
-        SmartDashboard.putNumber("TURRRETTTTT", 0);
-        // SmartDashboard.putNumber("wrist setpoint (deg)", wrist.getAngle().getDegrees());
-        // SmartDashboard.putBoolean("flip wrist", false);
     }
-    double prevsetpt = 0;
+    double prevWrist = 0, prevTurret = 0, prevPivot = 0, prevArm = 0;
 
     @Override
     public void execute(){
@@ -51,15 +46,16 @@ public class TestPosition extends CommandBase {
          SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
          SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
          SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
-        //  var armSetpoint = SmartDashboard.getNumber("arm setpoint", arm.getExtension());
-        //  var pivotSetpoint = SmartDashboard.getNumber("pivot setpoint (deg)", pivot.getAngleRadians());
-        // var turretSetpoint = SmartDashboard.getNumber("TURRRETTTTT", 0);
-        //  var wristSetpoint = SmartDashboard.getNumber("wrist setpoint (deg)", wrist.getAngle().getDegrees());
-        //  var flipWrist = SmartDashboard.getBoolean("flip wrist", false);
-        //  arm.setExtension(armSetpoint);
-        prevsetpt += new Joystick(2).getY()*0.1;
-        SmartDashboard.putNumber("setpoint", prevsetpt);
-         wrist.setAngle(new Rotation2d(prevsetpt));
+         prevWrist += Util.handleDeadband(new Joystick(2).getY(), 0.3)*0.1;
+            prevTurret += Util.handleDeadband(new Joystick(2).getX(), 0.3)*0.1;
+            prevPivot += Util.handleDeadband(new Joystick(2).getZ(), 0.3)*0.1;
+            prevArm += Util.handleDeadband(new Joystick(2).getThrottle(), 0.3)*0.1;
+        boolean flipWrist = new Joystick(2).getRawButton(3);
+        arm.setExtension(prevArm);
+        wrist.setAngle(new Rotation2d(prevWrist));
+        pivot.setAngle(new Rotation2d(prevPivot));
+        turret.setAngle(new Rotation2d(prevTurret));
+        wrist.setFlipped(flipWrist);
         // if(turretSetpoint != prevsetpt){
         //     turret.setAngle(Rotation2d.fromDegrees(turretSetpoint));
         //     prevsetpt = turretSetpoint;

@@ -211,7 +211,7 @@ public final class Constants {
     public static final class Wrist {
         //ports
         public static final int WRIST_MOTOR = 14, //DOCS Wrist Falcon 0
-                        WRIST_FLIP_SOLENOID = 5;
+                        WRIST_FLIP_SOLENOID = 4;
         //constants
         public static final double WRIST_FLIP_TIME = 0.5; //seconds TODO time to flip wrist
 

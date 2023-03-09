@@ -42,7 +42,7 @@ public class SeanyDrive extends CommandBase {
     @Override
     public void execute(){
         double throttle = driverJoystick.getY() * (invertFront ? 1 : -1);
-        double wheel = driverJoystick.getX();
+        double wheel = -driverJoystick.getX();
         // double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
         var arcadeTwist = 0.0;
         boolean isHighGear = driverJoystick.getRawButton(1),

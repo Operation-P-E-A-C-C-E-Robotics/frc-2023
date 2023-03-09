@@ -18,7 +18,7 @@ public class Setpoints {
     public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.5, 10);
     public static SupersystemState placeMidCone = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeHighCone = new SupersystemState(0, 0, 0, 0);
-    public static SupersystemState intakeFloor = new SupersystemState(0, 0, 0, 0);
+    public static SupersystemState intakeFloor = new SupersystemState(0, 2.1, 0.75, 0);
     public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0, 0, 0);
     private final Supersystem supersystem;
     private final DoubleSupplier x;
@@ -36,7 +36,7 @@ public class Setpoints {
 
     public Command goToSetpoint(SupersystemState setpoint, Constants.SupersystemTolerance tolerance){
         return new RunCommand(
-                () -> supersystem.setSupersystemState(setpoint.plus(new SupersystemState(turret.getAsDouble(), 0, 0, 0))), supersystem
+                () -> supersystem.setSupersystemState(setpoint.plus(new SupersystemState(turret.getAsDouble(), 0, 0, 0))), supersystem.getRequirements()
         );
     }
 
