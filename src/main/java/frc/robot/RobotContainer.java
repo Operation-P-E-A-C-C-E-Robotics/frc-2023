@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.PigeonIMU;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -44,10 +43,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
-  private final Limelight apriltagLimelight = new Limelight("limelight"),
-                          armLimelight = new Limelight("sdsfg"); //TODO
-
-  private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
+  private final Limelight drivetrainLimelight = new Limelight("drivetrainLimelight"),
+                          armLimelight = new Limelight("armLimelight");
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -58,7 +55,7 @@ public class RobotContainer {
   private final EndEffector endEffector = new EndEffector();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
 
-  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, apriltagLimelight, armLimelight);
+  private final RobotState robotState = new RobotState(driveTrain, supersystem, pigeon, drivetrainLimelight, armLimelight);
   private final Constraints constraints = new Constraints(supersystem.getKinematics());
 
   //OI
@@ -86,16 +83,15 @@ public class RobotContainer {
     () -> driverJoystick.getRawButton(2)
   );
 
-  private final OIEntry[] testDriverOI = {
-          SimpleButton.toggle(automations.placeCube(PlaceLevel.HIGH), 3),
-          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 4),
-          SimpleButton.toggle(new RunCommand(() -> robotState.resetOdometry(new Pose2d())), 11)
+  private final OIEntry[] driverOI = {
   };
 
   private final OIEntry[] mainOperatorOI = {
-          SimpleButton.toggle(automations.place(PlaceLevel.HIGH), 4),
-          SimpleButton.toggle(automations.place(PlaceLevel.MID), 1),
-          SimpleButton.toggle(automations.place(PlaceLevel.LOW), 2),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1),
+          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW), 2),
+          SimpleButton.onPress(automations.pickUpConeFloor(), 5),
+          SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
   };
 
   private final OIEntry[] manualOperatorOI = {
@@ -103,13 +99,12 @@ public class RobotContainer {
           SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
           SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 1),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.DEFAULT), 2)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    compressor.enableAnalog(60, 80); //TODO up pressure
+    Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
+    compressor.enableAnalog(100, 120);
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
@@ -131,8 +126,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    // endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
-    new ButtonMap(driverJoystick).map(testDriverOI);
+    endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
+    new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(new Joystick(2)).map(manualOperatorOI);
     // supersystem.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));

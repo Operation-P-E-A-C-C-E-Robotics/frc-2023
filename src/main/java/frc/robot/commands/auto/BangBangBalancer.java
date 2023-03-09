@@ -25,6 +25,6 @@ public class BangBangBalancer extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        driveTrain.set(DriveSignal.DEFAULT); //TODO maybe make this some hold position command
+        driveTrain.set(DriveSignal.DEFAULT);
     }
 }

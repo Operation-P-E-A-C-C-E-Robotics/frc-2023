@@ -28,7 +28,7 @@ public class EndEffector extends SubsystemBase {
           Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
           PneumaticsModuleType.CTREPCM,
           GRIP_PNEUMATICS_PORT
-  ); //TODO
+  );
   
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
   private final ColorMatch colorMatcher = new ColorMatch();
@@ -40,8 +40,8 @@ public class EndEffector extends SubsystemBase {
 
   /** Creates a new Intake. */
   public EndEffector() {
-    leftMotor.setInverted(false);
-    rightMotor.setInverted(false);
+    leftMotor.setInverted(Constants.Inversions.INTAKE_LEFT);
+    rightMotor.setInverted(Constants.Inversions.INTAKE_RIGHT);
 
     leftMotor.setSmartCurrentLimit(20);
     rightMotor.setSmartCurrentLimit(20);

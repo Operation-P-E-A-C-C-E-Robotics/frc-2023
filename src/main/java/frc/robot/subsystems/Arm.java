@@ -11,9 +11,11 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
 import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
+import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 
@@ -21,27 +23,18 @@ import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends ServoMotor {
-    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
+public class Arm extends SubsystemBase {
+    private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getExtension, this::getVelocity);
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT);
     private double setpoint = 0;
 
-    // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
-        super(SYSTEM_CONSTANTS);
         armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 50, 60, 0.1));
-        //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
-//        addFeedforward((double pos, double vel) -> {
-//            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
-//            var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
-//            //account for gearing:
-//            force /= SYSTEM_CONSTANTS.gearing;
-//            //calculate voltage needed to counteract force:
-//            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
-//        });
-        armMaster.setInverted(true);
+
+        armMaster.setInverted(Constants.Inversions.ARM);
         armMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-        setPeriodicFunction(this::zeroFromLimitSwitchPeriodic);
+        servoController.setPeriodicFunction(this::zeroFromLimitSwitchPeriodic);
         DankPids.registerDankTalon(armMaster);
     }
 
@@ -51,6 +44,7 @@ public class Arm extends ServoMotor {
      * @param speed the percentage, positive drives out
      */
     public void setPercent(double speed){
+        servoController.disableLoop();
         armMaster.set(speed);
     }
 
@@ -80,8 +74,8 @@ public class Arm extends ServoMotor {
      */
     public void setExtension(double meters){
         setpoint = meters;
-        enableLoop(this::setVoltage, this::getExtension, this::getVelocity);
-        goToState(meters);
+        servoController.enableLoop();
+        servoController.goToState(meters);
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){

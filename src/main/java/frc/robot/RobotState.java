@@ -45,7 +45,7 @@ public class RobotState {
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
-                new Pose2d(3, 3, new Rotation2d()), //TODO starting pose
+                new Pose2d(0, 0, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
         );
@@ -153,7 +153,7 @@ public class RobotState {
      * update drivetrain odometry
      */
     public void update(){
-        supersystem.getKinematics().reset(); //TODO better place for this?
+        supersystem.getKinematics().reset();
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
@@ -290,7 +290,7 @@ public class RobotState {
      */
     public Pose3d drivetrainToApriltagCamera(Pose3d drivetrainPoint){
         var apriltagOrigin =  new Pose3d(0,0,0,
-                new Rotation3d(0,0,Units.degreesToRadians(180)) //todo fix 180
+                new Rotation3d(0,0,Units.degreesToRadians(0))
         );
         return Util.globalToLocalPose(apriltagOrigin, drivetrainPoint);
     }

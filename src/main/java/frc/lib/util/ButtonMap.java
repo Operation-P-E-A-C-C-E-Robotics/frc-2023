@@ -69,16 +69,65 @@ public class ButtonMap {
 
     }
 
+    public static class MultiButton implements OIEntry {
+        public final Command command;
+        public final int[] buttonNumbers;
+        public final TriggerType triggerType;
+        public MultiButton(Command command, TriggerType triggerType, int... buttonNumbers){
+            this.command = command;
+            this.buttonNumbers = buttonNumbers;
+            this.triggerType = triggerType;
+        }
+
+        public void bindTo(Trigger trigger){
+            switch (triggerType) {
+                case ON_PRESS -> trigger.onTrue(command);
+                case ON_RELEASE -> trigger.onFalse(command);
+                case WHILE_HOLD -> trigger.whileTrue(command);
+                case TOGGLE -> trigger.toggleOnTrue(command);
+            }
+        }
+
+        public Trigger getTrigger(Joystick joystick){
+            Trigger[] triggers = new Trigger[buttonNumbers.length];
+            for(int i = 0; i < buttonNumbers.length; i++){
+                triggers[i] = new JoystickButton(joystick, buttonNumbers[i]);
+            }
+            return new Trigger(() -> {
+                    for(Trigger trigger : triggers){
+                        if(!trigger.getAsBoolean()){
+                            return false;
+                        }
+                    }
+                    return true;
+            });
+        }
+
+        public static MultiButton onHold(Command command, int... buttonNumbers){
+            return new MultiButton(command, TriggerType.WHILE_HOLD, buttonNumbers);
+        }
+
+        public static MultiButton onPress(Command command, int... buttonNumbers){
+            return new MultiButton(command, TriggerType.ON_PRESS, buttonNumbers);
+        }
+
+        public static MultiButton onRelease(Command command, int... buttonNumbers){
+            return new MultiButton(command, TriggerType.ON_RELEASE, buttonNumbers);
+        }
+
+        public static MultiButton toggle(Command command, int... buttonNumbers){
+            return new MultiButton(command, TriggerType.TOGGLE, buttonNumbers);
+        }
+    }
+
     public static class FancyPOVAndButton implements OIEntry{
         public final Command command;
         public final int buttonNumber;
-        public final int povAngle;
         public final TriggerType triggerType;
 
-        public FancyPOVAndButton(Command command, int buttonNumber, int povAngle, TriggerType triggerType){
+        public FancyPOVAndButton(Command command, int buttonNumber, TriggerType triggerType){
             this.command = command;
             this.buttonNumber = buttonNumber;
-            this.povAngle = povAngle;
             this.triggerType = triggerType;
         }
 
@@ -94,7 +143,7 @@ public class ButtonMap {
 
         @Override
         public Trigger getTrigger(Joystick joystick) {
-            Trigger povTrigger = new Trigger(() -> joystick.getPOV() == povAngle);
+            Trigger povTrigger = new Trigger(() -> joystick.getPOV() != -1);
             return new JoystickButton(joystick, buttonNumber).and(povTrigger);
         }
     }
