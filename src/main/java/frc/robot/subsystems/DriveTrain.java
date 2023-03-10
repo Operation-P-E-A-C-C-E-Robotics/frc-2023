@@ -50,9 +50,6 @@ public class DriveTrain extends SubsystemBase {
   //velocity drive
   //with current auto setup.
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
-  private final SimpleMotorFeedforward feedforward;
-  private final PIDController leftController;
-  private final PIDController rightController;
   private final PigeonHelper pigeon;
   private final Timer shiftClutchTimer = new Timer();
   private boolean shiftClutchEngaged = false;
@@ -94,13 +91,10 @@ public class DriveTrain extends SubsystemBase {
     rightSlave.setInverted(InvertType.FollowMaster);
     leftMaster.setInverted(Constants.Inversions.DRIVE_LEFT);
     rightMaster.setInverted(Constants.Inversions.DRIVE_RIGHT);
+    set(new DriveSignal(0, 0, false, false));
     set(DriveSignal.DEFAULT);
-    shiftClutchTimer.start();
 
     //configure PID
-    feedforward = new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR);
-    leftController = new PIDController(kP, kI, kD);
-    rightController = new PIDController(kP, kI, kD);
 
     DankPids.registerDankTalon(leftMaster);
     DankPids.registerDankTalon(rightMaster);
@@ -144,8 +138,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public void resetVelocityDrive(){
-    leftController.reset();
-    rightController.reset();
+    highVelocityController.loop.reset(VecBuilder.fill(getLeftVelocity(), getRightVelocity()));
   }
 
   //WPILib built in odometry methods from docs
@@ -155,7 +148,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the left side of the drivetrain in meters per second
    */
   public double getLeftVelocity(){
-    return countsToMeters(leftMaster.getSelectedSensorVelocity());
+    return countsToMeters(leftMaster.getSelectedSensorVelocity() * 10); //times 10 to convert units/100ms to units/sec
   }
 
   /**
@@ -163,7 +156,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the right side of the drivetrain in meters per second
    */
   public double getRightVelocity(){
-    return countsToMeters(rightMaster.getSelectedSensorVelocity());
+    return countsToMeters(rightMaster.getSelectedSensorVelocity() * 10); //times 10 to convert units/100ms to units/sec
   }
 
   public double getAverageVelocity(){
@@ -238,7 +231,7 @@ public class DriveTrain extends SubsystemBase {
       shiftClutchTimer.reset();
       shiftClutchTimer.start();
 
-      shiftClutchEngaged = true;
+      shiftClutchEngaged = false;
 
       leftMaster.setInverted(!isHighGear);
       rightMaster.setInverted(isHighGear);
@@ -277,6 +270,17 @@ public class DriveTrain extends SubsystemBase {
       var left = loop.getU(0);
       var right = loop.getU(1);
       setVoltage(left, right);
+    }
+    //current limit while shifting to prevent damage, but only configure 1 time per shift.
+    if(shiftClutchTimer.get() < 0.1 && !shiftClutchEngaged){
+      leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+      rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+      shiftClutchEngaged = true;
+    }
+    if(shiftClutchTimer.get() > 0.1 && shiftClutchEngaged){
+      leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+      rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+      shiftClutchEngaged = false;
     }
     SmartDashboard.putData("drivetrain", differentialDrive);
   }

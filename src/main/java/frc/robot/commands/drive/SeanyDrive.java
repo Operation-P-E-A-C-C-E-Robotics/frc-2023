@@ -43,8 +43,7 @@ public class SeanyDrive extends CommandBase {
     public void execute(){
         double throttle = driverJoystick.getY() * (invertFront ? 1 : -1);
         double wheel = driverJoystick.getX();
-        // double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
-        var arcadeTwist = 0.0;
+        double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
         boolean isHighGear = driverJoystick.getRawButton(1),
                 isFineControl = driverJoystick.getRawButton(2),
                 isFastAcceleration = driverJoystick.getRawButton(3),
@@ -56,7 +55,7 @@ public class SeanyDrive extends CommandBase {
                 zeroPigeon = driverJoystick.getRawButton(9);
 
         //use the pov hat to determine the front of the robot.
-         double povAngle = driverJoystick.getPOV();
+         double povAngle = driverJoystick.getPOV() + (robotState.onRedAlliance() ? 180 : 0);
          if(povAngle != -1) {
              var robotRotationDeg = robotState.getOdometryPose().getRotation().getDegrees();
             //  //compare pov angle to robot rotation - robot rotation is ccw positive, but pov is cw positive.
@@ -64,7 +63,6 @@ public class SeanyDrive extends CommandBase {
              if(povRobotMatched < -180) povRobotMatched += 360;
 
              invertFront = Math.abs(povRobotMatched - robotRotationDeg) > 90;
-            // invertFront = povAngle >= 90 && povAngle <= 270;
          }
 
         if (zeroOdometry) robotState.resetOdometry(new Pose2d());

@@ -51,6 +51,7 @@ public class RobotContainer {
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("armLimelight");
+  private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -126,8 +127,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
-    compressor.enableAnalog(100, 120);
+    enableCompressor();
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
@@ -135,11 +135,6 @@ public class RobotContainer {
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
-  }
-
-  public void update(){
-    robotState.update();
-    DashboardManager.getInstance().update();
   }
 
   /**
@@ -162,6 +157,19 @@ public class RobotContainer {
   //  ));
       supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
       // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
+  }
+
+  public void enableCompressor(){
+    compressor.enableAnalog(Constants.PNEUMATICS_MIN_PRESSURE, Constants.PNEUMATICS_MAX_PRESSURE);
+  }
+
+  public void disableCompressor(){
+    compressor.disable();
+  }
+
+  public void update(){
+    robotState.update();
+    DashboardManager.getInstance().update();
   }
 
   public boolean robotXInRange(double low, double high){

@@ -11,6 +11,9 @@ DID A LOTTA STUFF
 STUFF I'LL forget to do at comp:
  - take wrist out of set position, make it make sense
  - add more gravity feedforward
+ - remember about the extra *10 for drivetrain velocity - make sure that's right
+ - test joystick twist quickturn
+ - label reset buttons on driver joystick
 
 TESTING TODO LIST 3/6:
  - presets

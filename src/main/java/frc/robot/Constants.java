@@ -90,6 +90,12 @@ public final class Constants {
                 60,
                 0.5
         );
+        public static final StatorCurrentLimitConfiguration HARD_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                true,
+                35,
+                40,
+                0.1
+        );
         public static final StatorCurrentLimitConfiguration SHIFTING_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
                 10,
@@ -153,8 +159,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                35,
-                35,
+                50,
+                60,
                 0
         );
 
@@ -195,8 +201,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                20,
-                30,
+                40,
+                50,
                 0.2
         );
 
@@ -205,7 +211,7 @@ public final class Constants {
                 10,
                 30 / 0.13823,
                 2048,
-                0.5,
+                1,
                 1.5,
                 3.0,
                 3.0,
@@ -233,8 +239,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                10,
-                15,
+                30,
+                40,
                 0.1
         );
 
@@ -315,4 +321,10 @@ public final class Constants {
     public static final boolean TUNING_MODE = true;
     public static final int LOWER_PNEUMATICS_MODULE_CAN_ID = 6,
                             UPPER_PNEUMATICS_MODULE_CAN_ID = 50;
+
+    public static final double PNEUMATICS_MIN_PRESSURE = 80,
+                                PNEUMATICS_MAX_PRESSURE = 120;
+
+    public static final double DISABLE_COMPRESSOR_CURRENT_THRESHOLD = 100,
+                                DRIVETRAIN_HARD_CURRENT_LIMIT_THRESHOLD = 120;
 }
