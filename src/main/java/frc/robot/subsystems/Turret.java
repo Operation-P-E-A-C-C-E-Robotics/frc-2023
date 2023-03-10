@@ -39,6 +39,8 @@ public class Turret extends SubsystemBase {
 
   /** Creates a new Turret. */
   public Turret() {
+    turretMaster.configFactoryDefault();
+
     turretEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
     turretEncoder.setPositionToAbsolute();
     turretEncoder.configSensorDirection(Constants.Inversions.TURRET_ENCODER);

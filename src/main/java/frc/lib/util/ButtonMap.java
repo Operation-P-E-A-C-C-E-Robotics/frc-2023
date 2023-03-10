@@ -120,6 +120,49 @@ public class ButtonMap {
         }
     }
 
+    public static class SimplePOV implements OIEntry{
+        public final Command command;
+        public final int povNumber;
+        public final TriggerType triggerType;
+
+        public SimplePOV(Command command, int povNumber, TriggerType triggerType){
+            this.command = command;
+            this.povNumber = povNumber;
+            this.triggerType = triggerType;
+        }
+
+        @Override
+        public void bindTo(Trigger trigger) {
+            switch (triggerType) {
+                case ON_PRESS -> trigger.onTrue(command);
+                case ON_RELEASE -> trigger.onFalse(command);
+                case WHILE_HOLD -> trigger.whileTrue(command);
+                case TOGGLE -> trigger.toggleOnTrue(command);
+            }
+        }
+
+        @Override
+        public Trigger getTrigger(Joystick joystick) {
+            return new Trigger(() -> joystick.getPOV() == povNumber);
+        }
+
+        public static SimplePOV onHold(Command command, int povNumber){
+            return new SimplePOV(command, povNumber, TriggerType.WHILE_HOLD);
+        }
+
+        public static SimplePOV onPress(Command command, int povNumber){
+            return new SimplePOV(command, povNumber, TriggerType.ON_PRESS);
+        }
+
+        public static SimplePOV onRelease(Command command, int povNumber){
+            return new SimplePOV(command, povNumber, TriggerType.ON_RELEASE);
+        }
+
+        public static SimplePOV toggle(Command command, int povNumber){
+            return new SimplePOV(command, povNumber, TriggerType.TOGGLE);
+        }
+    }
+
     public static class FancyPOVAndButton implements OIEntry{
         public final Command command;
         public final int buttonNumber;

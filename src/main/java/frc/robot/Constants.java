@@ -148,7 +148,7 @@ public final class Constants {
                                     TIME_FOR_BRAKE_TO_ENGAGE = 0.1;
 
         //physical constants
-        public static final double  LENGTH = 0.1,
+        public static final double  LENGTH = 0.1, //Note: probably going to ignore this length, and use the current arm length (even though it's not perfect)
                                     MASS = 0.1;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
@@ -243,8 +243,8 @@ public final class Constants {
                 2,
                 7*5*4,
                 2048,
-                0.5,
-                0.5,
+                1,
+                3,
                 3.0,
                 3.0,
                 0.01,
@@ -281,7 +281,8 @@ public final class Constants {
 
     public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0,
-                                OPERATOR_JOYSTICK = 1;
+                                OPERATOR_JOYSTICK = 1,
+                                BACKUP_JOYSTICK = 2;
     }
 
     public static final class SupersystemTolerance{

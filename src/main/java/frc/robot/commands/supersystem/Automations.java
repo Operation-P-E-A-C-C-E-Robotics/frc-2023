@@ -88,11 +88,7 @@ public class Automations {
      * @return a command to place a cone
      */
     public Command placeConeNoVision(PlaceLevel level){
-        var tolerance = switch(level){
-            case HIGH -> SupersystemTolerance.PLACE_HIGH;
-            case MID -> SupersystemTolerance.PLACE_MID;
-            case LOW -> SupersystemTolerance.PLACE_LOW;
-        };
+        var tolerance = SupersystemTolerance.forLevel(level);
         ArrayList<Translation3d> scoreLocations = switch(level){
             case HIGH -> FieldConstants.Grids.highConeTranslations;
             case MID -> FieldConstants.Grids.midConeTranslations;
@@ -114,7 +110,7 @@ public class Automations {
                 robotState,
                 true
         );
-        return goToPrePlace.andThen(goToPlace.raceWith(new DropGamepiece(endEffector)));
+        return goToPrePlace.andThen(goToPlace.andThen(new DropGamepiece(endEffector, () -> true)));
     }
 
     /**

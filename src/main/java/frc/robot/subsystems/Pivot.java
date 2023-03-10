@@ -29,10 +29,12 @@ import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
 import frc.robot.Robot;
 
+import java.util.function.DoubleSupplier;
+
 import static frc.robot.Constants.Pivot.*;
 
 public class Pivot extends SubsystemBase {
-  private final ServoArm servoController = new ServoArm(SYSTEM_CONSTANTS, LENGTH, MASS);
+  private final ServoArm servoController;
 
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
@@ -44,12 +46,18 @@ public class Pivot extends SubsystemBase {
   private final WPI_CANCoder pivotEncoder = new WPI_CANCoder(PIVOT_ENCODER);
   private final Timer brakeTimer = new Timer();
   private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE;
+  private final DoubleSupplier armLengthSupplier;
   private double setpoint = 0;
 
 
   /** Creates a new ExampleSubsystem. */
-  public Pivot(boolean withBrake) {
+  public Pivot(boolean withBrake, DoubleSupplier armLengthSupplier) {
+    this.armLengthSupplier = armLengthSupplier;
+    servoController = new ServoArm(SYSTEM_CONSTANTS, armLengthSupplier, MASS);
     WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
+
+    pivotMaster.configFactoryDefault();
+    pivotSlave.configFactoryDefault();
 
     pivotMaster.setNeutralMode(NeutralMode.Brake);
     pivotSlave.setNeutralMode(NeutralMode.Brake);
