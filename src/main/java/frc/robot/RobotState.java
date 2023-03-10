@@ -6,7 +6,9 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.AveragePose;
 import frc.lib.util.Util;
@@ -158,6 +160,8 @@ public class RobotState {
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
 
+        SmartDashboard.putNumber("robot pitch!", imu.getRoll());
+
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
@@ -169,6 +173,10 @@ public class RobotState {
 
         var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
+    }
+
+    public boolean onRedAlliance(){
+        return DriverStation.getAlliance() == DriverStation.Alliance.Red;
     }
 
     public void zeroImuPitchRoll(){
@@ -228,6 +236,10 @@ public class RobotState {
                         odometryPose.getRotation().getRadians()
                 )
         );
+    }
+
+    public PigeonHelper getPigeon(){
+        return imu;
     }
 
     /**
@@ -303,7 +315,7 @@ public class RobotState {
      */
     public Pose3d apriltagCameraToDriveTrain(Pose3d apriltagCameraPoint){
         var apriltagOrigin =  new Pose3d(0,0,0,
-                new Rotation3d(0,0,Units.degreesToRadians(180))
+                new Rotation3d(0,0,Units.degreesToRadians(0))
         );
         return Util.localToGlobalPose(apriltagOrigin, apriltagCameraPoint);
     }

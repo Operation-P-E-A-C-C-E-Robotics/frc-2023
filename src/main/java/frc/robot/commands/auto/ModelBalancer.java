@@ -6,6 +6,7 @@ import frc.lib.field.ChargeStation;
 import frc.lib.motion.TrapezoidalMotion;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
+import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.subsystems.DriveTrain;
 
@@ -52,19 +53,22 @@ public class ModelBalancer extends CommandBase{
         );
         driveTrain.set(DriveSignal.velocityDrive(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond, true));
     }
+    static double maxBangBangSpeed = 0.5, minBangBangSpeed = 0.2;
 
     static void bangBangController(double currentPitch, double deadband, double bangbangspeed, DriveTrain driveTrain) {
         double left, right;
+        double error = Math.abs(currentPitch);
+        double speed = Util.interpolate(minBangBangSpeed, maxBangBangSpeed, error/20);
         if (currentPitch > deadband) {
-            left = bangbangspeed;
-            right = -bangbangspeed;
+            left = -speed;
+            right = -speed;
         } else if (currentPitch < -deadband) {
-            left = -bangbangspeed;
-            right = bangbangspeed;
+            left = speed;
+            right = speed;
         } else {
             left = 0;
             right = 0;
         }
-        driveTrain.set(DriveSignal.DEFAULT);
+        driveTrain.set(DriveSignal.velocityDrive(left, right, true));
     }
 }

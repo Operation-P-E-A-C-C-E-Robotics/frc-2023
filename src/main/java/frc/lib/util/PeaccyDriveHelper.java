@@ -5,7 +5,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 public class PeaccyDriveHelper {
     private static final double THROTTLE_DEADBAND = 0.035, WHEEL_DEADBAND = 0.02;
     private static final double HIGH_WEEL_NON_LINEARITY = 0.6,
-            HIGH_SENSITIVITY = 0.7,
+            HIGH_SENSITIVITY = 0.5,
             HIGH_NEG_INERTIA_SCALAR = 5.0; //how sensitive the robot is to the change in wheel
     private static final double LOW_WHEEL_NON_LINEARITY = 0.5,
             LOW_SENSITIVITY = 0.65,
@@ -20,12 +20,12 @@ public class PeaccyDriveHelper {
 
     private double prevWheel = 0.0, negInertiaAccumulator = 0.0, quickStopAccumulator = 0.0;
 
-    public static final double FINE_TURN_SENSITIVITY = 0.1, FINE_THROTTLE_SENSITIVITY = 0.1;
+    public static final double FINE_TURN_SENSITIVITY = 0.2, FINE_THROTTLE_SENSITIVITY = 0.4;
 
-    private static final SlewRateLimiter fastAccelLimiterLeft = new SlewRateLimiter(0.5); //TODO
-    private static final SlewRateLimiter fastAccelLimiterRight = new SlewRateLimiter(0.5); //TODO
-    private static final double FAST_ACCEL_UPSHIFT_THRESHOLD = 50,
-            FAST_ACCEL_DOWNSHIFT_THRESHOLD = 30;
+    private static final SlewRateLimiter fastAccelLimiterLeft = new SlewRateLimiter(4); //TODO
+    private static final SlewRateLimiter fastAccelLimiterRight = new SlewRateLimiter(4); //TODO
+    private static final double FAST_ACCEL_UPSHIFT_THRESHOLD = 0.5,
+            FAST_ACCEL_DOWNSHIFT_THRESHOLD = 0.3;
     private static final double FAST_ACCEL_SCALAR = 0.5; //TODO
 
     /**

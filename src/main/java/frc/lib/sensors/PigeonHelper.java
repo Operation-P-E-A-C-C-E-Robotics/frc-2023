@@ -54,7 +54,7 @@ public class PigeonHelper {
      * @return the pitch in degrees
      */
     public double getPitch(){
-        return pg.getPitch() - pitchOffset;
+        return pg.getPitch();
     }
     /**
      * get the robots roll from the pigeon.

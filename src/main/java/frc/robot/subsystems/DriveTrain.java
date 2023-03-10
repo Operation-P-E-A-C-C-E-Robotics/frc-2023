@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
 import frc.lib.safety.RedundantSystem;
@@ -73,8 +74,8 @@ public class DriveTrain extends SubsystemBase {
   private double leftVelocitySetpoint = 0, rightVelocitySetpoint = 0;
   private boolean isClosedLoop = false;
 
-  private static final Value HIGH_GEAR = Value.kForward;
-  private static final Value LOW_GEAR = Value.kReverse;
+  private static final Value HIGH_GEAR = Value.kReverse;
+  private static final Value LOW_GEAR = Value.kForward;
 
   /** Creates a new DriveTrain. */
   public DriveTrain(PigeonHelper pigeon) {
@@ -272,6 +273,7 @@ public class DriveTrain extends SubsystemBase {
       var right = loop.getU(1);
       setVoltage(left, right);
     }
+    SmartDashboard.putData("drivetrain", differentialDrive);
   }
 
   //simulation

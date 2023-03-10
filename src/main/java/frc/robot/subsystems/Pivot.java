@@ -64,12 +64,13 @@ public class Pivot extends SubsystemBase {
     pivotEncoder.setPositionToAbsolute();
     pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
     pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    pivotEncoder.configMagnetOffset(168);
 
-    pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), SYSTEM_CONSTANTS));
-    pivotMaster.configForwardSoftLimitEnable(true);
-    pivotMaster.configReverseSoftLimitEnable(true);
-    pivotMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MAX_ANGLE_RAD)));
-    pivotMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MIN_ANGLE_RAD)));
+    pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
+    pivotMaster.configForwardSoftLimitEnable(false);
+    pivotMaster.configReverseSoftLimitEnable(false);
+    pivotMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MAX_ANGLE_RAD), 2048, SYSTEM_CONSTANTS.gearing));
+    pivotMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.radiansToRotations(MIN_ANGLE_RAD), 2048, SYSTEM_CONSTANTS.gearing));
 
     if(Robot.isSimulation()) {
       initializeSimulation();
@@ -92,7 +93,9 @@ public class Pivot extends SubsystemBase {
    */
   public void setPercent(double speed){
     servoController.disableLoop();
-    pivotMaster.set(speed);
+    if(getAngleRadians() > MAX_ANGLE_RAD && speed > 0) pivotMaster.set(0);
+    else if(getAngleRadians() < MIN_ANGLE_RAD && speed < 0) pivotMaster.set(0);
+    else pivotMaster.set(speed);
   }
 
   private void setBrakeEngaged(boolean engageBrake) {
@@ -123,7 +126,9 @@ public class Pivot extends SubsystemBase {
    * @param volts -12 to 12
    */
   private void setVoltage(double volts){
-    pivotMaster.setVoltage(volts);
+    if(getAngleRadians() > MAX_ANGLE_RAD && volts < 0) pivotMaster.set(0);
+    else if(getAngleRadians() < MAX_ANGLE_RAD && volts > 0) pivotMaster.set(0);
+    else pivotMaster.setVoltage(volts);
   }
 
 

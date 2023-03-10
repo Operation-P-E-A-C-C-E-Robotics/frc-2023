@@ -1,5 +1,6 @@
 package frc.robot.commands.testing;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -37,7 +38,7 @@ public class TestBasic extends CommandBase {
     public void execute(){
         System.out.println("Testing basic controls - executing");
         SmartDashboard.putNumber("arm extension", arm.getExtension());
-        SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
+        SmartDashboard.putNumber("pivot angle (deg)", Units.radiansToDegrees(pivot.getAngleRadians()));
         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
         SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
@@ -46,8 +47,8 @@ public class TestBasic extends CommandBase {
         var pivotSpeed = testJoystick.getRawAxis(1);
         var turretSpeed = testJoystick.getRawAxis(0);
         var wristSpeed = testJoystick.getRawAxis(0);
-        arm.setPercent(armSpeed);
-        // pivot.setPercent(pivotSpeed);
+        // arm.setPercent(armSpeed);
+        pivot.setPercent(pivotSpeed);
         // turret.setPercent(turretSpeed);
         // wrist.setPercent(wristSpeed);
         SmartDashboard.putNumber("arm velocity", arm.getVelocity());

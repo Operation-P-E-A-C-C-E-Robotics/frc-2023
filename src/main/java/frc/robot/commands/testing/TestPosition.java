@@ -46,10 +46,10 @@ public class TestPosition extends CommandBase {
          SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
          SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
          SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
-         prevWrist += Util.handleDeadband(new Joystick(2).getY(), 0.3)*0.1;
-            prevTurret += Util.handleDeadband(new Joystick(2).getX(), 0.3)*0.1;
-            prevPivot += Util.handleDeadband(new Joystick(2).getZ(), 0.3)*0.1;
-            prevArm += Util.handleDeadband(new Joystick(2).getThrottle(), 0.3)*0.1;
+         prevWrist += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getY(), 0.3)*0.1;
+        prevTurret += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getX(), 0.3)*0.1;
+        prevPivot += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getZ(), 0.3)*0.5;
+        prevArm += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getThrottle(), 0.3)*0.1;
         boolean flipWrist = new Joystick(2).getRawButton(3);
         arm.setExtension(prevArm);
         wrist.setAngle(new Rotation2d(prevWrist));

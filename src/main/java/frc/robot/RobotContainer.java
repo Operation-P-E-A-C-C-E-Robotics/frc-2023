@@ -19,10 +19,12 @@ import frc.lib.util.ButtonMap.OIEntry;
 import frc.lib.util.ButtonMap.SimpleButton;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.commands.auto.Autos;
+import frc.robot.commands.auto.BangBangBalancer;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.supersystem.Setpoints;
+import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +32,7 @@ import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.ChesyDriv;
+import frc.robot.commands.drive.DriveDistance;
 import frc.robot.commands.drive.SeanyDrive;
 
 
@@ -43,7 +46,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
-  private final Limelight drivetrainLimelight = new Limelight("drivetrainLimelight"),
+  private final Limelight drivetrainLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("armLimelight");
 
   //subsystems
@@ -84,6 +87,7 @@ public class RobotContainer {
   );
 
   private final OIEntry[] driverOI = {
+    SimpleButton.onHold(new BangBangBalancer(driveTrain, robotState, false), 12)
   };
 
   private final OIEntry[] mainOperatorOI = {
@@ -137,8 +141,8 @@ public class RobotContainer {
   //     () -> robotXInRange(12, 30),
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
-      // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-      // pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+      // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
   }
 
   public boolean robotXInRange(double low, double high){

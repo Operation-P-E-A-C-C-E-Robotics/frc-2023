@@ -34,7 +34,7 @@ public final class Constants {
                                     PIVOT_ENCODER = false,
                                     ARM = true,
                                     WRIST = false,
-                                    INTAKE_LEFT = false,
+                                    INTAKE_LEFT = true,
                                     INTAKE_RIGHT = false;
     }
     public static final class DriveTrain {
@@ -143,8 +143,8 @@ public final class Constants {
                       BRAKE_SOLENOID_FORWARD = 7,
                      BRAKE_SOLENOID_REVERSE = 6;
         //constraints
-        public static final double  MAX_ANGLE_RAD = Math.PI/2, //TODO actual constraints
-                                    MIN_ANGLE_RAD = -Math.PI/2,
+        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(120), //TODO actual constraints
+                                    MIN_ANGLE_RAD = -MAX_ANGLE_RAD,
                                     TIME_FOR_BRAKE_TO_ENGAGE = 0.1;
 
         //physical constants
@@ -153,8 +153,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                5,
-                10,
+                35,
+                35,
                 0
         );
 
