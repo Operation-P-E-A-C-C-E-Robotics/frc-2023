@@ -272,16 +272,16 @@ public class DriveTrain extends SubsystemBase {
       setVoltage(left, right);
     }
     //current limit while shifting to prevent damage, but only configure 1 time per shift.
-    if(shiftClutchTimer.get() < 0.1 && !shiftClutchEngaged){
-      leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
-      rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
-      shiftClutchEngaged = true;
-    }
-    if(shiftClutchTimer.get() > 0.1 && shiftClutchEngaged){
-      leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-      rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-      shiftClutchEngaged = false;
-    }
+    // if(shiftClutchTimer.get() < 0.1 && !shiftClutchEngaged){
+    //   leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+    //   rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+    //   shiftClutchEngaged = true;
+    // }
+    // if(shiftClutchTimer.get() > 0.1 && shiftClutchEngaged){
+    //   leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    //   rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    //   shiftClutchEngaged = false;
+    // }
     SmartDashboard.putData("drivetrain", differentialDrive);
   }
 

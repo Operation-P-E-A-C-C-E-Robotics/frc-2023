@@ -4,6 +4,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.Util;
 import frc.robot.subsystems.*;
 
 public class TestBasic extends CommandBase {
@@ -43,14 +44,14 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
-        var armSpeed = testJoystick.getRawAxis(3);
-        var pivotSpeed = testJoystick.getRawAxis(1);
-        var turretSpeed = testJoystick.getRawAxis(0);
-        var wristSpeed = testJoystick.getRawAxis(0);
+        var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
+        var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
+        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.1);
+        var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);
         turret.setPercent(turretSpeed);
-        // wrist.setPercent(wristSpeed);
+        wrist.setPercent(wristSpeed);
         SmartDashboard.putNumber("arm velocity", arm.getVelocity());
         SmartDashboard.putNumber("arm speed", armSpeed);
         SmartDashboard.putNumber("pivot speed", pivotSpeed);

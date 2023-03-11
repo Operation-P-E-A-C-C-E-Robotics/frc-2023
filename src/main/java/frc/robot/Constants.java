@@ -34,8 +34,8 @@ public final class Constants {
                                     PIVOT_ENCODER = false,
                                     ARM = true,
                                     WRIST = false,
-                                    INTAKE_LEFT = true,
-                                    INTAKE_RIGHT = false;
+                                    INTAKE_LEFT = false,
+                                    INTAKE_RIGHT = true;
     }
     public static final class DriveTrain {
         //ports
@@ -90,12 +90,12 @@ public final class Constants {
                 60,
                 0.5
         );
-        public static final StatorCurrentLimitConfiguration HARD_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                true,
-                35,
-                40,
-                0.1
-        );
+        public static final StatorCurrentLimitConfiguration HARD_CURRENT_LIMIT = CURRENT_LIMIT; //new StatorCurrentLimitConfiguration(
+        //         true,
+        //         35,
+        //         40,
+        //         0.1
+        // );
         public static final StatorCurrentLimitConfiguration SHIFTING_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
                 10,
@@ -115,8 +115,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                20,
-                30,
+                40,
+                50,
                 0.1
         );
 
@@ -159,9 +159,9 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                35,
-                40,
-                0
+                45,
+                50,
+                0.1
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
@@ -201,8 +201,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                30,
                 40,
+                45,
                 0.2
         );
 

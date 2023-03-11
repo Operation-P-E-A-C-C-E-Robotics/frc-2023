@@ -13,21 +13,25 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Kinematics.*;
 
 public class Setpoints {
+
+    public static SupersystemState zero = new SupersystemState(0, 0, 0, 0);
+    public static SupersystemState ninetyPivot = new SupersystemState(0, -Math.PI/2, 0, 0);
     public static SupersystemState placeLow = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeMidCube = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.5, 10);
     public static SupersystemState placeMidCone = new SupersystemState(0, -1.0754, 0.7051, -0.25);
     public static SupersystemState placeHighCone = new SupersystemState(0, -0.99, 1.25, -0.3);
-    public static SupersystemState intakeFloor = new SupersystemState(0, 2.1, 0.75, 0);
-    public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0, 0, 0);
-    public static SupersystemState wristFlipOffset = new SupersystemState(0,0,0, -0.5);
+    public static SupersystemState intakeFloor = new SupersystemState(0, 2.0, 0.75, 0);
+    public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0.8, 0.74, 1.13);
+    public static SupersystemState wristFlipOffset = new SupersystemState(0, 0, 0, -0.5);
     private final Supersystem supersystem;
     private final DoubleSupplier x;
     private final DoubleSupplier y;
     private final DoubleSupplier z;
     private final DoubleSupplier turret;
 
-    public Setpoints(Supersystem supersystem, DoubleSupplier x, DoubleSupplier y, DoubleSupplier z, DoubleSupplier turret){
+    public Setpoints(Supersystem supersystem, DoubleSupplier x, DoubleSupplier y, DoubleSupplier z,
+            DoubleSupplier turret) {
         this.supersystem = supersystem;
         this.x = x;
         this.y = y;
@@ -35,26 +39,30 @@ public class Setpoints {
         this.turret = turret;
     }
 
-    public Command goToSetpoint(SupersystemState setpoint, Constants.SupersystemTolerance tolerance){
+    public Command goToSetpoint(SupersystemState setpoint, Constants.SupersystemTolerance tolerance) {
         AtomicReference<Double> turretOffset = new AtomicReference<>(0.0);
         return new RunCommand(
-                () -> supersystem.setSupersystemState(setpoint.plus(new SupersystemState(turretOffset.updateAndGet(v -> v + turret.getAsDouble()), 0, 0, 0))), supersystem.getRequirements()
-        );
+                () -> supersystem.setSupersystemState(setpoint
+                        .plus(new SupersystemState(turretOffset.updateAndGet(v -> v + turret.getAsDouble()), 0, 0, 0))),
+                supersystem.getRequirements());
     }
 
-    public Command goToSetpoint(SupersystemState setpoint){
+    public Command goToSetpoint(SupersystemState setpoint) {
         return goToSetpoint(setpoint, Constants.SupersystemTolerance.DEFAULT);
     }
 
-    public Command goToSetpoint(SupersystemState setpoint, Constants.SupersystemTolerance tolerance,  boolean endOnTarget){
-        if(!endOnTarget) return goToSetpoint(setpoint, tolerance);
+    public Command goToSetpoint(SupersystemState setpoint, Constants.SupersystemTolerance tolerance,
+            boolean endOnTarget) {
+        if (!endOnTarget)
+            return goToSetpoint(setpoint, tolerance);
         AtomicReference<Double> turretOffset = new AtomicReference<>(0.0);
         return new RunCommand(
-                () -> supersystem.setSupersystemState(setpoint.plus(new SupersystemState(turretOffset.updateAndGet(v -> v + turret.getAsDouble()), 0, 0, 0))), supersystem.getRequirements()
-        ).until(() -> supersystem.withinTolerance(tolerance));
+                () -> supersystem.setSupersystemState(setpoint
+                        .plus(new SupersystemState(turretOffset.updateAndGet(v -> v + turret.getAsDouble()), 0, 0, 0))),
+                supersystem.getRequirements()).until(() -> supersystem.withinTolerance(tolerance));
     }
 
-    public Command goToPlace(Automations.PlaceLevel level, boolean cone){
+    public Command goToPlace(Automations.PlaceLevel level, boolean cone) {
         var tolerance = Constants.SupersystemTolerance.forLevel(level);
         return switch (level) {
             case LOW -> goToSetpoint(placeLow, tolerance);
@@ -63,7 +71,7 @@ public class Setpoints {
         };
     }
 
-    public Command goToPlaceConeWithWristFlip(Automations.PlaceLevel level, boolean endOnTarget){
+    public Command goToPlaceConeWithWristFlip(Automations.PlaceLevel level, boolean endOnTarget) {
         var setpoint = switch (level) {
             case LOW -> placeLow;
             case MID -> placeMidCone;
@@ -73,27 +81,26 @@ public class Setpoints {
                 .andThen(goToSetpoint(setpoint, Constants.SupersystemTolerance.forLevel(level), endOnTarget));
     }
 
-    public Command goToSetpointWithManualAdjustment(SupersystemState setpoint, Constants.SupersystemTolerance tolerance){
+    public Command goToSetpointWithManualAdjustment(SupersystemState setpoint,
+            Constants.SupersystemTolerance tolerance) {
         AtomicReference<Double> xOffset = new AtomicReference<>((double) 0);
         AtomicReference<Double> yOffset = new AtomicReference<>((double) 0);
         AtomicReference<Double> zOffset = new AtomicReference<>((double) 0);
         return new RunCommand(
                 () -> {
-                    //update offsets from inputs:
+                    // update offsets from inputs:
                     double newXOffset = xOffset.updateAndGet(v -> (v + x.getAsDouble()));
                     double newYOffset = yOffset.updateAndGet(v -> (v + y.getAsDouble()));
                     double newZOffset = zOffset.updateAndGet(v -> (v + z.getAsDouble()));
 
-                    //calculate new position:
+                    // calculate new position:
                     var position = kinematics(setpoint);
                     supersystem.setSupersystemPosition(
-                            position.plus(new Translation3d(newXOffset, newYOffset, newZOffset))
-                    );
-                }, supersystem
-        );
+                            position.plus(new Translation3d(newXOffset, newYOffset, newZOffset)));
+                }, supersystem);
     }
 
-    public Command goToPlaceWithManualAdjustment(Automations.PlaceLevel level, boolean cone){
+    public Command goToPlaceWithManualAdjustment(Automations.PlaceLevel level, boolean cone) {
         var tolerance = Constants.SupersystemTolerance.forLevel(level);
         return switch (level) {
             case LOW -> goToSetpointWithManualAdjustment(placeLow, tolerance);

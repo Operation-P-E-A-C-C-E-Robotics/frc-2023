@@ -31,6 +31,7 @@ import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestPosition;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.lib.sensors.PigeonHelper;
 import frc.robot.commands.auto.paths.Paths;
 import frc.robot.commands.drive.ArcadeDrive;
@@ -69,7 +70,8 @@ public class RobotContainer {
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK),
           operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK),
           backupJoystick = new Joystick(Constants.OperatorInterface.BACKUP_JOYSTICK);
-  private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
+  private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>(),
+                autoMode = new SendableChooser<Command>();
 
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
@@ -120,9 +122,10 @@ public class RobotContainer {
           SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 6), //upper right trigger
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
+          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
           SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 180), //pov down
           SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 0), //pov up
-          SimpleButton.onPress(new RunCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
+          SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -133,6 +136,13 @@ public class RobotContainer {
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
     teleopDriveMode.addOption("seany drive (test)", testDrive);
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
+
+    autoMode.addOption("DO NOTHING", null);
+    autoMode.addOption("auto balance",
+      new BangBangBalancer(driveTrain, robotState, false)
+      .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
+    );
+    SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
   }
@@ -148,14 +158,14 @@ public class RobotContainer {
     new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(backupJoystick).map(manualOperatorOI);
-    pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+    // pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   //   supersystem.setDefaultCommand(new DefaultStatemachine(
   //     supersystem,
   //     () -> robotXInRange(0, 4.5),
   //     () -> robotXInRange(12, 30),
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
-      // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
       // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
   }
 
@@ -183,7 +193,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.testAuto1(paths, robotState, supersystem);
+    return autoMode.getSelected();
   }
 
   public void setDriveTrainCommand() {

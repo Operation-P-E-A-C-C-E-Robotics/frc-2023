@@ -20,7 +20,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * unify motion of entire supersystem
      * @param arm arm subsystem
-     * @param pivot pivot subsystem
+     * @param pivot pivot subsystem0000000000000000000000000000000000000000
      * @param turret turret subsystem
      * @param wrist wrist subsystem
      */

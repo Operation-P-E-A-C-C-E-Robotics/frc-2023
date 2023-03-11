@@ -126,6 +126,7 @@ public class Wrist extends SubsystemBase {
     }
 
     public void flipWristPeriodic(){
+        // if(Util.inRange(pivotAngle.getAsDouble(), 0.3)) return;
         setFlipped(pivotAngle.getAsDouble() > 0);
     }
 
