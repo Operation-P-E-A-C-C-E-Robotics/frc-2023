@@ -31,6 +31,8 @@ public class Wrist extends SubsystemBase {
     private final Timer wristTimer = new Timer();
 
     public Wrist(DoubleSupplier pivotAngle){
+        wristMaster.configFactoryDefault();
+
         wristMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 10));
 
         wristMaster.setInverted(Constants.Inversions.WRIST);

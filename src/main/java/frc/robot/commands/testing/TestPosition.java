@@ -63,5 +63,9 @@ public class TestPosition extends CommandBase {
         // System.out.println(turretSetpoint);
         // wrist.setAngle(Rotation2d.fromDegrees(wristSetpoint));
         // wrist.setFlipped(flipWrist);
+        if(testJoystick.getRawButton(10)){
+            //zero everything:
+            prevArm = prevPivot = prevTurret = prevWrist = 0;
+        }
     }
 }

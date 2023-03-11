@@ -25,6 +25,7 @@ public class ServoArm extends SubsystemBase {
     private final LinearSystem<N2, N1, N1> plant;
     private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
+    private final DoubleSupplier armLength;
     private Trajectory trajectory;
     private State trajectoryStart, trajectoryEnd;
     private boolean recalculateTrajectory = false; //whether we need to recalculate the trajectory
@@ -35,14 +36,14 @@ public class ServoArm extends SubsystemBase {
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
-    private double armLength, armMass; //TODO make final once we're done tuning.
+    private double armMass; //TODO make final once we're done tuning.
     /**
      * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
      * @param armLength The length of the arm (m)
      * @param armMass The mass of the arm (kg)
      */
-    public ServoArm(SystemConstants constants, double armLength, double armMass) {
+    public ServoArm(SystemConstants constants, DoubleSupplier armLength, double armMass) {
         this.constants = constants;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
         KalmanFilter<N2, N1, N1> observer = new KalmanFilter<N2, N1, N1>(
@@ -70,7 +71,7 @@ public class ServoArm extends SubsystemBase {
         this.armMass = armMass;
         if(Constants.TUNING_MODE){
             SmartDashboard.putNumber("Arm Mass", armMass);
-            SmartDashboard.putNumber("Arm Length", armLength);
+            SmartDashboard.putNumber("Arm Length", armLength.getAsDouble());
         }
     }
 
@@ -118,6 +119,7 @@ public class ServoArm extends SubsystemBase {
      * calculate additional feedforward to account for gravity
      */
     public double calculateGravityFeedforward(double position, double velocity){
+        var armLength = this.armLength.getAsDouble();
         var force = armMass     * armLength
                                 * 9.8
                                 * 3.0
@@ -199,7 +201,7 @@ public class ServoArm extends SubsystemBase {
         //update the weight and length of the arm from the dashboard if we're in tuning mode:
         if(Constants.TUNING_MODE){
             armMass = SmartDashboard.getNumber("Arm Mass", armMass);
-            armLength = SmartDashboard.getNumber("Arm Length", armLength);
+//            armLength = SmartDashboard.getNumber("Arm Length", this.armLength.getAsDouble());
         }
          // run the subsystem's periodic code
          if(superPeriodic != null) superPeriodic.run();

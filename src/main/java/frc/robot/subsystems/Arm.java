@@ -29,8 +29,9 @@ public class Arm extends SubsystemBase {
     private double setpoint = 0;
 
     /** Creates a new ExampleSubsystem. */
-    public Arm(DoubleSupplier pivotAngleSupplier) {
-        armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 0.1));
+    public Arm() {
+        armMaster.configFactoryDefault();
+        armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 50, 60, 0.1));
 
         armMaster.setInverted(Constants.Inversions.ARM);
         armMaster.configStatorCurrentLimit(CURRENT_LIMIT);

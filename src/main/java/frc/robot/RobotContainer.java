@@ -15,8 +15,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.lib.util.ButtonMap;
+import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
 import frc.lib.util.ButtonMap.SimpleButton;
+import frc.lib.util.ButtonMap.SimplePOV;
+import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.BangBangBalancer;
@@ -48,12 +51,13 @@ public class RobotContainer {
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("armLimelight");
+  private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
   private final Turret turret = new Turret();
-  private final Pivot pivot = new Pivot(false);
-  private final Arm arm = new Arm(pivot::getAngleRadians);
+  private final Arm arm = new Arm();
+  private final Pivot pivot = new Pivot(false, arm::getExtension); //this has to be after arm :(
   private final Wrist wrist = new Wrist(pivot::getAngleRadians);
   private final EndEffector endEffector = new EndEffector();
   private final Supersystem supersystem = new Supersystem(arm, pivot, turret, wrist);
@@ -62,13 +66,20 @@ public class RobotContainer {
   private final Constraints constraints = new Constraints(supersystem.getKinematics());
 
   //OI
-  private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK);
-  private final Joystick operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK);
+  private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK),
+          operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK),
+          backupJoystick = new Joystick(Constants.OperatorInterface.BACKUP_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>();
 
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
-  private final Setpoints setpoints = new Setpoints(supersystem, operatorJoystick::getX, operatorJoystick::getY, operatorJoystick::getZ, operatorJoystick::getThrottle);
+  private final Setpoints setpoints = new Setpoints(
+          supersystem,
+          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(0), 0.2),
+          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(1), 0.2),
+          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(2), 0.2),
+          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(3), 0.2)
+  );
   private final Automations automations = new Automations(supersystem, robotState, endEffector, setpoints);
   private final SeanyDrive testDrive = new SeanyDrive(driverJoystick, driveTrain, robotState);
   private final ChesyDriv peaccyDrive = new ChesyDriv(
@@ -91,27 +102,32 @@ public class RobotContainer {
   };
 
   private final OIEntry[] mainOperatorOI = {
-          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4),
-          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1),
-          SimpleButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW), 2),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4, 7),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1, 7),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW), 2, 7),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
           SimpleButton.onPress(automations.pickUpConeFloor(), 5),
           SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
   };
 
   private final OIEntry[] manualOperatorOI = {
-          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 5),
-          SimpleButton.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 6),
-          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(true), endEffector), 7),
-          SimpleButton.onPress(new RunCommand(() -> endEffector.setClaw(false), endEffector), 8),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.PLACE_HIGH), 4),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.placeMidCone, SupersystemTolerance.PLACE_MID), 1),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.placeLow, SupersystemTolerance.PLACE_LOW), 2)
+          MultiButton.onHold(setpoints.goToPlaceConeWithWristFlip(PlaceLevel.HIGH, false), 4, 7), //lower left trigger, top button
+          MultiButton.onHold(setpoints.goToPlaceWithManualAdjustment(PlaceLevel.MID, true), 1, 7), //lower left trigger, mid left button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, false), 4, 5), //upper left trigger, top button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, false), 1, 5), //upper left trigger, mid left button
+          SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
+          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 6), //upper right trigger
+          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
+          SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 180), //pov down
+          SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 0), //pov up
+          SimpleButton.onPress(new RunCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
-    compressor.enableAnalog(100, 120);
+    enableCompressor();
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
@@ -119,11 +135,6 @@ public class RobotContainer {
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
-  }
-
-  public void update(){
-    robotState.update();
-    DashboardManager.getInstance().update();
   }
 
   /**
@@ -136,8 +147,8 @@ public class RobotContainer {
     endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
     new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
-    new ButtonMap(new Joystick(2)).map(manualOperatorOI);
-    pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+    new ButtonMap(backupJoystick).map(manualOperatorOI);
+    // supersystem.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   //   supersystem.setDefaultCommand(new DefaultStatemachine(
   //     supersystem,
   //     () -> robotXInRange(0, 4.5),
@@ -146,6 +157,19 @@ public class RobotContainer {
   //  ));
       // supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
       // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
+  }
+
+  public void enableCompressor(){
+    compressor.enableAnalog(Constants.PNEUMATICS_MIN_PRESSURE, Constants.PNEUMATICS_MAX_PRESSURE);
+  }
+
+  public void disableCompressor(){
+    compressor.disable();
+  }
+
+  public void update(){
+    robotState.update();
+    DashboardManager.getInstance().update();
   }
 
   public boolean robotXInRange(double low, double high){

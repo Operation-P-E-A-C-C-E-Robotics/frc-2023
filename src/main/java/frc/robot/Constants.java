@@ -90,6 +90,12 @@ public final class Constants {
                 60,
                 0.5
         );
+        public static final StatorCurrentLimitConfiguration HARD_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
+                true,
+                35,
+                40,
+                0.1
+        );
         public static final StatorCurrentLimitConfiguration SHIFTING_CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
                 10,
@@ -148,13 +154,13 @@ public final class Constants {
                                     TIME_FOR_BRAKE_TO_ENGAGE = 0.1;
 
         //physical constants
-        public static final double  LENGTH = 0.1,
+        public static final double  LENGTH = 0.1, //Note: probably going to ignore this length, and use the current arm length (even though it's not perfect)
                                     MASS = 0.1;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                35,
-                35,
+                50,
+                60,
                 0
         );
 
@@ -205,7 +211,7 @@ public final class Constants {
                 10,
                 30 / 0.13823,
                 2048,
-                0.5,
+                1,
                 1.5,
                 3.0,
                 3.0,
@@ -233,8 +239,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                10,
-                15,
+                30,
+                40,
                 0.1
         );
 
@@ -243,8 +249,8 @@ public final class Constants {
                 2,
                 7*5*4,
                 2048,
-                0.5,
-                0.5,
+                1,
+                3,
                 3.0,
                 3.0,
                 0.01,
@@ -281,7 +287,8 @@ public final class Constants {
 
     public static final class OperatorInterface {
         public static final int DRIVER_JOYSTICK = 0,
-                                OPERATOR_JOYSTICK = 1;
+                                OPERATOR_JOYSTICK = 1,
+                                BACKUP_JOYSTICK = 2;
     }
 
     public static final class SupersystemTolerance{
@@ -314,4 +321,10 @@ public final class Constants {
     public static final boolean TUNING_MODE = true;
     public static final int LOWER_PNEUMATICS_MODULE_CAN_ID = 6,
                             UPPER_PNEUMATICS_MODULE_CAN_ID = 50;
+
+    public static final double PNEUMATICS_MIN_PRESSURE = 80,
+                                PNEUMATICS_MAX_PRESSURE = 120;
+
+    public static final double DISABLE_COMPRESSOR_CURRENT_THRESHOLD = 100,
+                                DRIVETRAIN_HARD_CURRENT_LIMIT_THRESHOLD = 120;
 }

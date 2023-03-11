@@ -6,7 +6,9 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
@@ -26,6 +28,7 @@ public class RobotState {
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private final Limelight apriltagCamera, armCamera;
+    private final PowerDistribution pdp;
     private Pose3d prevConePose = new Pose3d();
     private Pose3d prevCubePose = new Pose3d();
     private Pose2d prevRobotPose;
@@ -42,6 +45,7 @@ public class RobotState {
         this.imu = imu;
         this.apriltagCamera = apriltagCamera;
         this.armCamera = armCamera;
+        this.pdp = new PowerDistribution();
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 DRIVE_KINEMATICS,
                 imu.getRotation(),
@@ -219,7 +223,7 @@ public class RobotState {
     }
 
     /**
-     * get the robot's pose in field coordinates as a pose3d,
+     * get the robot's pose in field coordinates as a Pose3d,
      * using fused odometry for x, y, and heading, and raw apriltag data for z
      * @return robot's position, relative to the field
      */
@@ -392,7 +396,7 @@ public class RobotState {
      */
     public Pose3d endEffectorToEndEffectorCamera(Pose3d endEffectorPoint){
         var endEffectorCameraOrigin = new Pose3d();
-        return Util.globalToLocalPose(endEffectorCameraOrigin, endEffectorPoint); //todo globaltolocal or localtoglobal?
+        return Util.globalToLocalPose(endEffectorCameraOrigin, endEffectorPoint); //todo globalToLocal or localToGlobal?
     }
 
     /**
@@ -403,6 +407,6 @@ public class RobotState {
      */
     public Pose3d endEffectorCameraToEndEffector(Pose3d endEffectorCameraPoint){
         var endEffectorCameraOrigin = new Pose3d();
-        return Util.localToGlobalPose(endEffectorCameraOrigin, endEffectorCameraPoint); //todo globaltolocal or localtoglobal?
+        return Util.localToGlobalPose(endEffectorCameraOrigin, endEffectorCameraPoint); //todo globalToLocal or localToGlobal?
     }
 }

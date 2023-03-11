@@ -114,6 +114,10 @@ public class EndEffector extends SubsystemBase {
     clawSolenoid.set(open);
   }
 
+  public void toggleClaw(){
+    setClaw(!clawSolenoid.get());
+  }
+
   public boolean isClawOpen(){
     return false;
     // return clawSolenoid.get() == DoubleSolenoid.Value.kForward && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
