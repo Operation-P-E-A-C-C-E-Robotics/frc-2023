@@ -16,8 +16,8 @@ public class Setpoints {
     public static SupersystemState placeLow = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeMidCube = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.5, 10);
-    public static SupersystemState placeMidCone = new SupersystemState(0, 0, 0, 0);
-    public static SupersystemState placeHighCone = new SupersystemState(0, 0, 0, 0);
+    public static SupersystemState placeMidCone = new SupersystemState(0, -1.0754, 0.7051, -0.25);
+    public static SupersystemState placeHighCone = new SupersystemState(0, -0.99, 1.25, -0.3);
     public static SupersystemState intakeFloor = new SupersystemState(0, 2.1, 0.75, 0);
     public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0, 0, 0);
     private final Supersystem supersystem;

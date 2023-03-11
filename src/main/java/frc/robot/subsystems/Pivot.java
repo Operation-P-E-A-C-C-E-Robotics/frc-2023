@@ -126,8 +126,8 @@ public class Pivot extends SubsystemBase {
    * @param volts -12 to 12
    */
   private void setVoltage(double volts){
-    if(getAngleRadians() > MAX_ANGLE_RAD && volts < 0) pivotMaster.set(0);
-    else if(getAngleRadians() < MAX_ANGLE_RAD && volts > 0) pivotMaster.set(0);
+    if(getAngleRadians() > MAX_ANGLE_RAD && volts > 0) pivotMaster.set(0);
+    else if(getAngleRadians() < MIN_ANGLE_RAD && volts < 0) pivotMaster.set(0);
     else pivotMaster.setVoltage(volts);
   }
 

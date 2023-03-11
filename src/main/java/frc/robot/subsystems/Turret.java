@@ -24,10 +24,6 @@ import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
-
-import static frc.robot.Constants.Pivot.MAX_ANGLE_RAD;
-import static frc.robot.Constants.Pivot.MIN_ANGLE_RAD;
-import static frc.robot.Constants.Pivot.SYSTEM_CONSTANTS;
 import static frc.robot.Constants.Turret.*;
 
 public class Turret extends SubsystemBase {
@@ -40,14 +36,15 @@ public class Turret extends SubsystemBase {
   /** Creates a new Turret. */
   public Turret() {
     turretEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    turretEncoder.configMagnetOffset(-114);
     turretEncoder.setPositionToAbsolute();
     turretEncoder.configSensorDirection(Constants.Inversions.TURRET_ENCODER);
     turretMaster.setInverted(Constants.Inversions.TURRET);
     turretMaster.configStatorCurrentLimit(CURRENT_LIMIT);
 
 //    turretMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(turretEncoder.getAbsolutePosition()), SYSTEM_CONSTANTS));
-    turretMaster.configForwardSoftLimitEnable(true);
-    turretMaster.configReverseSoftLimitEnable(true);
+    turretMaster.configForwardSoftLimitEnable(false);
+    turretMaster.configReverseSoftLimitEnable(false);
     turretMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MAX_ANGLE_RAD)));
     turretMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MIN_ANGLE_RAD)));
 
@@ -60,7 +57,9 @@ public class Turret extends SubsystemBase {
    */
   public void setPercent(double speed) {
     servoController.disableLoop();
-    turretMaster.set(speed);
+    if(getAngleRadians() > MAX_ANGLE_RAD && speed < 0) turretMaster.set(0);
+    else if(getAngleRadians() < MIN_ANGLE_RAD && speed > 0) turretMaster.set(0);
+    else turretMaster.set(speed);
   }
 
   /**
@@ -94,7 +93,9 @@ public class Turret extends SubsystemBase {
    * @param volts voltage
    */
   private void setVoltageWithoutStoppingProfile(double volts){
-    turretMaster.setVoltage(volts);
+    if(getAngleRadians() > MAX_ANGLE_RAD && volts > 0) turretMaster.set(0);
+    else if(getAngleRadians() < MIN_ANGLE_RAD && volts < 0) turretMaster.set(0);
+    else turretMaster.setVoltage(volts);
   }
 
 

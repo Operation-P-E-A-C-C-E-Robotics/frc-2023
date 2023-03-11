@@ -28,7 +28,7 @@ public final class Constants {
     public static final class Inversions{
         public static final boolean DRIVE_LEFT = false,
                                     DRIVE_RIGHT = true,
-                                    TURRET = false,
+                                    TURRET = true,
                                     TURRET_ENCODER = false,
                                     PIVOT = false,
                                     PIVOT_ENCODER = false,
@@ -101,7 +101,7 @@ public final class Constants {
 
     public static final class Turret {
         public static final int MOTOR_PORT = 4,
-                                ENCODER_PORT = 27;
+                                ENCODER_PORT = 10;
 
         //constraints:
         public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(180),
@@ -109,8 +109,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                10,
-                20,
+                40,
+                50,
                 0.1
         );
 
@@ -195,8 +195,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                20,
-                30,
+                40,
+                50,
                 0.2
         );
 

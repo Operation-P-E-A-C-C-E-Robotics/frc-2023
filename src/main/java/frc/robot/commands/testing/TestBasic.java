@@ -47,9 +47,9 @@ public class TestBasic extends CommandBase {
         var pivotSpeed = testJoystick.getRawAxis(1);
         var turretSpeed = testJoystick.getRawAxis(0);
         var wristSpeed = testJoystick.getRawAxis(0);
-        // arm.setPercent(armSpeed);
+        arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);
-        // turret.setPercent(turretSpeed);
+        turret.setPercent(turretSpeed);
         // wrist.setPercent(wristSpeed);
         SmartDashboard.putNumber("arm velocity", arm.getVelocity());
         SmartDashboard.putNumber("arm speed", armSpeed);

@@ -30,10 +30,11 @@ public class Arm extends SubsystemBase {
 
     /** Creates a new ExampleSubsystem. */
     public Arm(DoubleSupplier pivotAngleSupplier) {
-        armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 50, 60, 0.1));
+        armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 0.1));
 
         armMaster.setInverted(Constants.Inversions.ARM);
         armMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+        armMaster.configLimitSwitchDisableNeutralOnLOS(true, 0);
         servoController.setPeriodicFunction(this::zeroFromLimitSwitchPeriodic);
         DankPids.registerDankTalon(armMaster);
     }
