@@ -113,8 +113,8 @@ public class RobotContainer {
   };
 
   private final OIEntry[] manualOperatorOI = {
-          MultiButton.onHold(setpoints.goToPlaceConeWithWristFlip(PlaceLevel.HIGH, false), 4, 7), //lower left trigger, top button
-          MultiButton.onHold(setpoints.goToPlaceWithManualAdjustment(PlaceLevel.MID, true), 1, 7), //lower left trigger, mid left button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 4, 7), //lower left trigger, top button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 1, 7), //lower left trigger, mid left button
           MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, false), 4, 5), //upper left trigger, top button
           MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, false), 1, 5), //upper left trigger, mid left button
           SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
@@ -148,7 +148,7 @@ public class RobotContainer {
     new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(backupJoystick).map(manualOperatorOI);
-    // supersystem.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
+    pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   //   supersystem.setDefaultCommand(new DefaultStatemachine(
   //     supersystem,
   //     () -> robotXInRange(0, 4.5),

@@ -56,7 +56,7 @@ public class Supersystem extends SubsystemBase {
      */
     public void setSupersystemState(SupersystemState state){
         state = Kinematics.optimize(state, getSupersystemState());
-        // state = Constraints.constrainArmExtension(state);
+        state = Constraints.constrainArmExtension(state);
         // state = Constraints.constrainPivotCollision(state);
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));

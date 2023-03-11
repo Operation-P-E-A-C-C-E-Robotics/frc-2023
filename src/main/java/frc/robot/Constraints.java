@@ -38,9 +38,9 @@ public class Constraints {
         return Util.interpolate(normal, extended, (kinematics.getSupersystemState().getArmExtension() - Arm.MIN_EXTENSION) / (Arm.MAX_EXTENSION - Arm.MIN_EXTENSION));
     }
 
-    public static double ARM_EXTENSION_4FT = Units.feetToMeters(4); //TODO how far the arm is extended to reach out 4 feet
-    public static double MAX_X = Units.feetToMeters(4); //TODO add frame perimeter to this
-    public static double MAX_Y = Units.feetToMeters(4);
+    public static double ARM_EXTENSION_4FT = Units.feetToMeters(3); //TODO how far the arm is extended to reach out 4 feet
+    public static double MAX_X = Units.feetToMeters(3); //TODO add frame perimeter to this
+    public static double MAX_Y = Units.feetToMeters(3);
     public static double MAX_Z = Units.feetToMeters(6); //TODO the maximum z value of the robot's end effector (max height)
 
 

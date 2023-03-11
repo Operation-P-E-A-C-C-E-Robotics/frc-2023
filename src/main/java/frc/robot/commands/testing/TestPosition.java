@@ -1,6 +1,7 @@
 package frc.robot.commands.testing;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -49,7 +50,8 @@ public class TestPosition extends CommandBase {
          prevWrist += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getRawAxis(0), 0.3)*0.1;
         prevTurret += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getRawAxis(1), 0.3)*0.1;
         prevPivot += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getRawAxis(2), 0.3)*0.1;
-        prevArm += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getRawAxis(3), 0.3)*0.1;
+        prevArm += Util.handleDeadbandWithSlopeIncrease(new Joystick(2).getRawAxis(3), 0.3)*0.02;
+        if(prevArm > Units.inchesToMeters(37)) prevArm = Units.inchesToMeters(37);
         boolean flipWrist = new Joystick(2).getRawButton(3);
         arm.setExtension(prevArm);
         wrist.setAngle(new Rotation2d(prevWrist));
