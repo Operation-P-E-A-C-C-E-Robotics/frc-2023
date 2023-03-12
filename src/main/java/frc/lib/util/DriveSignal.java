@@ -70,6 +70,11 @@ public class DriveSignal {
         return new DriveSignal(left, right, DEFAULT_BRAKE_MODE, highGear, ControlMode.VELOCITY);
     }
 
+    public static DriveSignal plus(DriveSignal a, DriveSignal b){
+        if(a.mode != b.mode) throw new IllegalArgumentException("Cannot add two DriveSignals with different control modes!");
+        return new DriveSignal(a.left + b.left, a.right + b.right, a.brakeMode, a.highGear, a.mode);
+    }
+
     @Override
     public String toString() {
         return "L: " + left + ", R: " + right + (brakeMode ? ", BRAKE" : "");

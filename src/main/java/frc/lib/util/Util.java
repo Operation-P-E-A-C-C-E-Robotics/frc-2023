@@ -402,6 +402,15 @@ public class Util {
     public static double rotationsToCounts(double rotations, ServoMotor.SystemConstants constants){
         return rotationsToCounts(rotations, constants.cpr, constants.gearing);
     }
+
+    private static double prevTurretVelocity = 0;
+    private static final double turretBalancekP = 0;
+
+    public static DriveSignal balanceTurret(DriveSignal signal, double turretVelocity){
+        var acceleration = turretVelocity - prevTurretVelocity;
+        return DriveSignal.plus(signal, DriveSignal.arcadeDrive(0, acceleration * turretBalancekP, true));
+    }
+
     public static void main(String args[]){
         for(double i = -1; i < 1; i += 0.02){
             System.out.println(i + " " + Util.handleDeadbandWithSlopeIncrease(i, 0.4));
