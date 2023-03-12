@@ -58,10 +58,11 @@ public class Turret extends SubsystemBase {
    * set the turret speed, Positive Values should be Counter Clock Wise
    */
   public void setPercent(double speed) {
-    servoController.disableLoop();
-    if(getAngleRadians() > MAX_ANGLE_RAD && speed < 0) turretMaster.set(0);
-    else if(getAngleRadians() < MIN_ANGLE_RAD && speed > 0) turretMaster.set(0);
-    else turretMaster.set(speed);
+    // servoController.disableLoop();
+    // if(getAngleRadians() > MAX_ANGLE_RAD && speed < 0) turretMaster.set(0);
+    // else if(getAngleRadians() < MIN_ANGLE_RAD && speed > 0) turretMaster.set(0);
+    // else turretMaster.set(speed);
+    turretMaster.set(speed);
   }
 
   /**

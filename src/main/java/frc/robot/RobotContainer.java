@@ -158,7 +158,7 @@ public class RobotContainer {
       new WaitCommand(0.5),
       autoZeroCommand1.withTimeout(0.5),
       new WaitCommand(0.5),
-      new DriveDistance(driveTrain, robotState, -4))
+      new DriveDistance(driveTrain, robotState, -6.5))
     );
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);

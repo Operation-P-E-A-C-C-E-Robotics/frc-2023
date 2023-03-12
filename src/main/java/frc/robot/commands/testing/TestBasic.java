@@ -38,7 +38,7 @@ public class TestBasic extends CommandBase {
 
     @Override
     public void execute(){
-        System.out.println("Testing basic controls - executing");
+        // System.out.println("Testing basic controls - executing");
         SmartDashboard.putNumber("arm extension", arm.getExtension());
         SmartDashboard.putNumber("pivot angle (deg)", Units.radiansToDegrees(pivot.getAngleRadians()));
         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
@@ -47,7 +47,7 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
         var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
-        var turretSpeed = PeaccyDriveHelper.applySinCurve(Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.05), false) * 0.2;
+        var turretSpeed = PeaccyDriveHelper.applySinCurve(Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.05), false) * 0.13;
         var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);

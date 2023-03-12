@@ -159,8 +159,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                45,
                 50,
+                55,
                 0.1
         );
 
@@ -170,8 +170,8 @@ public final class Constants {
                 10, //6.67
                 3*4*5*6.4,
                 4096,
-                1,
-                1, //0.735
+                1.1,
+                1.5, //0.735
                 0.1,
                 0.1,
                 0.1,
