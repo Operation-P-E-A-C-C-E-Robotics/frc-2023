@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -94,6 +95,10 @@ public class Wrist extends SubsystemBase {
         }
         System.out.println("Flipping the bird"); //we do a little trolling
         return true;
+    }
+
+    public void setNeutralMode(NeutralMode mode){
+        wristMaster.setNeutralMode(mode);
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){

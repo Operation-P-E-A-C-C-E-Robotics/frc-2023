@@ -4,6 +4,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.PeaccyDriveHelper;
 import frc.lib.util.Util;
 import frc.robot.subsystems.*;
 
@@ -46,7 +47,7 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
         var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
-        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.1);
+        var turretSpeed = PeaccyDriveHelper.applySinCurve(Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.05), false) * 0.2;
         var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);

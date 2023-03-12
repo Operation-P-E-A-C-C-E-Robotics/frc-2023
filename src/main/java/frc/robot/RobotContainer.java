@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj.Compressor;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
@@ -115,10 +117,8 @@ public class RobotContainer {
   };
 
   private final OIEntry[] manualOperatorOI = {
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 4, 7), //lower left trigger, top button
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 1, 7), //lower left trigger, mid left button
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, false), 4, 5), //upper left trigger, top button
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, false), 1, 5), //upper left trigger, mid left button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 4), //lower left trigger, top button
+          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 1), //lower left trigger, mid left button
           SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 6), //upper right trigger
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
@@ -142,9 +142,21 @@ public class RobotContainer {
       new BangBangBalancer(driveTrain, robotState, false)
       .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
     );
+    autoMode.addOption("test auto", new DriveDistance(driveTrain, robotState, -3.4));
+    autoMode.addOption("helpplease",
+      new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
+      .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(7),
+      new InstantCommand(() -> endEffector.setClaw(false), endEffector),
+      new RunCommand(() -> endEffector.setPercent(1), endEffector).withTimeout(1),
+      new InstantCommand(() -> endEffector.setPercent(0), endEffector),
+      new WaitCommand(3),
+      setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true).withTimeout(0.5),
+      new DriveDistance(driveTrain, robotState, -3.5))
+    );
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
+    wristCoastMode();
   }
 
   /**
@@ -167,6 +179,14 @@ public class RobotContainer {
   //  ));
       supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
       // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
+  }
+
+  public void wristBrakeMode(){
+    wrist.setNeutralMode(NeutralMode.Brake);
+  }
+
+  public void wristCoastMode(){
+    wrist.setNeutralMode(NeutralMode.Coast);
   }
 
   public void enableCompressor(){

@@ -85,7 +85,7 @@ public final class Constants {
                 AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
-                true,
+                false,
                 50,
                 60,
                 0.5
@@ -155,7 +155,7 @@ public final class Constants {
 
         //physical constants
         public static final double  LENGTH = 0.1, //Note: probably going to ignore this length, and use the current arm length (even though it's not perfect)
-                                    MASS = 0.1;
+                                    MASS = Units.lbsToKilograms(40);
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
@@ -293,9 +293,9 @@ public final class Constants {
 
     public static final class SupersystemTolerance{
         public final double turret, pivot, wrist, arm;
-        public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.3, 0.3, 0.3, 0.1);
         public static final SupersystemTolerance PIVOT_BRAKE = new SupersystemTolerance(50, 0.05, 50, 50);
-        public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.5, 0.5, 0.5, 0.1);
         public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.1, 0.1, 0.3);

@@ -23,6 +23,7 @@ public class DriveDistance extends CommandBase {
 
     @Override
     public void initialize(){
+        driveTrain.resetEncoders(0, 0);
         initialEncoder = driveTrain.getAverageEncoderDistance();
         initialHeading = robotState.getPigeon().getHeading();
     }
@@ -38,16 +39,16 @@ public class DriveDistance extends CommandBase {
             left += headingError * 0.01;
         } else {
             left = right = -speed;
-            left -= headingError * 0.01;
-            right += headingError * 0.01;
+            left += headingError * 0.01;
+            right -= headingError * 0.01;
         }
 
-        driveTrain.set(DriveSignal.velocityDrive(left, right, true));
+        driveTrain.set(DriveSignal.tankDrive(left, right, true));
     }
 
     @Override
     public boolean isFinished(){
-        return Math.abs(driveTrain.getAverageEncoderDistance() - initialEncoder) > distance;
+        return Math.abs(driveTrain.getAverageEncoderDistance() - initialEncoder) > Math.abs(distance);
     }
 
     @Override

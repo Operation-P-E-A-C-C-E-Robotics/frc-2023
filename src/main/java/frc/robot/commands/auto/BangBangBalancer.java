@@ -27,6 +27,7 @@ public class BangBangBalancer extends CommandBase {
     public void initialize(){
         drivingOn = true;
         initialHeading = robotState.getPigeon().getHeading();
+        robotState.getPigeon().zeroHeading();
     }
     static double maxBangBangSpeed = 0.5, minBangBangSpeed = 0.2;
 

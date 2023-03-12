@@ -26,6 +26,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
+    robotContainer.wristCoastMode();
     this.isInMatch = Inspiration.initializeInspiration();
     if(isInMatch) {
       Inspiration.inspireDriversInit();
@@ -42,6 +43,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    robotContainer.wristBrakeMode();
     autonomousCommand = robotContainer.getAutonomousCommand();
      Inspiration.inspireAutonomous(isInMatch);
 
@@ -53,12 +55,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    robotContainer.wristBrakeMode();
      Inspiration.inspireTeleopInit(isInMatch);
 
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
     robotContainer.setDriveTrainCommand();
+  }
+
+  @Override
+  public void disabledInit(){
+    robotContainer.wristCoastMode();
   }
 
   @Override

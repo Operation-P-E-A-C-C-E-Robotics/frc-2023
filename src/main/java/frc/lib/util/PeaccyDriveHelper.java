@@ -172,7 +172,7 @@ public class PeaccyDriveHelper {
         return LOW_NEG_INERTIA_CLOSE_SCALAR;
     }
 
-    private double applySinCurve(double wheel, boolean gear){
+    public static double applySinCurve(double wheel, boolean gear){
         var nonLinearity = gear ? HIGH_WEEL_NON_LINEARITY : LOW_WHEEL_NON_LINEARITY;
         var denominator = Math.sin(Math.PI / 2.0 * nonLinearity);
         wheel = Math.sin(Math.PI / 2.0 * nonLinearity * wheel) / denominator;
