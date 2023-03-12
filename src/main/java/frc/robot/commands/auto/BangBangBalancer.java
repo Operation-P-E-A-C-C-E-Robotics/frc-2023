@@ -29,7 +29,7 @@ public class BangBangBalancer extends CommandBase {
         initialHeading = robotState.getPigeon().getHeading();
         robotState.getPigeon().zeroHeading();
     }
-    static double maxBangBangSpeed = 0.5, minBangBangSpeed = 0.2;
+    static double maxBangBangSpeed = 0.55, minBangBangSpeed = 0.05;
 
     @Override
     public void execute() {
@@ -37,19 +37,19 @@ public class BangBangBalancer extends CommandBase {
         double headingError = robotState.getPigeon().getHeading() - initialHeading;
         if(Math.abs(angle) > 10) drivingOn = false;
         if(drivingOn){
-            driveTrain.set(DriveSignal.velocityDrive(0.5, 0.5, true));
+            driveTrain.set(DriveSignal.tankDrive(0.4, 0.4, true));
         } else {
             double left, right;
             double error = Math.abs(angle);
             double speed = Util.interpolate(minBangBangSpeed, maxBangBangSpeed, error/20);
             if (angle > DEADBAND) {
                 left = right = -speed;
-                right += headingError * 0.01;
-                left -= headingError * 0.01;
+                right += headingError * 0.001;
+                left -= headingError * 0.001;
             } else if (angle < -DEADBAND) {
                 left = right = speed;
-                left += headingError * 0.01;
-                right -= headingError * 0.01;
+                left += headingError * 0.001;
+                right -= headingError * 0.001;
             } else {
                 left = 0;
                 right = 0;

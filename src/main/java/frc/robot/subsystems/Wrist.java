@@ -44,6 +44,10 @@ public class Wrist extends SubsystemBase {
         wristMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(90), SYSTEM_CONSTANTS));
         wristMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(-90), SYSTEM_CONSTANTS));
 
+        wristMaster.setNeutralMode(NeutralMode.Coast);
+
+        wristMaster.setSelectedSensorPosition(Util.rotationsToCounts(-0.3, SYSTEM_CONSTANTS));
+
         this.pivotAngle = pivotAngle;
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
@@ -107,6 +111,10 @@ public class Wrist extends SubsystemBase {
 
     public boolean withinTolerance(SupersystemTolerance tolerance){
         return withinTolerance(tolerance, getAngle().getRadians());
+    }
+
+    public void zero(){
+        wristMaster.setSelectedSensorPosition(0);
     }
 
     /**

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.MultiButton;
@@ -97,12 +98,14 @@ public class RobotContainer {
   private final ArcadeDrive arcadeDrive = new ArcadeDrive(
     driveTrain,
     driverJoystick::getY,
+
     driverJoystick::getX,
     () -> driverJoystick.getRawButton(2)
   );
 
   private final OIEntry[] driverOI = {
-    SimpleButton.onHold(new BangBangBalancer(driveTrain, robotState, false), 12)
+    SimpleButton.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
+    SimpleButton.onPress(new InstantCommand(() -> wrist.zero(), wrist), 8)
   };
 
   private final OIEntry[] mainOperatorOI = {
@@ -137,6 +140,9 @@ public class RobotContainer {
     teleopDriveMode.addOption("seany drive (test)", testDrive);
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
 
+    Command autoZeroCommand1 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
+    Command autoZeroCommand2 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
+
     autoMode.addOption("DO NOTHING", null);
     autoMode.addOption("auto balance",
       new BangBangBalancer(driveTrain, robotState, false)
@@ -149,9 +155,10 @@ public class RobotContainer {
       new InstantCommand(() -> endEffector.setClaw(false), endEffector),
       new RunCommand(() -> endEffector.setPercent(1), endEffector).withTimeout(1),
       new InstantCommand(() -> endEffector.setPercent(0), endEffector),
-      new WaitCommand(3),
-      setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true).withTimeout(0.5),
-      new DriveDistance(driveTrain, robotState, -3.5))
+      new WaitCommand(0.5),
+      autoZeroCommand1.withTimeout(0.5),
+      new WaitCommand(0.5),
+      new DriveDistance(driveTrain, robotState, -4))
     );
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
