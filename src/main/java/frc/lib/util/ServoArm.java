@@ -43,8 +43,11 @@ public class ServoArm extends SubsystemBase {
      * @param armLength The length of the arm (m)
      * @param armMass The mass of the arm (kg)
      */
-    public ServoArm(SystemConstants constants, DoubleSupplier armLength, double armMass) {
+    public ServoArm(SystemConstants constants, DoubleSupplier armLength, DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity, double armMass) {
         this.constants = constants;
+        this.voltDriveFunction = voltDriveFunction;
+        this.getPosition = getPosition;
+        this.getVelocity = getVelocity;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
         KalmanFilter<N2, N1, N1> observer = new KalmanFilter<N2, N1, N1>(
                 Nat.N2(),
@@ -89,14 +92,13 @@ public class ServoArm extends SubsystemBase {
      * @param getPosition The function to get the position
      * @param getVelocity The function to get the velocity
      */
-    public void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
-        this.voltDriveFunction = voltDriveFunction;
-        this.getPosition = getPosition;
-        this.getVelocity = getVelocity;
+    public void enableLoop() {
         if(trajectory == null){
             trajectoryStart = trajectoryEnd = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
             trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
         }
+        if(looping) return;
+        loop.reset(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         looping = true;
     }
 

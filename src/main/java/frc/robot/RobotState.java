@@ -169,10 +169,10 @@ public class RobotState {
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
-            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-            var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
-            var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
-            DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
+//            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+//            var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
+//            var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
+//            DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
         }
 
         var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());

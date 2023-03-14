@@ -144,21 +144,24 @@ public class Wrist extends SubsystemBase {
     }
 
     //SIMULATION:
-    private final SingleJointedArmSim wristSim = new SingleJointedArmSim(
-            SYSTEM_CONSTANTS.motor,
-            SYSTEM_CONSTANTS.gearing,
-            SYSTEM_CONSTANTS.inertia,
-            LENGTH,
-            -100,
-            100,
-            MASS,
-            false
-    );
-    private final TalonFXSimCollection wristMotorSim = wristMaster.getSimCollection();
-    double prevSetpoint = 0;
+    private SingleJointedArmSim wristSim;
+    private TalonFXSimCollection wristMotorSim;
+    Double prevSetpoint = null;
 
     @Override
     public void simulationPeriodic(){
+        if(wristSim == null) wristSim = new SingleJointedArmSim(
+                SYSTEM_CONSTANTS.motor,
+                SYSTEM_CONSTANTS.gearing,
+                SYSTEM_CONSTANTS.inertia,
+                LENGTH,
+                -100,
+                100,
+                MASS,
+                false
+        );
+        if(wristMotorSim == null) wristMotorSim = wristMaster.getSimCollection();
+        if(prevSetpoint == null) prevSetpoint = 0.0;
         //update from the dashboard setpoint:
         var setpoint = SmartDashboard.getNumber("wrist setpoint", 0);
         if (setpoint != prevSetpoint){

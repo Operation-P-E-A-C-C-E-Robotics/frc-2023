@@ -39,7 +39,7 @@ public class ServoMotor extends SubsystemBase {
 
     //setters and getters:
     private DoubleConsumer voltDriveFunction;
-    private DoubleSupplier getPosition, getVelocity;
+    private DoubleSupplier positionSupplier, velocitySupplier;
 
     private Runnable superPeriodic; // a function to run every periodic.
 
@@ -47,11 +47,11 @@ public class ServoMotor extends SubsystemBase {
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
      * @param constants The constants for the system
      */
-    public ServoMotor(SystemConstants constants, DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
+    public ServoMotor(SystemConstants constants, DoubleConsumer voltDriveFunction, DoubleSupplier positionSupplier, DoubleSupplier velocitySupplier) {
         this.constants = constants;
         this.voltDriveFunction = voltDriveFunction;
-        this.getPosition = getPosition;
-        this.getVelocity = getVelocity;
+        this.positionSupplier = positionSupplier;
+        this.velocitySupplier = velocitySupplier;
 
         //set up teh statey spacey contraollr
         plant = LinearSystemId.createDCMotorSystem( //create the mathy calculator thingy
@@ -110,11 +110,10 @@ public class ServoMotor extends SubsystemBase {
 
     /**
      * enable the feedback loop with a consumer to set the voltage, and a supplier to get the position and velocity
-     * @param voltDriveFunction The function to set the voltage
-     * @param getPosition The function to get the position
-     * @param getVelocity The function to get the velocity
      */
     public void enableLoop() {
+        if(looping) return;
+        loop.reset(VecBuilder.fill(positionSupplier.getAsDouble(),velocitySupplier.getAsDouble()));
         looping = true;
     }
 
@@ -159,7 +158,7 @@ public class ServoMotor extends SubsystemBase {
 
         if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.2){
             // option 1
-            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
             trajectoryEnd = new State(position, 0);
             trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
             profileTimer.reset();
@@ -168,7 +167,7 @@ public class ServoMotor extends SubsystemBase {
             recalculateTrajectory = false;
         } else if(Math.abs(position - trajectoryEnd.position) < 0.2 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
             // option 2
-            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
+            trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
             trajectoryEnd = new State(position, 0);
             trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
             recalculateTrajectory = false;
@@ -206,7 +205,7 @@ public class ServoMotor extends SubsystemBase {
         if(!looping) return; // don't run the feedback loop if it's not enabled
 
         var time = profileTimer.get(); // get the time since the profile started
-        double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
+        double position = positionSupplier.getAsDouble(), velocity = velocitySupplier.getAsDouble();
 
         var feedforward = 0.0;
 

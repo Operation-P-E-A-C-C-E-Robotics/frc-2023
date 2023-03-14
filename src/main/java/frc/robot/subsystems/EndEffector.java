@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -139,6 +141,14 @@ public class EndEffector extends SubsystemBase {
   public boolean ejecting(){
     return state == IntakeState.EJECTING_CONE || state == IntakeState.EJECTING_CUBE || state == IntakeState.EJECTING_NOTHING;
   }
+
+   public Command grabCommand(boolean open){
+     return new InstantCommand(()  -> setClaw(open), this);
+   }
+
+   public Command ejectCommand(){
+        return new InstantCommand(() -> setPercent(1), this);
+   }
 
   public boolean beamBroken(){
     return beamBrakeSensor.get();

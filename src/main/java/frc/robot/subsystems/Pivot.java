@@ -46,14 +46,12 @@ public class Pivot extends SubsystemBase {
   private final WPI_CANCoder pivotEncoder = new WPI_CANCoder(PIVOT_ENCODER);
   private final Timer brakeTimer = new Timer();
   private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE;
-  private final DoubleSupplier armLengthSupplier;
   private double setpoint = 0;
 
 
   /** Creates a new ExampleSubsystem. */
   public Pivot(boolean withBrake, DoubleSupplier armLengthSupplier) {
-    this.armLengthSupplier = armLengthSupplier;
-    servoController = new ServoArm(SYSTEM_CONSTANTS, armLengthSupplier, MASS);
+    servoController = new ServoArm(SYSTEM_CONSTANTS, armLengthSupplier, this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond, MASS);
     WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
 
     pivotMaster.configFactoryDefault();
@@ -151,7 +149,7 @@ public class Pivot extends SubsystemBase {
   public void setAngle(Rotation2d angle){
     setpoint = angle.getRadians();
     if(isBrakeEngaged()) return;
-    servoController.enableLoop(this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond);
+    servoController.enableLoop();
     servoController.goToState(angle.getRadians(), 0);
   }
 

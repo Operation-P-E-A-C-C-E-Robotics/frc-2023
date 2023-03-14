@@ -76,6 +76,19 @@ public class Setpoints {
         };
     }
 
+    public Command goToPlaceAndEnd(Automations.PlaceLevel level, boolean cone) {
+        var tolerance = Constants.SupersystemTolerance.forLevel(level);
+        return switch (level) {
+            case LOW -> goToSetpoint(placeLow, tolerance, true);
+            case MID -> goToSetpoint(cone ? placeMidCone : placeMidCube, tolerance, true);
+            case HIGH -> goToSetpoint(cone ? placeHighCone : placeHighCube, tolerance, true);
+        };
+    }
+
+    public Command zero(){
+        return goToSetpoint(Setpoints.zero, Constants.SupersystemTolerance.DEFAULT, true);
+    }
+
     public Command goToPlaceConeWithWristFlip(Automations.PlaceLevel level, boolean endOnTarget) {
         var setpoint = switch (level) {
             case LOW -> placeLow;
