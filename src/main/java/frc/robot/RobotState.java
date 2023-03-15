@@ -6,13 +6,12 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
-import frc.lib.util.AveragePose;
+import frc.lib.util.PoseFilter;
 import frc.lib.util.Util;
 import frc.lib.safety.Value;
 import frc.robot.subsystems.DriveTrain;
@@ -22,9 +21,9 @@ import frc.robot.subsystems.Supersystem;
 public class RobotState {
     private final DriveTrain driveTrain;
     private final PigeonHelper imu;
-    private final AveragePose conePoseSmoothed = new AveragePose(),
-            cubePoseSmoothed = new AveragePose(),
-            visionTargetPoseSmoothed = new AveragePose();
+    private final PoseFilter conePoseSmoothed = new PoseFilter(),
+            cubePoseSmoothed = new PoseFilter(),
+            visionTargetPoseSmoothed = new PoseFilter();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
     private final Limelight apriltagCamera, armCamera;
@@ -181,6 +180,10 @@ public class RobotState {
 
     public boolean onRedAlliance(){
         return DriverStation.getAlliance() == DriverStation.Alliance.Red;
+    }
+
+    public boolean robotXInRange(double low, double high){
+        return getOdometryPose().getTranslation().getX() > low && getOdometryPose().getTranslation().getX() < high;
     }
 
     public void zeroImuPitchRoll(){

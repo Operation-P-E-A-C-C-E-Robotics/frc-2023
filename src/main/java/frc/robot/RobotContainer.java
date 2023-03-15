@@ -177,7 +177,6 @@ public class RobotContainer {
     new ButtonMap(driverJoystick).map(driverOI);
     new ButtonMap(operatorJoystick).map(mainOperatorOI);
     new ButtonMap(backupJoystick).map(manualOperatorOI);
-    // pivot.setDefaultCommand(new TestPosition(arm, pivot, turret, wrist));
   //   supersystem.setDefaultCommand(new DefaultStatemachine(
   //     supersystem,
   //     () -> robotXInRange(0, 4.5),
@@ -204,13 +203,9 @@ public class RobotContainer {
     compressor.disable();
   }
 
-  public void update(){
+  public void update() {
     robotState.update();
     DashboardManager.getInstance().update();
-  }
-
-  public boolean robotXInRange(double low, double high){
-    return robotState.getOdometryPose().getTranslation().getX() > low && robotState.getOdometryPose().getTranslation().getX() < high;
   }
 
   /**

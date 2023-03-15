@@ -88,9 +88,6 @@ public class ServoArm extends SubsystemBase {
 
     /**
      * enable the feedback loop with a consumer to set the voltage, and a supplier to get the position and velocity
-     * @param voltDriveFunction The function to set the voltage
-     * @param getPosition The function to get the position
-     * @param getVelocity The function to get the velocity
      */
     public void enableLoop() {
         if(trajectory == null){
@@ -251,7 +248,7 @@ public class ServoArm extends SubsystemBase {
         for(var i = 0; i < 360; i++){
             var angle = Math.toRadians(i) + Math.PI*1.5;
             var force = (armMass * 9.80665) * armLength * Math.cos(angle + Math.PI);
-            force *= 1/gearing;
+            force *= 1.0/gearing;
             var voltage = motor.getVoltage(force, 0);
             System.out.println(i + "," + voltage);
         }
