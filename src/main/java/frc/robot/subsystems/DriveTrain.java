@@ -107,7 +107,7 @@ public class DriveTrain extends SubsystemBase {
     setHighGear(signal.isHighGear());
     setBrakeMode(signal.isBrakeMode());
 
-    if(shiftClutchTimer.get() < 0.2) return;
+    // if(shiftClutchTimer.get() < 0.2) return;
 
     switch(signal.getControlMode()){
       case OPEN_LOOP -> {

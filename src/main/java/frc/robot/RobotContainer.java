@@ -32,6 +32,7 @@ import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.supersystem.Setpoints;
 import frc.robot.commands.testing.TestBasic;
 import frc.robot.commands.testing.TestPosition;
+import frc.robot.commands.testing.TestSimpleKinematics;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -109,14 +110,14 @@ public class RobotContainer {
   };
 
   private final OIEntry[] mainOperatorOI = {
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4, 7),
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1, 7),
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW), 2, 7),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
-          SimpleButton.onPress(automations.pickUpConeFloor(), 5),
-          SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
+          // MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4, 7),
+          // MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1, 7),
+          SimpleButton.onHold(automations.placeCube(PlaceLevel.MID), 2),
+          // MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
+          // MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
+          // MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
+          // SimpleButton.onPress(automations.pickUpConeFloor(), 5),
+          // SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
   };
 
   private final OIEntry[] manualOperatorOI = {
@@ -125,6 +126,7 @@ public class RobotContainer {
           SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 6), //upper right trigger
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
+          SimpleButton.onHold(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem), 5),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
           SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 180), //pov down
           SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 0), //pov up

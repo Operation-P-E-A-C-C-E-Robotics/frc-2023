@@ -44,15 +44,15 @@ public class SeanyDrive extends CommandBase {
         double throttle = driverJoystick.getY() * (invertFront ? 1 : -1);
         double wheel = driverJoystick.getX();
         double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
-        boolean isHighGear = driverJoystick.getRawButton(1),
-                isFineControl = driverJoystick.getRawButton(2),
-                isFastAcceleration = driverJoystick.getRawButton(3),
-                isQuickTurn = driverJoystick.getRawButton(4),
+        boolean isHighGear = driverJoystick.getRawButton(3),
+                isFineControl = driverJoystick.getRawButton(7),
+                isFastAcceleration = driverJoystick.getRawButton(6),
+                isQuickTurn = driverJoystick.getRawButton(1),
                 isGravityCompensation = driverJoystick.getRawButton(5), //TODO
                 isLockDrivetrain = driverJoystick.getRawButton(6), //TODO
-                resetOdometryFromApriltags = driverJoystick.getRawButton(7),
-                zeroOdometry = driverJoystick.getRawButton(8),
-                zeroPigeon = driverJoystick.getRawButton(9);
+                resetOdometryFromApriltags = driverJoystick.getRawButton(13),
+                zeroOdometry = driverJoystick.getRawButton(12),
+                zeroPigeon = driverJoystick.getRawButton(11);
 
         //use the pov hat to determine the front of the robot.
          double povAngle = driverJoystick.getPOV();

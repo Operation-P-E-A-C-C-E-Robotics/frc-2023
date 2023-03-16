@@ -20,7 +20,7 @@ import frc.robot.subsystems.Supersystem;
 import java.util.ArrayList;
 
 public class Automations {
-    public static Translation3d cubePlaceOffset = new Translation3d(0.3, 0, 0.3); //TODO
+    public static Translation3d cubePlaceOffset = new Translation3d(-0.3, 0, -0.3); //TODO
     public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
     public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0); //TODO
     private final Supersystem supersystem;

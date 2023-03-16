@@ -70,7 +70,7 @@ public class Pivot extends SubsystemBase {
     pivotEncoder.setPositionToAbsolute();
     pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
     pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
-    pivotEncoder.configMagnetOffset(168);
+    pivotEncoder.configMagnetOffset(169);
 
     pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
     pivotMaster.configForwardSoftLimitEnable(false);

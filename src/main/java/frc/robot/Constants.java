@@ -125,13 +125,13 @@ public final class Constants {
                 2,
                 20 * 5, //20:1 versaplanetary, 5:1 driving gear
                 4096,
-                3,
-                3,
+                1,
+                1,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.1,
+                0.03,
                 0.1,
                 12,
                 0,
@@ -159,8 +159,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                50,
-                55,
+                40,
+                45,
                 0.1
         );
 
