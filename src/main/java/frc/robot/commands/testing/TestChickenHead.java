@@ -19,7 +19,7 @@ public class TestChickenHead extends CommandBase {
     private final RobotState robotState;
     private final Joystick testJoystick = new Joystick(2);
     private double x = 0, y = 0, z = 0;
-    private final double SENSITIVITY = 0.1;
+    private final double SENSITIVITY = 0.03;
 
     /**
      * Test chicken head mode - keep the end effector at a fixed position
@@ -41,7 +41,7 @@ public class TestChickenHead extends CommandBase {
     public void initialize(){
         System.out.println("PREPARING CHICKEN HEAD");
         var posRelativeToEndOfArm = new Pose3d(supersystem.getKinematics().getSupersystemPosition(), new Rotation3d());
-        var pos = robotState.drivetrainToField(robotState.turretToDrivetrain(robotState.endEffectorToTurret(posRelativeToEndOfArm)));
+        var pos = robotState.drivetrainToField(posRelativeToEndOfArm);
         x = pos.getX();
         y = pos.getY();
         z = pos.getZ();
@@ -52,7 +52,7 @@ public class TestChickenHead extends CommandBase {
         System.out.println("CHICKEN HEAD ENGAGED!");
         //get teh current position of the end effector
         var currentEndEffector = new Pose3d(supersystem.getKinematics().getSupersystemPosition(), new Rotation3d());
-        var current = robotState.drivetrainToField(robotState.turretToDrivetrain(robotState.endEffectorToTurret(currentEndEffector)));
+        var current = robotState.drivetrainToField(currentEndEffector);
         SmartDashboard.putNumber("arm extension", arm.getExtension());
         SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
         SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());

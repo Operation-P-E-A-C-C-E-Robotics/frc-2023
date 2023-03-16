@@ -51,7 +51,7 @@ public final class Constants {
         public static final double  DRIVE_ENCODER_CPR = 2048,
                 GEARBOX_RATIO_HIGH = 10.66,//:1
                 GEARBOX_RATIO_LOW = 17.88,//:1
-                METERS_PER_ROTATION = 0.4844,
+                WHEEL_CIRCUMFERENCE = 0.4785,
                 MOMENT_OF_INERTIA = 7.5, //J/m^2
                 MASS = Units.lbsToKilograms(100), //kg
                 TRACK_WIDTH = 0.6096; //m

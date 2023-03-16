@@ -281,13 +281,7 @@ public class Kinematics {
     }
 
     public static void main(String args[]){
-        //test optimization:
-        SupersystemState target = new SupersystemState(Units.degreesToRadians(90), -1, 1, 0);
-        SupersystemState current = new SupersystemState(Units.degreesToRadians(270), -1, 1, 0);
-        System.out.println("target: " + target);
-        System.out.println("current: " + current);
-        System.out.println("optimized: " + optimize(target, current));
-        System.out.println("optimized: " + kinematics(optimize(target, current)));
+
     }
 
     public static class EndEffectorPosition {

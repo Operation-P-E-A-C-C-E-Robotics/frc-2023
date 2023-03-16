@@ -16,6 +16,12 @@ public class BangBangBalancer extends CommandBase {
     private double initialHeading = 0;
     private boolean endWhenBalanced;
 
+    /**
+     * WELCOME to the wonderful world of code written right before + during a competition.
+     * @param drivetrain the drivetrain
+     * @param robotState the robot state
+     * @param endWhenBalanced whether to end the command when the robot is balanced
+     */
     public BangBangBalancer(DriveTrain drivetrain, RobotState robotState, boolean endWhenBalanced) {
         this.robotState = robotState;
         this.driveTrain = drivetrain;
@@ -25,7 +31,7 @@ public class BangBangBalancer extends CommandBase {
 
     @Override
     public void initialize(){
-        drivingOn = true;
+        drivingOn = true; //THE ROBOT NEEDS TO DRIVE ON FIRST
         initialHeading = robotState.getPigeon().getHeading();
         robotState.getPigeon().zeroHeading();
     }
@@ -33,17 +39,23 @@ public class BangBangBalancer extends CommandBase {
 
     @Override
     public void execute() {
+        //GET THE PIGEON ANGLES:
         double angle = robotState.getPigeon().getRoll();
         double headingError = robotState.getPigeon().getHeading() - initialHeading;
-        if(Math.abs(angle) > 10) drivingOn = false;
+
+        if(Math.abs(angle) > 10) drivingOn = false; //if we're tilted more than 10 degrees, start balancing
         if(drivingOn){
+            //to drive on, drive at 0.4 speed (TODO maybe change to low gear if we fix the issues with that)
             driveTrain.set(DriveSignal.tankDrive(0.4, 0.4, true));
         } else {
             double left, right;
-            double error = Math.abs(angle);
+            double error = Math.abs(angle); //Bad robot isn't balanced yet
+
+            //interpolate between the min and max velocity to stop the robot from going too fast
             double speed = Util.interpolate(minBangBangSpeed, maxBangBangSpeed, error/20);
             if (angle > DEADBAND) {
                 left = right = -speed;
+                //adjust for heading error to keep the robot straight
                 right += headingError * 0.001;
                 left -= headingError * 0.001;
             } else if (angle < -DEADBAND) {
@@ -54,7 +66,8 @@ public class BangBangBalancer extends CommandBase {
                 left = 0;
                 right = 0;
             }
-            driveTrain.set(DriveSignal.velocityDrive(left, right, true));        }
+            driveTrain.set(DriveSignal.velocityDrive(left, right, true));
+        }
     }
 
     @Override

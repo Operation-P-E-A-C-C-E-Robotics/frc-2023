@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
@@ -13,8 +12,6 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.LinearQuadraticRegulator;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N2;
@@ -33,7 +30,6 @@ import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
-import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constants;
@@ -210,15 +206,15 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double countsToMeters(double encoderCounts){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * METERS_PER_ROTATION;
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * WHEEL_CIRCUMFERENCE;
   }
 
   public double countsToMeters(double encoderCounts, boolean isHighGear){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * METERS_PER_ROTATION;
+    return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * WHEEL_CIRCUMFERENCE;
   }
 
   public double metersToCounts(double meters){
-    return ((meters / METERS_PER_ROTATION) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
+    return ((meters / WHEEL_CIRCUMFERENCE) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
   }
 
   private void setHighGear(boolean isHighGear){
@@ -251,11 +247,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double getCurrentGearRatio(){
-    if(isHighGear()){
-      return GEARBOX_RATIO_HIGH;
-    } else {
-      return GEARBOX_RATIO_LOW;
-    }
+    return isHighGear() ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW;
   }
 
   @Override

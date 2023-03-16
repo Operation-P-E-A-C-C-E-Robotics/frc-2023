@@ -163,8 +163,6 @@ public class RobotState {
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
 
-        SmartDashboard.putNumber("robot pitch!", imu.getRoll());
-
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
@@ -263,7 +261,7 @@ public class RobotState {
      * @return the pose relative to the center of the drivetrain
      */
     public Pose3d fieldToDrivetrain(Pose3d fieldPoint){
-        Pose3d fieldToRobot = getRobotPose();
+        Pose3d fieldToRobot = Util.toPose3d(getOdometryPose()); //todo try with snap to floor? (before used apriltag z)
         return Util.globalToLocalPose(fieldToRobot, fieldPoint);
     }
 
