@@ -20,9 +20,9 @@ import frc.robot.subsystems.Supersystem;
 import java.util.ArrayList;
 
 public class Automations {
-    public static Translation3d cubePlaceOffset = new Translation3d(-0.3, 0, -0.3); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.3); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0); //TODO
+    public static Translation3d cubePlaceOffset = new Translation3d(-0.8, 0, 0.5); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0.05, 0, 0.5); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(-0.02, 0, 0.35); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;

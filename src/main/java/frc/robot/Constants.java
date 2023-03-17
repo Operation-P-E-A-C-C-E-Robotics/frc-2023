@@ -28,12 +28,12 @@ public final class Constants {
     public static final class Inversions{
         public static final boolean DRIVE_LEFT = false,
                                     DRIVE_RIGHT = true,
-                                    TURRET = true,
-                                    TURRET_ENCODER = false,
-                                    PIVOT = false,
-                                    PIVOT_ENCODER = false,
+                                    TURRET = false,
+                                    TURRET_ENCODER = true,
+                                    PIVOT = true,
+                                    PIVOT_ENCODER = true,
                                     ARM = true,
-                                    WRIST = false,
+                                    WRIST = true,
                                     INTAKE_LEFT = false,
                                     INTAKE_RIGHT = true;
     }

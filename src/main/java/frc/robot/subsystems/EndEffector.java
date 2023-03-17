@@ -109,15 +109,15 @@ public class EndEffector extends SubsystemBase {
    * @param open true to open the claw, false to close it
    */
   public void setClaw(boolean open){
-    if(open != clawSolenoid.get()) {
+    if(open == clawSolenoid.get()) {
       clawTimer.reset();
       clawTimer.start();
     }
-    clawSolenoid.set(open);
+    clawSolenoid.set(!open);
   }
 
   public void toggleClaw(){
-    setClaw(!clawSolenoid.get());
+    setClaw(clawSolenoid.get());
   }
 
   public boolean isClawOpen(){

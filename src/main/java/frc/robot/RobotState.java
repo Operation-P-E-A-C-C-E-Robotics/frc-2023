@@ -52,7 +52,7 @@ public class RobotState {
                 driveTrain.getRightMeters(),
                 new Pose2d(0, 0, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 3)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
@@ -166,10 +166,10 @@ public class RobotState {
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         } else {
-//            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-//            var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
-//            var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
-//            DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
+           DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+           var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
+           var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
+           DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
         }
 
         var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
@@ -271,7 +271,7 @@ public class RobotState {
      * @return the pose relative to the bottom left field corner
      */
     public Pose3d drivetrainToField(Pose3d drivetrainPoint){
-        Pose3d fieldToRobot = getRobotPose();
+        Pose3d fieldToRobot = Util.toPose3d(getOdometryPose());
         return Util.localToGlobalPose(fieldToRobot, drivetrainPoint);
     }
 

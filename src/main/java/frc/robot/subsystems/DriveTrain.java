@@ -189,7 +189,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftMeters() {
-    return countsToMeters(leftMaster.getSelectedSensorPosition()) + leftPositionOffset;
+    return countsToMeters(leftMaster.getSelectedSensorPosition());
   }
 
   /**
@@ -198,7 +198,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightMeters() {
-    return countsToMeters(rightMaster.getSelectedSensorPosition()) + rightPositionOffset;
+    return countsToMeters(rightMaster.getSelectedSensorPosition());
   }
 
   public DifferentialDrive getDifferentialDrive(){

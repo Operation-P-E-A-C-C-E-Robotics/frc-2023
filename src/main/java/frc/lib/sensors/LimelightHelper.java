@@ -225,8 +225,8 @@ public class LimelightHelper {
     double halfFieldHeight = 8.1/2;
 
     int divergentVisionReadings = 0;
-    static final double ERRONIOUS_VISION_THRESHOLD = 1; //meters
-    static final double RESET_VISION_THRESHOLD = 10; //divergent readings
+    static final double ERRONIOUS_VISION_THRESHOLD = 0.3; //meters
+    static final double RESET_VISION_THRESHOLD = 5; //divergent readings
 
     /**
      * update a pose estimator from vision measurements
@@ -238,7 +238,8 @@ public class LimelightHelper {
 
         //add vision measurements to the estimator
         for(TimestampedDoubleArray i : visionMeasurements){
-            var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
+            // var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
+            var time = i.timestamp;
             double[] val = i.value;
             if(val.length == 6) {
                 var visionPose = new Pose2d(
