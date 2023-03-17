@@ -252,6 +252,12 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic(){
+    SmartDashboard.putNumber("dbg encoder counts", leftMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("dbg motor revolutions", leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR);
+    SmartDashboard.putNumber("dbg gear ratio", getCurrentGearRatio());
+    SmartDashboard.putNumber("dbg grbx output rots", leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR / getCurrentGearRatio());
+    SmartDashboard.putNumber("dbg meters test", leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR / getCurrentGearRatio() * WHEEL_CIRCUMFERENCE);
+    SmartDashboard.putNumber("dbg meters", getLeftMeters());
     if(isClosedLoop){
       var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
 
