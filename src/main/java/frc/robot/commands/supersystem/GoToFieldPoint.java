@@ -50,7 +50,7 @@ public class GoToFieldPoint extends CommandBase {
         var pivot = supersystem.getSupersystemState().getPivotAngle();
         if(Math.abs(pivot) < 0.1) return new Rotation2d();
         var wrist = pivot < 0 ? -Math.PI/2 : Math.PI/2;
-        wrist -= pivot;
+//        wrist -= pivot; TODO take this out? - changed wrist to absolute angle
         return new Rotation2d(wrist);
     }
 

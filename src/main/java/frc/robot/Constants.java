@@ -296,7 +296,7 @@ public final class Constants {
         public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.3, 0.3, 0.3, 0.1);
         public static final SupersystemTolerance PIVOT_BRAKE = new SupersystemTolerance(50, 0.05, 50, 50);
         public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.5, 0.5, 0.5, 0.1);
-        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.05, 0.1, 0.1, 0.04);
         public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.1, 0.1, 0.3);
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
