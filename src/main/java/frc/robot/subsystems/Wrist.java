@@ -30,6 +30,7 @@ public class Wrist extends SubsystemBase {
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();
+    private double setpoint = 0;
 
     public Wrist(DoubleSupplier pivotAngle){
         wristMaster.configFactoryDefault();
@@ -52,8 +53,6 @@ public class Wrist extends SubsystemBase {
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
         DankPids.registerDankTalon(wristMaster);
-
-        servoController.setPeriodicFunction(this::flipWristPeriodic);
 
         wristTimer.start();
     }
@@ -81,7 +80,8 @@ public class Wrist extends SubsystemBase {
      */
     public void setAngle(Rotation2d angle){
         servoController.enableLoop();
-        servoController.goToState(angle.getRadians());
+        setpoint = angle.getRadians();
+        servoController.goToState(angle.getRadians() - pivotAngle.getAsDouble());
     }
 
     public void setFlipped(boolean flipped){
@@ -138,9 +138,10 @@ public class Wrist extends SubsystemBase {
         return getVelocity().getRadians();
     }
 
-    public void flipWristPeriodic(){
-        // if(Util.inRange(pivotAngle.getAsDouble(), 0.3)) return;
+    @Override
+    public void periodic(){
         setFlipped(pivotAngle.getAsDouble() > 0);
+        if(servoController.isLooping()) servoController.goToState(setpoint - pivotAngle.getAsDouble());
     }
 
     //SIMULATION:
