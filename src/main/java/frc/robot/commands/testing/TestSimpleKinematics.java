@@ -1,5 +1,6 @@
 package frc.robot.commands.testing;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,9 +16,9 @@ public class TestSimpleKinematics extends CommandBase {
     private final Pivot pivot;
     private final Turret turret;
     private final Wrist wrist;
-    private final Joystick testJoystick = new Joystick(2);
+    private final Joystick testJoystick = new Joystick(1);
     private double x = 0, y = 0, z = 0;
-    private final double SENSITIVITY = 0.03;
+    private final double SENSITIVITY = 0.01;
 
     /**
      * Kinematic control of end effector
@@ -54,9 +55,10 @@ public class TestSimpleKinematics extends CommandBase {
         SmartDashboard.putNumber("x", current.getX());
         SmartDashboard.putNumber("y", current.getY());
         SmartDashboard.putNumber("z", current.getZ());
-        x += Util.handleDeadband(testJoystick.getRawAxis(3), 0.03) * SENSITIVITY;
+        x += Util.handleDeadband(-testJoystick.getRawAxis(3), 0.03) * SENSITIVITY;
         y -= Util.handleDeadband(testJoystick.getRawAxis(2), 0.03) * SENSITIVITY;
-        z += Util.handleDeadband(testJoystick.getRawAxis(1), 0.03) * SENSITIVITY;
+        z += Util.handleDeadband(-testJoystick.getRawAxis(1), 0.03) * SENSITIVITY;
         supersystem.setSupersystemPosition(new Translation3d(x, y, z));
+        supersystem.setWrist(Rotation2d.fromDegrees(-90));
     }
 }

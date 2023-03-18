@@ -110,7 +110,7 @@ public final class Constants {
                                 ENCODER_PORT = 10;
 
         //constraints:
-        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(180),
+        public static final double  MAX_ANGLE_RAD = Units.degreesToRadians(90),
                 MIN_ANGLE_RAD = -MAX_ANGLE_RAD;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
@@ -125,14 +125,14 @@ public final class Constants {
                 2,
                 20 * 5, //20:1 versaplanetary, 5:1 driving gear
                 4096,
-                1,
-                1,
+                2,
+                3,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
                 0.03,
-                0.1,
+                0.05,
                 12,
                 0,
                 12,
@@ -159,8 +159,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                40,
-                45,
+                50,
+                55,
                 0.1
         );
 
@@ -201,8 +201,8 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                40,
-                45,
+                50,
+                55,
                 0.2
         );
 
@@ -217,8 +217,8 @@ public final class Constants {
                 3.0,
                 0.01,
                 0.01,
+                0.0001,
                 0.001,
-                0.01,
                 12,
                 0,
                 12,
@@ -296,9 +296,9 @@ public final class Constants {
         public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.3, 0.3, 0.3, 0.1);
         public static final SupersystemTolerance PIVOT_BRAKE = new SupersystemTolerance(50, 0.05, 50, 50);
         public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.5, 0.5, 0.5, 0.1);
-        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.05, 0.1, 0.1, 0.04);
+        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.07, 0.15, 0.1, 0.1);
         public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
-        public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.1, 0.1, 0.3);
+        public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.2, 0.1, 0.3);
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance TARGET_VISION = new SupersystemTolerance(0.5, 0.5, 0.5, 0.3);

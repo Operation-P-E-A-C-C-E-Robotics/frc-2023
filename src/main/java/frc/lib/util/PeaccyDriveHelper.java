@@ -20,7 +20,7 @@ public class PeaccyDriveHelper {
 
     private double prevWheel = 0.0, negInertiaAccumulator = 0.0, quickStopAccumulator = 0.0;
 
-    public static final double FINE_TURN_SENSITIVITY = 0.2, FINE_THROTTLE_SENSITIVITY = 0.4;
+    public static final double FINE_TURN_SENSITIVITY = 0.5, FINE_THROTTLE_SENSITIVITY = 1;
 
     private static final SlewRateLimiter fastAccelLimiterLeft = new SlewRateLimiter(4); //TODO
     private static final SlewRateLimiter fastAccelLimiterRight = new SlewRateLimiter(4); //TODO

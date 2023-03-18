@@ -5,6 +5,7 @@ import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.safety.Value;
 
 import java.util.function.DoubleSupplier;
@@ -226,7 +227,7 @@ public class LimelightHelper {
 
     int divergentVisionReadings = 0;
     static final double ERRONIOUS_VISION_THRESHOLD = 0.3; //meters
-    static final double RESET_VISION_THRESHOLD = 5; //divergent readings
+    static final double RESET_VISION_THRESHOLD = 4; //divergent readings
 
     /**
      * update a pose estimator from vision measurements
@@ -235,13 +236,14 @@ public class LimelightHelper {
     public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator, DoubleSupplier drivetrainLeft, DoubleSupplier drivetrainRight, Supplier<Rotation2d> imuHeading){
         var visionMeasurements = botpose.readQueue();
         var currentPose = estimator.getEstimatedPosition();
+        SmartDashboard.putNumber("divergent vision readings", divergentVisionReadings);
 
         //add vision measurements to the estimator
         for(TimestampedDoubleArray i : visionMeasurements){
-            // var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
-            var time = i.timestamp;
+            var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
+            // var time = i.timestamp;
             double[] val = i.value;
-            if(val.length == 6) {
+            if(val.length == 6 && val[0] != 0) {
                 var visionPose = new Pose2d(
                         val[0] + halfFieldWidth,
                         val[1] + halfFieldHeight,
@@ -252,7 +254,7 @@ public class LimelightHelper {
                     divergentVisionReadings++;
                 } else {
                     estimator.addVisionMeasurement(visionPose, time);
-                    divergentVisionReadings--;
+                    if(divergentVisionReadings > 0) divergentVisionReadings--;
                 }
                 //if there are too many divergent vision readings, reset the estimator to the vision pose
                 if(divergentVisionReadings > RESET_VISION_THRESHOLD){
@@ -261,6 +263,15 @@ public class LimelightHelper {
                 }
             }
         }
+        // var val = botpose.get();
+        // if(val.length == 6 && val[0] != 0) {
+        //     var visionPose = new Pose2d(
+        //             val[0] + halfFieldWidth,
+        //             val[1] + halfFieldHeight,
+        //             Rotation2d.fromDegrees(val[5])
+        //     );
+        //     estimator.addVisionMeasurement(visionPose, Timer.getFPGATimestamp());
+        // }
     }
 
     /**

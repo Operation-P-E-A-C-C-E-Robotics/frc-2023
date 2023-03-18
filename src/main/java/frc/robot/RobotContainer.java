@@ -104,19 +104,21 @@ public class RobotContainer {
     driverJoystick::getX,
     () -> driverJoystick.getRawButton(2)
   );
+  private final TestSimpleKinematics kinematicsManual = new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem);
 
   private final OIEntry[] driverOI = {
     SimpleButton.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
-    SimpleButton.onPress(new InstantCommand(() -> wrist.zero(), wrist), 8)
+    SimpleButton.onPress(new InstantCommand(() -> wrist.zero(), wrist), 8),
+    SimpleButton.onPress(new InstantCommand(() -> driveTrain.resetEncoders(0,0)), 16)
   };
 
   private final OIEntry[] mainOperatorOI = {
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH), 4, 7),
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID), 1, 7),
-          // SimpleButton.onHold(automations.placeConeNoVision(PlaceLevel.MID), 2),
-          // MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
-          // MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
-          // MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 4, 7),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 1, 7),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
+          MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
           // SimpleButton.onPress(automations.pickUpConeFloor(), 5),
           // SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
@@ -191,7 +193,7 @@ public class RobotContainer {
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
       supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
-      // pivot.setDefaultCommand(new TestBasic(arm, pivot, turret, wrist));
+      // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   public void wristBrakeMode(){

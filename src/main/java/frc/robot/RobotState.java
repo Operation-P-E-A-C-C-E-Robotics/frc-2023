@@ -14,6 +14,7 @@ import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.PoseFilter;
 import frc.lib.util.Util;
 import frc.lib.safety.Value;
+import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
@@ -51,8 +52,8 @@ public class RobotState {
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
                 new Pose2d(0, 0, new Rotation2d()), //TODO starting pose
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 3)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.01, 0.01, 0.005),
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
     }
@@ -162,6 +163,7 @@ public class RobotState {
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
+        SmartDashboard.putBoolean("tolerance bs", supersystem.withinTolerance(SupersystemTolerance.PLACE_MID));
 
         if (Robot.isReal()) {
             DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());

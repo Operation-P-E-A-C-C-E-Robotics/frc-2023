@@ -156,7 +156,7 @@ public class ServoMotor extends SubsystemBase {
         // we want to do option 2 if the new distance is close to the current profile, and we are close to the end of the profile
         // we want to do option 3 if the new distance is close to the current profile, and we are not close to the end of the profile
 
-        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.2){
+        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.1){
             // option 1
             trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
             trajectoryEnd = new State(position, 0);
@@ -165,7 +165,7 @@ public class ServoMotor extends SubsystemBase {
             profileTimer.start();
             followingProfile = true;
             recalculateTrajectory = false;
-        } else if(Math.abs(position - trajectoryEnd.position) < 0.2 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
+        } else if(Math.abs(position - trajectoryEnd.position) < 0.1 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
             // option 2
             trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
             trajectoryEnd = new State(position, 0);

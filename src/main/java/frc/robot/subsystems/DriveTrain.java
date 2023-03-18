@@ -218,7 +218,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   private void setHighGear(boolean isHighGear){
-    if(isHighGear != isHighGear()){
+    // if(isHighGear == isHighGear()){
       leftPositionOffset = getLeftMeters() - countsToMeters(leftMaster.getSelectedSensorPosition(), isHighGear);
       rightPositionOffset = getRightMeters() - countsToMeters(rightMaster.getSelectedSensorPosition(), isHighGear);
 
@@ -231,7 +231,7 @@ public class DriveTrain extends SubsystemBase {
 
       leftMaster.setInverted(!isHighGear);
       rightMaster.setInverted(isHighGear);
-    }
+    // }
   }
 
   private void setBrakeMode(boolean isBrakeMode){
@@ -243,7 +243,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public boolean isHighGear(){
-    return shiftSolenoid.get() == HIGH_GEAR;
+    return shiftSolenoid.get() != HIGH_GEAR;
   }
 
   public double getCurrentGearRatio(){
@@ -258,6 +258,7 @@ public class DriveTrain extends SubsystemBase {
     SmartDashboard.putNumber("dbg grbx output rots", leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR / getCurrentGearRatio());
     SmartDashboard.putNumber("dbg meters test", leftMaster.getSelectedSensorPosition() / DRIVE_ENCODER_CPR / getCurrentGearRatio() * WHEEL_CIRCUMFERENCE);
     SmartDashboard.putNumber("dbg meters", getLeftMeters());
+    SmartDashboard.putBoolean("dbg is high gear", isHighGear());
     if(isClosedLoop){
       var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
 
