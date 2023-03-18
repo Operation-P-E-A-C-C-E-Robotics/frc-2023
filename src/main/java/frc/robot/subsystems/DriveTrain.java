@@ -87,7 +87,7 @@ public class DriveTrain extends SubsystemBase {
     rightSlave.setInverted(InvertType.FollowMaster);
     leftMaster.setInverted(Constants.Inversions.DRIVE_LEFT);
     rightMaster.setInverted(Constants.Inversions.DRIVE_RIGHT);
-    set(new DriveSignal(0, 0, false, false));
+    // set(new DriveSignal(0, 0, false, false));
     set(DriveSignal.DEFAULT);
 
     //configure PID

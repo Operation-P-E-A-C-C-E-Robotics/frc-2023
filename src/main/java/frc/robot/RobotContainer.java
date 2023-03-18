@@ -115,12 +115,13 @@ public class RobotContainer {
   private final OIEntry[] mainOperatorOI = {
           MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 4, 7),
           MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 1, 7),
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.LOW).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
+          MultiButton.toggle(automations.placeConeDriverAssist(PlaceLevel.MID, operatorJoystick::getX, operatorJoystick::getY, operatorJoystick::getZ).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
           MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
           MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
           MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
           // SimpleButton.onPress(automations.pickUpConeFloor(), 5),
           // SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
+          SimpleButton.onHold(automations.smartZero(), 9),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
           SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger

@@ -56,6 +56,13 @@ public class AllianceFlipUtil {
             return pose;
         }
     }
+    /** Flips a pose to the correct side of the field based on the current alliance color. */
+    public static Pose2d flip(Pose2d pose) {
+            return new Pose2d(
+                    FieldConstants.fieldLength - pose.getX(),
+                    pose.getY(),
+                    new Rotation2d(-pose.getRotation().getCos(), pose.getRotation().getSin()));
+    }
 
     /**
      * Flips a trajectory state to the correct side of the field based on the current alliance color.

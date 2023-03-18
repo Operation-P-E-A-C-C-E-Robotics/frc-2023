@@ -156,26 +156,39 @@ public class ServoMotor extends SubsystemBase {
         // we want to do option 2 if the new distance is close to the current profile, and we are close to the end of the profile
         // we want to do option 3 if the new distance is close to the current profile, and we are not close to the end of the profile
 
-        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.1){
-            // option 1
-            trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
-            trajectoryEnd = new State(position, 0);
-            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
-            profileTimer.reset();
-            profileTimer.start();
-            followingProfile = true;
-            recalculateTrajectory = false;
-        } else if(Math.abs(position - trajectoryEnd.position) < 0.1 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
-            // option 2
-            trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
-            trajectoryEnd = new State(position, 0);
-            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
-            recalculateTrajectory = false;
-        } else {
-            // option 3
-            trajectoryEnd = new State(position, 0);
-            recalculateTrajectory = true;
+        // if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.03){
+        //     // option 1
+        //     trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        //     trajectoryEnd = new State(position, 0);
+        //     trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        //     profileTimer.reset();
+        //     profileTimer.start();
+        //     followingProfile = true;
+        //     recalculateTrajectory = false;
+        // } else if(Math.abs(position - trajectoryEnd.position) < 0.03 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
+        //     // option 2
+        //     trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        //     trajectoryEnd = new State(position, 0);
+        //     trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        //     recalculateTrajectory = false;
+        // } else {
+        //     // option 3
+        //     trajectoryEnd = new State(position, 0);
+        //     recalculateTrajectory = true;
+        // }
+        if(Math.abs(position - trajectoryEnd.position) < 0.01){
+            // // option 2
+            // trajectoryEnd = new State(position, 0);
+            // recalculateTrajectory = true;
+            return;
         }
+        trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        trajectoryEnd = new State(position, 0);
+        trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        profileTimer.reset();
+        profileTimer.start();
+        followingProfile = true;
+        recalculateTrajectory = false;
     }
 
     /**

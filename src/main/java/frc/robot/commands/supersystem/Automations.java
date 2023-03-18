@@ -4,11 +4,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.lib.field.FieldConstants;
 import frc.lib.safety.Value;
-import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.Kinematics;
 import frc.robot.RobotState;
@@ -18,6 +16,8 @@ import frc.robot.subsystems.EndEffector;
 import frc.robot.subsystems.Supersystem;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.DoubleSupplier;
 
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(-0.8, 0, 0.5); //TODO
@@ -110,7 +110,39 @@ public class Automations {
                 robotState,
                 true
         );
-        return goToPrePlace;
+        return goToPrePlace.andThen(goToPlace.andThen(new DropGamepiece(endEffector, () -> true)));
+    }
+
+    private static final double SENSITIVITY = 0.02;
+
+    public Command placeConeDriverAssist(PlaceLevel level, DoubleSupplier xOffset, DoubleSupplier yOffset, DoubleSupplier zOffset){
+        var tolerance = SupersystemTolerance.forLevel(level);
+        ArrayList<Translation3d> scoreLocations = switch(level){
+            case HIGH -> FieldConstants.Grids.highConeTranslations;
+            case MID -> FieldConstants.Grids.midConeTranslations;
+            case LOW -> FieldConstants.Grids.lowTranslations3d;
+        };
+        AtomicReference<Double> xRef = new AtomicReference<>(0.0), yRef = new AtomicReference<>(0.0), zRef = new AtomicReference<>(0.0);
+        return new GoToFieldPoint(
+            supersystem,
+            () -> {
+                var gridLocation = FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations);
+                return gridLocation.plus(new Translation3d(
+                    xRef.getAndUpdate(v -> v + xOffset.getAsDouble() * SENSITIVITY),
+                    yRef.getAndUpdate(v -> v + yOffset.getAsDouble() * SENSITIVITY),
+                    zRef.getAndUpdate(v -> v + zOffset.getAsDouble() * SENSITIVITY)
+                ));
+            },
+            tolerance,
+            robotState,
+            false
+        );
+    }
+
+    public Command smartZero(){
+        return new RunCommand(() -> supersystem.setArm(0), supersystem.getRequirements())
+            .until(() -> supersystem.withinTolerance(SupersystemTolerance.DEFAULT))
+            .andThen(setpoints.goToSetpoint(Setpoints.zero));
     }
 
     /**

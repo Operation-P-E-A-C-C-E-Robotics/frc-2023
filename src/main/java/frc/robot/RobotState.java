@@ -7,6 +7,7 @@ import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -56,6 +57,26 @@ public class RobotState {
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+    }
+
+     /**
+     * update drivetrain odometry
+     */
+    public void update(){
+        supersystem.getKinematics().reset();
+        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+        // apriltagCamera.updatePoseEstimatorOld(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
+        fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters());
+        if(!new Joystick(0).getRawButton(14)) apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+
+        SmartDashboard.putBoolean("tolerance bs", supersystem.withinTolerance(SupersystemTolerance.PLACE_MID));
+        DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+        var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
+        var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
+        DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
+
+        var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
+        DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
     public static final double PLACE_DISTANCE = 2; //TODO meters
@@ -153,29 +174,6 @@ public class RobotState {
         var angle = armCamera.getTargetX();
         if(!angle.isNormal()) return Value.notAvailable();
         return angle;
-    }
-
-    /**
-     * update drivetrain odometry
-     */
-    public void update(){
-        supersystem.getKinematics().reset();
-        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
-        apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
-        fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
-        SmartDashboard.putBoolean("tolerance bs", supersystem.withinTolerance(SupersystemTolerance.PLACE_MID));
-
-        if (Robot.isReal()) {
-            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-        } else {
-           DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-           var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
-           var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
-           DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
-        }
-
-        var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
-        DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
     public boolean onRedAlliance(){

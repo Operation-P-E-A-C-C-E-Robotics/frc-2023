@@ -115,23 +115,23 @@ public final class Constants {
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 true,
-                40,
                 50,
-                0.1
+                50,
+                0
         );
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                2,
+                1,
                 20 * 5, //20:1 versaplanetary, 5:1 driving gear
                 4096,
-                2,
                 3,
+                5,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.03,
+                0.01,
                 0.05,
                 12,
                 0,

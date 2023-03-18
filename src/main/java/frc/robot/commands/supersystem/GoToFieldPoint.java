@@ -12,11 +12,13 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class GoToFieldPoint extends CommandBase {
     private final Supersystem supersystem;
     private Supplier<Translation3d> targetLocation;
+    private double wristAngle;
     private final Constants.SupersystemTolerance tolerance;
     private final RobotState robotState;
     private final boolean stopWhenInTolerance;
@@ -27,11 +29,27 @@ public class GoToFieldPoint extends CommandBase {
      */
     public GoToFieldPoint(Supersystem supersystem,
                           Supplier<Translation3d> targetLocation,
+                          double wristAngle,
                           Constants.SupersystemTolerance tolerance,
                           RobotState robotState,
                           boolean stopWhenInTolerance) {
         this.supersystem = supersystem;
         this.targetLocation = targetLocation;
+        this.wristAngle = wristAngle;
+        this.tolerance = tolerance;
+        this.robotState = robotState;
+        this.stopWhenInTolerance = stopWhenInTolerance;
+        addRequirements(supersystem.getRequirements());
+    }
+
+    public GoToFieldPoint(Supersystem supersystem,
+                          Supplier<Translation3d> targetLocation,
+                          Constants.SupersystemTolerance tolerance,
+                          RobotState robotState,
+                          boolean stopWhenInTolerance) {
+        this.supersystem = supersystem;
+        this.targetLocation = targetLocation;
+        this.wristAngle = Math.PI/2;
         this.tolerance = tolerance;
         this.robotState = robotState;
         this.stopWhenInTolerance = stopWhenInTolerance;
@@ -49,7 +67,7 @@ public class GoToFieldPoint extends CommandBase {
     public Rotation2d getTargetWristAngle(){
         var pivot = supersystem.getSupersystemState().getPivotAngle();
         if(Math.abs(pivot) < 0.1) return new Rotation2d();
-        var wrist = pivot < 0 ? -Math.PI/2 : Math.PI/2;
+        var wrist = pivot < 0 ? -wristAngle : wristAngle;
 //        wrist -= pivot; TODO take this out? - changed wrist to absolute angle
         return new Rotation2d(wrist);
     }
