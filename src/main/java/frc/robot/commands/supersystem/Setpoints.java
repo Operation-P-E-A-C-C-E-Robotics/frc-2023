@@ -23,7 +23,7 @@ public class Setpoints {
     public static SupersystemState placeMidCube = new SupersystemState(0, 0, 0, 0);
     public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.5, 10);
 
-    public static SupersystemState placeMidCone = new SupersystemState(0, -1.0754, 0.7051, 0.5);
+    public static SupersystemState placeMidCone = new SupersystemState(0, Units.degreesToRadians(-66), 0.8, Units.degreesToRadians(-45));
     public static SupersystemState placeHighCone = new SupersystemState(0, -0.99, 1.28, 0.5);
 
     public static SupersystemState intakeFloor = new SupersystemState(0, Units.degreesToRadians(120), 0.93, -0.5);

@@ -82,6 +82,7 @@ public class Wrist extends SubsystemBase {
         servoController.enableLoop();
         setpoint = angle.getRadians();
         servoController.goToState(angle.getRadians() - pivotAngle.getAsDouble());
+        // servoController.goToState(angle.getRadians());
     }
 
     public void setFlipped(boolean flipped){

@@ -122,6 +122,7 @@ public class ServoMotor extends SubsystemBase {
      */
     public void disableLoop() {
         looping = false;
+        stopTrajectory();
     }
 
     /**
@@ -176,7 +177,7 @@ public class ServoMotor extends SubsystemBase {
         //     trajectoryEnd = new State(position, 0);
         //     recalculateTrajectory = true;
         // }
-        if(Math.abs(position - trajectoryEnd.position) < 0.01){
+        if(Math.abs(position - trajectoryEnd.position) < 0.01 && followingProfile){
             // // option 2
             // trajectoryEnd = new State(position, 0);
             // recalculateTrajectory = true;

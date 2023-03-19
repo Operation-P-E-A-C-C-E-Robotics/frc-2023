@@ -124,6 +124,10 @@ public class RobotContainer {
           SimpleButton.onHold(automations.smartZero(), 9),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
           SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
+          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 0), //lower left trigger, top button
+          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 90), //lower left trigger, mid left button
+          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 180), //mid right button
+          SimplePOV.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 270), //mid right button
           SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
   };
 
@@ -193,7 +197,7 @@ public class RobotContainer {
   //     () -> robotXInRange(12, 30),
   //     () -> robotState.getOdometryPose().getRotation().getRadians()
   //  ));
-      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
       // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 

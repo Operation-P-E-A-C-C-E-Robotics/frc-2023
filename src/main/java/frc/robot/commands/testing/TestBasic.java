@@ -13,7 +13,7 @@ public class TestBasic extends CommandBase {
     private final Pivot pivot;
     private final Turret turret;
     private final Wrist wrist;
-    private final Joystick testJoystick = new Joystick(2);
+    private final Joystick testJoystick;
 
     /**
      * Test basic functionality of all subsystems
@@ -23,12 +23,13 @@ public class TestBasic extends CommandBase {
      * @param turret the turret subsystem
      * @param wrist the wrist subsystem
      */
-    public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist) {
+    public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist, Joystick joystick) {
         addRequirements(supersystem, arm, pivot, turret, wrist);
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
         this.wrist = wrist;
+        testJoystick = joystick;
     }
 
     @Override

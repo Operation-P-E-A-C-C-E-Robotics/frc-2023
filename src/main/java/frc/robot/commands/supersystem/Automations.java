@@ -3,8 +3,10 @@ package frc.robot.commands.supersystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.field.FieldConstants;
 import frc.lib.safety.Value;
 import frc.robot.Constants.SupersystemTolerance;
@@ -20,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 public class Automations {
-    public static Translation3d cubePlaceOffset = new Translation3d(-0.8, 0, 0.5); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(0, 0, 0.4); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(0, 0, 0.1); //TODO
+    public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0.6, 0, 0.3); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(-0.4, 0, 0.1); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
@@ -98,7 +100,8 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePrePlaceOffset),
-                tolerance,
+                Units.degreesToRadians(20),
+                SupersystemTolerance.PRE_PLACE,
                 robotState,
                 true
         );
@@ -106,11 +109,12 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePlaceOffset),
+                Units.degreesToRadians(90),
                 tolerance,
                 robotState,
                 true
         );
-        return goToPrePlace.andThen(goToPlace.andThen(new DropGamepiece(endEffector, () -> true)));
+        return goToPrePlace.andThen(new WaitCommand(0.5),goToPlace.andThen(new DropGamepiece(endEffector, () -> true)));
     }
 
     private static final double SENSITIVITY = 0.02;
@@ -141,7 +145,7 @@ public class Automations {
 
     public Command smartZero(){
         return new RunCommand(() -> supersystem.setArm(0), supersystem.getRequirements())
-            .until(() -> supersystem.withinTolerance(SupersystemTolerance.DEFAULT))
+            .until(() -> supersystem.withinTolerance(SupersystemTolerance.ZERO_ARM))
             .andThen(setpoints.goToSetpoint(Setpoints.zero));
     }
 

@@ -126,7 +126,7 @@ public final class Constants {
                 20 * 5, //20:1 versaplanetary, 5:1 driving gear
                 4096,
                 3,
-                5,
+                4,
                 3.0,
                 3.0,
                 0.01,
@@ -246,17 +246,17 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                2,
+                4,
                 7*5*4,
                 2048,
-                1,
-                3,
+                1.5,
+                2,
                 3.0,
                 3.0,
                 0.01,
                 0.01,
-                0.01,
-                0.1,
+                0.005,
+                0.001,
                 12,
                 0,
                 12,
@@ -296,12 +296,13 @@ public final class Constants {
         public static final SupersystemTolerance DEFAULT = new SupersystemTolerance(0.3, 0.3, 0.3, 0.1);
         public static final SupersystemTolerance PIVOT_BRAKE = new SupersystemTolerance(50, 0.05, 50, 50);
         public static final SupersystemTolerance PLACE_HIGH = new SupersystemTolerance(0.5, 0.5, 0.5, 0.1);
-        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.07, 0.15, 0.1, 0.1);
+        public static final SupersystemTolerance PLACE_MID = new SupersystemTolerance(0.02, 0.15, 0.05, 0.1);
         public static final SupersystemTolerance PLACE_LOW = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
-        public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.1, 0.2, 0.1, 0.3);
+        public static final SupersystemTolerance PRE_PLACE = new SupersystemTolerance(0.03, 0.2, 0.1, 0.3);
         public static final SupersystemTolerance INTAKE_GROUND = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance INTAKE_SUBSTATION = new SupersystemTolerance(0.1, 0.1, 0.1, 0.1);
         public static final SupersystemTolerance TARGET_VISION = new SupersystemTolerance(0.5, 0.5, 0.5, 0.3);
+        public static final SupersystemTolerance ZERO_ARM = new SupersystemTolerance(10, 10, 10, 0.1);
 
         public static SupersystemTolerance forLevel(Automations.PlaceLevel level){
             return switch (level) {
