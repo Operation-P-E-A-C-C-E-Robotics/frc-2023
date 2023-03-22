@@ -43,7 +43,7 @@ import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.ChesyDriv;
 import frc.robot.commands.drive.DriveDistance;
 import frc.robot.commands.drive.SeanyDrive;
-
+import frc.robot.subsystems.PhotonicHRI;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -78,6 +78,7 @@ public class RobotContainer {
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>(),
                 autoMode = new SendableChooser<Command>();
 
+  
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
   private final Setpoints setpoints = new Setpoints(
@@ -156,6 +157,8 @@ public class RobotContainer {
 
     Command autoZeroCommand1 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
     Command autoZeroCommand2 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
+
+
 
     autoMode.addOption("DO NOTHING", null);
     autoMode.addOption("auto balance",

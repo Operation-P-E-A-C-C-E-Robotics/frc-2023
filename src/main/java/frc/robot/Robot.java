@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.safety.Inspiration;
+import frc.robot.subsystems.PhotonicHRI;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -22,17 +23,19 @@ public class Robot extends TimedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private boolean isInMatch;
+  private PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
 
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
     robotContainer.wristCoastMode();
     this.isInMatch = Inspiration.initializeInspiration();
-    if(isInMatch) {
-      Inspiration.inspireDriversInit();
-    } else {
-      Inspiration.inspireProgrammersInit();
-    }
+    // if(isInMatch) {
+    //   Inspiration.inspireDriversInit();
+    // } else {
+    //   Inspiration.inspireProgrammersInit();
+    // }
+    
   }
   @Override
   public void robotPeriodic() {
@@ -45,7 +48,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     robotContainer.wristBrakeMode();
     autonomousCommand = robotContainer.getAutonomousCommand();
-     Inspiration.inspireAutonomous(isInMatch);
+    //  Inspiration.inspireAutonomous(isInMatch);
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -56,8 +59,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     robotContainer.wristBrakeMode();
-     Inspiration.inspireTeleopInit(isInMatch);
-
+    //  Inspiration.inspireTeleopInit(isInMatch);
+    photonicHRI.off();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
@@ -67,6 +70,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit(){
     robotContainer.wristCoastMode();
+    photonicHRI.runElement(photonicHRI.rainbow);
   }
 
   @Override
