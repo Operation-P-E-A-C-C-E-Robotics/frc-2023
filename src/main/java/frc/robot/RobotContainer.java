@@ -15,25 +15,20 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.util.ButtonMap;
+import frc.lib.util.ButtonMap.InterferenceButton;
 import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
-import frc.lib.util.ButtonMap.SimpleButton;
-import frc.lib.util.ButtonMap.SimplePOV;
+import frc.lib.util.ButtonMap.Button;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
-import frc.robot.commands.auto.Autos;
 import frc.robot.commands.auto.BangBangBalancer;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.supersystem.Setpoints;
 import frc.robot.commands.testing.TestBasic;
-import frc.robot.commands.testing.TestChickenHead;
-import frc.robot.commands.testing.TestPosition;
-import frc.robot.commands.testing.TestSimpleKinematics;
 import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -56,7 +51,7 @@ public class RobotContainer {
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
-                          armLimelight = new Limelight("armLimelight");
+          armLimelight = new Limelight("armLimelight");
   private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
 
   //subsystems
@@ -76,7 +71,7 @@ public class RobotContainer {
           operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK),
           backupJoystick = new Joystick(Constants.OperatorInterface.BACKUP_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>(),
-                autoMode = new SendableChooser<Command>();
+          autoMode = new SendableChooser<Command>();
 
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
@@ -87,62 +82,95 @@ public class RobotContainer {
           () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(2), 0.2),
           () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(3), 0.2)
   );
+
   private final Automations automations = new Automations(supersystem, robotState, endEffector, setpoints);
-  private final SeanyDrive testDrive = new SeanyDrive(driverJoystick, driveTrain, robotState);
+  private final SeanyDrive seansFancyDriveMode = new SeanyDrive(driverJoystick, driveTrain, robotState);
   private final ChesyDriv peaccyDrive = new ChesyDriv(
-    driveTrain,
-    () -> {return constraints.constrainJoystickFwdJerk(driverJoystick.getY());},
-    driverJoystick::getX,
-    () -> driverJoystick.getRawButton(1),
-    () -> driverJoystick.getRawButton(2)
+          driveTrain,
+          () -> {return constraints.constrainJoystickFwdJerk(driverJoystick.getY());},
+          driverJoystick::getX,
+          () -> driverJoystick.getRawButton(1),
+          () -> driverJoystick.getRawButton(2)
   );
   private final TestVelocity velocityDrive = new TestVelocity(driveTrain, driverJoystick, Constants.DriveTrain.DRIVE_KINEMATICS);
   private final ArcadeDrive arcadeDrive = new ArcadeDrive(
-    driveTrain,
-    driverJoystick::getY,
+          driveTrain,
+          driverJoystick::getY,
 
-    driverJoystick::getX,
-    () -> driverJoystick.getRawButton(2)
+          driverJoystick::getX,
+          () -> driverJoystick.getRawButton(2)
   );
-  private final TestSimpleKinematics kinematicsManual = new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem);
+  private final Command placeConeHigh = automations.placeConeNoVision(PlaceLevel.HIGH),
+          placeConeMid = automations.placeConeNoVision(PlaceLevel.MID),
+          placeLow = automations.placeCube(PlaceLevel.LOW),
+          placeCubeHigh = automations.placeCube(PlaceLevel.HIGH),
+          placeCubeMid = automations.placeCube(PlaceLevel.MID);
+
+  private final Command highSetpoint = setpoints.goToPlace(PlaceLevel.HIGH, true),
+          midSetpoint = setpoints.goToPlace(PlaceLevel.MID, true),
+          lowSetpoint = setpoints.goToPlace(PlaceLevel.LOW, false);
+
+  private final Command intakeFloorFancy = setpoints.groundIntake(operatorJoystick::getPOV, () -> robotState.getOdometryPose().getRotation().getRadians()),
+          intakeFloorSimple = setpoints.goToSetpoint(Setpoints.intakeFloor),
+          intakeSubstation = setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation);
+
+  private final Command runIntake = new RunCommand(() -> {
+    endEffector.setPercent(-1);
+    endEffector.setClaw(true);
+  }, endEffector);
+
+  private final Command runOuttake = new RunCommand(() -> {
+    endEffector.setPercent(1);
+    endEffector.setClaw(true);
+  }, endEffector);
+
+  private final Command dropCone = new RunCommand(() -> {
+    endEffector.setPercent(0);
+    endEffector.setClaw(true);
+  }, endEffector);
+
+  private final Command intakeDefault = new RunCommand(() -> {
+    endEffector.setPercent(-0.1);
+    endEffector.setClaw(false);
+  }, endEffector);
 
   private final OIEntry[] driverOI = {
-    SimpleButton.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
-    SimpleButton.onPress(new InstantCommand(() -> wrist.zero(), wrist), 8),
-    SimpleButton.onPress(new InstantCommand(() -> driveTrain.resetEncoders(0,0)), 16)
+          Button.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
+          Button.onPress(new InstantCommand(wrist::zero, wrist), 8),
+          Button.onPress(new InstantCommand(() -> driveTrain.resetEncoders(0,0)), 16)
   };
 
-  private final OIEntry[] mainOperatorOI = {
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 4, 7),
-          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 1, 7),
-          MultiButton.toggle(automations.placeConeDriverAssist(PlaceLevel.MID, operatorJoystick::getX, operatorJoystick::getY, operatorJoystick::getZ).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
-          MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
+  private final OIEntry[] autoPlaceBindings = {
+          MultiButton.toggle(placeConeHigh, 4, 7),
+          MultiButton.toggle(placeConeMid, 1, 7),
+          MultiButton.toggle(placeLow, 2, 7),
+          MultiButton.toggle(placeCubeHigh, 4, 5),
+          MultiButton.toggle(placeCubeMid, 1, 5),
+          MultiButton.toggle(placeLow, 2, 5),
           // SimpleButton.onPress(automations.pickUpConeFloor(), 5),
           // SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
-          SimpleButton.onHold(automations.smartZero(), 9),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
-          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 0), //lower left trigger, top button
-          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 90), //lower left trigger, mid left button
-          SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 180), //mid right button
-          SimplePOV.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 270), //mid right button
-          SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
+          Button.onHold(automations.smartZero(), 10),
+          Button.onHold(setpoints.goToSetpoint(Setpoints.zero), 9),
+          Button.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
+          Button.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
   };
 
-  private final OIEntry[] manualOperatorOI = {
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.HIGH, true), 4), //lower left trigger, top button
-          MultiButton.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 1), //lower left trigger, mid left button
-          SimpleButton.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 2), //mid right button
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeFloor, SupersystemTolerance.INTAKE_GROUND), 6), //upper right trigger
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
-          SimpleButton.onHold(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem), 5),
-          SimpleButton.onHold(new TestChickenHead(arm, pivot, turret, wrist, supersystem, robotState), 7),
-          SimpleButton.onHold(setpoints.goToSetpoint(Setpoints.zero), 10),
-          SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(-1), endEffector), 180), //pov down
-          SimplePOV.onHold(new RunCommand(() -> endEffector.setPercent(1), endEffector), 0), //pov up
-          SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
+  private final OIEntry[] setpointBindings = {
+          InterferenceButton.onHold(highSetpoint, 4, 7, 5),
+          InterferenceButton.onHold(midSetpoint, 1, 7, 5),
+          InterferenceButton.onHold(lowSetpoint, 2, 7, 5),
+
+          Button.onHold(automations.smartZero(), 10),
+          Button.onHold(setpoints.goToSetpoint(Setpoints.zero), 9),
+  };
+
+  private final OIEntry[] intakeBindings = {
+          Button.onHold(intakeFloorSimple.alongWith(runIntake), 1),
+          Button.onHold(intakeSubstation.alongWith(runIntake), 3),
+          new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(runIntake), ButtonMap.TriggerType.WHILE_HOLD),
+
+          Button.onHold(runIntake, 8),
+            Button.onHold(runOuttake, 7),
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -151,7 +179,7 @@ public class RobotContainer {
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
-    teleopDriveMode.addOption("seany drive (test)", testDrive);
+    teleopDriveMode.addOption("seany drive (test)", seansFancyDriveMode);
     teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
 
     Command autoZeroCommand1 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
@@ -159,20 +187,20 @@ public class RobotContainer {
 
     autoMode.addOption("DO NOTHING", null);
     autoMode.addOption("auto balance",
-      new BangBangBalancer(driveTrain, robotState, false)
-      .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
+            new BangBangBalancer(driveTrain, robotState, false)
+                    .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
     );
     autoMode.addOption("test auto", new DriveDistance(driveTrain, robotState, -3.4));
     autoMode.addOption("helpplease",
-      new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
-      .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(7),
-      new InstantCommand(() -> endEffector.setClaw(false), endEffector),
-      new RunCommand(() -> endEffector.setPercent(1), endEffector).withTimeout(1),
-      new InstantCommand(() -> endEffector.setPercent(0), endEffector),
-      new WaitCommand(0.5),
-      autoZeroCommand1.withTimeout(0.5),
-      new WaitCommand(0.5),
-      new DriveDistance(driveTrain, robotState, -6.5))
+            new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
+                    .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(7),
+                            new InstantCommand(() -> endEffector.setClaw(false), endEffector),
+                            new RunCommand(() -> endEffector.setPercent(1), endEffector).withTimeout(1),
+                            new InstantCommand(() -> endEffector.setPercent(0), endEffector),
+                            new WaitCommand(0.5),
+                            autoZeroCommand1.withTimeout(0.5),
+                            new WaitCommand(0.5),
+                            new DriveDistance(driveTrain, robotState, -6.5))
     );
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
@@ -189,16 +217,15 @@ public class RobotContainer {
   private void configureBindings() {
     endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
     new ButtonMap(driverJoystick).map(driverOI);
-    new ButtonMap(operatorJoystick).map(mainOperatorOI);
-    new ButtonMap(backupJoystick).map(manualOperatorOI);
-  //   supersystem.setDefaultCommand(new DefaultStatemachine(
-  //     supersystem,
-  //     () -> robotXInRange(0, 4.5),
-  //     () -> robotXInRange(12, 30),
-  //     () -> robotState.getOdometryPose().getRotation().getRadians()
-  //  ));
-      supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
-      // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+//    new ButtonMap(operatorJoystick).map(mainOperatorOI);
+    //   supersystem.setDefaultCommand(new DefaultStatemachine(
+    //     supersystem,
+    //     () -> robotXInRange(0, 4.5),
+    //     () -> robotXInRange(12, 30),
+    //     () -> robotState.getOdometryPose().getRotation().getRadians()
+    //  ));
+    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
+    // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
   }
 
   public void wristBrakeMode(){
@@ -220,7 +247,7 @@ public class RobotContainer {
   public void update() {
     robotState.update();
     DashboardManager.getInstance().update();
-  } 
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

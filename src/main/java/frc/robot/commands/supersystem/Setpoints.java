@@ -10,6 +10,7 @@ import frc.robot.subsystems.Supersystem;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static frc.robot.Kinematics.*;
 
@@ -116,6 +117,19 @@ public class Setpoints {
                     supersystem.setSupersystemPosition(
                             position.plus(new Translation3d(newXOffset, newYOffset, newZOffset)));
                 }, supersystem);
+    }
+
+    public Command groundIntake(Supplier<Integer> povAngle, DoubleSupplier robotAngle){
+        return new RunCommand(
+                () -> {
+                    var offset = robotAngle.getAsDouble() - Units.degreesToRadians(povAngle.get());
+                    //round to nearest 90 degrees (to put off one side of robot):
+                    offset = Math.round(offset / (Math.PI / 2)) * (Math.PI / 2);
+                    var setpoint = intakeFloor.plus(new SupersystemState(offset, 0, 0, 0));
+                    supersystem.setSupersystemState(setpoint);
+                },
+                supersystem.getRequirements()
+        );
     }
 
     public Command goToPlaceWithManualAdjustment(Automations.PlaceLevel level, boolean cone) {
