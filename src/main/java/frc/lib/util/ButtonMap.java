@@ -2,6 +2,7 @@ package frc.lib.util;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -27,11 +28,11 @@ public class ButtonMap {
         public Trigger getTrigger(Joystick joystick);
     }
 
-    public static class SimpleButton implements OIEntry{
+    public static class Button implements OIEntry{
         public final Command command;
         public final int buttonNumber;
         public final TriggerType triggerType;
-        public SimpleButton(Command command, int buttonNumber, TriggerType triggerType){
+        public Button(Command command, int buttonNumber, TriggerType triggerType){
             this.command = command;
             this.buttonNumber = buttonNumber;
             this.triggerType = triggerType;
@@ -50,20 +51,20 @@ public class ButtonMap {
             return new JoystickButton(joystick, buttonNumber);
         }
 
-        public static SimpleButton onHold(Command command, int buttonNumber){
-            return new SimpleButton(command, buttonNumber, TriggerType.WHILE_HOLD);
+        public static Button onHold(Command command, int buttonNumber){
+            return new Button(command, buttonNumber, TriggerType.WHILE_HOLD);
         }
 
-        public static SimpleButton onPress(Command command, int buttonNumber){
-            return new SimpleButton(command, buttonNumber, TriggerType.ON_PRESS);
+        public static Button onPress(Command command, int buttonNumber){
+            return new Button(command, buttonNumber, TriggerType.ON_PRESS);
         }
 
-        public static SimpleButton onRelease(Command command, int buttonNumber){
-            return new SimpleButton(command, buttonNumber, TriggerType.ON_RELEASE);
+        public static Button onRelease(Command command, int buttonNumber){
+            return new Button(command, buttonNumber, TriggerType.ON_RELEASE);
         }
 
-        public static SimpleButton toggle(Command command, int buttonNumber){
-            return new SimpleButton(command, buttonNumber, TriggerType.TOGGLE);
+        public static Button toggle(Command command, int buttonNumber){
+            return new Button(command, buttonNumber, TriggerType.TOGGLE);
         }
 
 
@@ -120,6 +121,83 @@ public class ButtonMap {
         }
     }
 
+    public static class InterferenceButton implements OIEntry{
+        int runButton;
+        int[] dontRunButtons;
+        Command command;
+        TriggerType triggerType;
+
+        public InterferenceButton(Command command, TriggerType triggerType, int runButton, int... dontRunButtons){
+            this.command = command;
+            this.triggerType = triggerType;
+            this.runButton = runButton;
+            this.dontRunButtons = dontRunButtons;
+        }
+
+        public void bindTo(Trigger trigger){
+            switch (triggerType) {
+                case ON_PRESS -> trigger.onTrue(command);
+                case ON_RELEASE -> trigger.onFalse(command);
+                case WHILE_HOLD -> trigger.whileTrue(command);
+                case TOGGLE -> trigger.toggleOnTrue(command);
+            }
+        }
+
+        public Trigger getTrigger(Joystick joystick){
+            return new JoystickButton(joystick, runButton).and(new Trigger(() -> {
+                for(int button : dontRunButtons){
+                    if(new JoystickButton(joystick, button).getAsBoolean()){
+                        return false;
+                    }
+                }
+                return true;
+            }));
+        }
+
+        public static InterferenceButton onHold(Command command, int runButton, int... dontRunButtons){
+            return new InterferenceButton(command, TriggerType.WHILE_HOLD, runButton, dontRunButtons);
+        }
+
+        public static InterferenceButton onPress(Command command, int runButton, int... dontRunButtons){
+            return new InterferenceButton(command, TriggerType.ON_PRESS, runButton, dontRunButtons);
+        }
+
+        public static InterferenceButton onRelease(Command command, int runButton, int... dontRunButtons){
+            return new InterferenceButton(command, TriggerType.ON_RELEASE, runButton, dontRunButtons);
+        }
+
+        public static InterferenceButton toggle(Command command, int runButton, int... dontRunButtons){
+            return new InterferenceButton(command, TriggerType.TOGGLE, runButton, dontRunButtons);
+        }
+    }
+
+    public static class OIMode implements OIEntry{
+        private final int selectButtonNumber;
+        private final OIEntry[] entries;
+        private final Joystick joystick;
+        private boolean selected;
+
+        public OIMode(int selectButtonNumber, boolean defaultSelected, Joystick joystick, OIEntry... entries){
+            this.selectButtonNumber = selectButtonNumber;
+            this.entries = entries;
+            this.joystick = joystick;
+            selected = defaultSelected;
+        }
+
+        @Override
+        public void bindTo(Trigger trigger) {
+            trigger.onTrue(new InstantCommand(() -> selected = !selected));
+            for(OIEntry entry : entries){
+                entry.bindTo(entry.getTrigger(joystick).and(new Trigger(() -> selected)));
+            }
+        }
+
+        @Override
+        public Trigger getTrigger(Joystick joystick) {
+            return new JoystickButton(joystick, selectButtonNumber);
+        }
+    }
+
     public static class SimplePOV implements OIEntry{
         public final Command command;
         public final int povNumber;
@@ -160,6 +238,31 @@ public class ButtonMap {
 
         public static SimplePOV toggle(Command command, int povNumber){
             return new SimplePOV(command, povNumber, TriggerType.TOGGLE);
+        }
+    }
+
+    public static class AnyPOV implements OIEntry{
+        Command command;
+        TriggerType triggerType;
+
+        public AnyPOV(Command command, TriggerType triggerType){
+            this.command = command;
+            this.triggerType = triggerType;
+        }
+
+        @Override
+        public void bindTo(Trigger trigger) {
+            switch (triggerType) {
+                case ON_PRESS -> trigger.onTrue(command);
+                case ON_RELEASE -> trigger.onFalse(command);
+                case WHILE_HOLD -> trigger.whileTrue(command);
+                case TOGGLE -> trigger.toggleOnTrue(command);
+            }
+        }
+
+        @Override
+        public Trigger getTrigger(Joystick joystick) {
+            return new Trigger(() -> joystick.getPOV() != -1);
         }
     }
 
