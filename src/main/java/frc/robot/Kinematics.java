@@ -226,9 +226,14 @@ public class Kinematics {
         double midX, midY, midZ;
         double x, y, z;
 
-        x = Math.sin(wristAngle) * Math.cos(turretAngle);
-        y = Math.sin(wristAngle) * Math.sin(turretAngle);
-        z = Math.cos(wristAngle);
+        // x = Math.sin(wristAngle) * Math.cos(turretAngle);
+        // y = Math.sin(wristAngle) * Math.sin(turretAngle);
+        // z = Math.cos(wristAngle);
+
+        //assume max length:
+        x = Math.cos(turretAngle);
+        y = Math.sin(turretAngle);
+        z = 0;
 
         endX = WRIST_LENGTH * x;
         endY = WRIST_LENGTH * y;

@@ -23,7 +23,6 @@ public class Robot extends TimedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private boolean isInMatch;
-  private PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
 
   @Override
   public void robotInit() {
@@ -35,7 +34,6 @@ public class Robot extends TimedRobot {
     // } else {
     //   Inspiration.inspireProgrammersInit();
     // }
-    
   }
   @Override
   public void robotPeriodic() {
@@ -60,7 +58,6 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     robotContainer.wristBrakeMode();
     //  Inspiration.inspireTeleopInit(isInMatch);
-    photonicHRI.off();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
@@ -69,8 +66,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit(){
+    // photonicHRI.runElement(photonicHRI.blink(149, 56, 242, 1));
+    //235, 165, 26
+    robotContainer.photonicHRI.runElement(robotContainer.photonicHRI.rainbow);
     robotContainer.wristCoastMode();
-    photonicHRI.runElement(photonicHRI.rainbow);
   }
 
   @Override

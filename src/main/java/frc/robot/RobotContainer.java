@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import org.opencv.photo.Photo;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
@@ -11,12 +13,15 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
@@ -58,6 +63,7 @@ public class RobotContainer {
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
                           armLimelight = new Limelight("armLimelight");
   private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
+  public PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -78,7 +84,7 @@ public class RobotContainer {
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>(),
                 autoMode = new SendableChooser<Command>();
 
-  
+
   //commands
   private final Paths paths = new Paths(robotState, driveTrain);
   private final Setpoints setpoints = new Setpoints(
@@ -116,7 +122,7 @@ public class RobotContainer {
   private final OIEntry[] mainOperatorOI = {
           MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.HIGH).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 4, 7),
           MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 1, 7),
-          MultiButton.toggle(automations.placeConeDriverAssist(PlaceLevel.MID, operatorJoystick::getX, operatorJoystick::getY, operatorJoystick::getZ).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
+          MultiButton.toggle(automations.placeConeNoVision(PlaceLevel.MID).andThen(new TestSimpleKinematics(arm, pivot, turret, wrist, supersystem)), 2, 7),
           MultiButton.toggle(automations.placeCube(PlaceLevel.HIGH), 4, 5),
           MultiButton.toggle(automations.placeCube(PlaceLevel.MID), 1, 5),
           MultiButton.toggle(automations.placeCube(PlaceLevel.LOW), 2, 5),
@@ -129,6 +135,8 @@ public class RobotContainer {
           SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.MID, true), 90), //lower left trigger, mid left button
           SimplePOV.onHold(setpoints.goToPlace(PlaceLevel.LOW, false), 180), //mid right button
           SimplePOV.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 270), //mid right button
+          SimpleButton.onPress(new InstantCommand(() -> photonicHRI.runElement(photonicHRI.setSolidColor(245, 56, 255))), 5),
+          SimpleButton.onPress(new InstantCommand(() -> photonicHRI.runElement(photonicHRI.setSolidColor(255, 165, 0))), 7),
           SimpleButton.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
   };
 
@@ -149,6 +157,8 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     enableCompressor();
+
+    photonicHRI.runElement(photonicHRI.fire());
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);

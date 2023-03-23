@@ -64,15 +64,21 @@ public class PhotonicHRI {
             rainbowFirstPixelHue += 3;
             rainbowFirstPixelHue %= 180;
             led.setData(buffer);
-        }, 0.05);
+        }, 0.03);
 
     public PhotonicLingualElement blink(int r, int g, int b, double period) {
         final boolean[] on = {false}; //not sure why this should be an array, but my editor says it should be
         return new PhotonicLingualElement(() -> {
             if (on[0]) {
-                setSolidColor(r, g, b);
+                for (int i = 0; i < buffer.getLength(); i++) {
+                    buffer.setRGB(i, r, g, b);
+                }
+                led.setData(buffer);
             } else {
-                setSolidColor(0, 0, 0);
+                for (int i = 0; i < buffer.getLength(); i++) {
+                    buffer.setRGB(i, 0,0,0);
+                }
+                led.setData(buffer);
             }
             on[0] = !on[0];
         }, period);
@@ -104,13 +110,12 @@ public class PhotonicHRI {
         //SEAN TO OTHER HUMANS: holy crap that link actually is a thing!
         
         //Logan: What in the fuck happened here?
-        
+        var heat = new int[buffer.getLength()];
         return new PhotonicLingualElement(() -> {
-            var heat = new int[buffer.getLength()];
             for (var i = 0; i < buffer.getLength(); i++) {
                 heat[i] = 0;
             }
-            var cooling = 55;
+            var cooling = 2;
             var sparking = 120;
             for (var i = 0; i < buffer.getLength(); i++) {
                 // Step 1.  Cool down every cell a little
@@ -127,7 +132,7 @@ public class PhotonicHRI {
                 buffer.setRGB(i, color[0], color[1], color[2]);
             }
             led.setData(buffer);
-        }, 0.05);
+        }, 0.1);
     }
 
     private int[] heatToColor(int heat) {
@@ -137,6 +142,7 @@ public class PhotonicHRI {
         if (heat < 85) {
             red = heat * 3;
             green = 255 - heat * 3;
+            green = 0;
         } else {
             red = 255;
             green = 255 - (heat - 85) * 3;

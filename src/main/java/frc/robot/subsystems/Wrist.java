@@ -141,7 +141,7 @@ public class Wrist extends SubsystemBase {
 
     @Override
     public void periodic(){
-        setFlipped(pivotAngle.getAsDouble() > 0);
+        setFlipped(pivotAngle.getAsDouble() < 0);
         if(servoController.isLooping()) servoController.goToState(setpoint - pivotAngle.getAsDouble());
     }
 
