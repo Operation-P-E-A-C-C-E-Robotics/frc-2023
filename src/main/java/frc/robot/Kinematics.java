@@ -156,6 +156,20 @@ public class Kinematics {
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
 
+    public static SupersystemState inverseKinematicsFromPlacePoint2(SupersystemState inverseKinematics, double wristAngle){
+        var pivot = inverseKinematics.getPivotAngle();
+        var extension = inverseKinematics.getArmExtension();
+        var wristInside = Math.PI - wristAngle;
+        
+        var sin = Math.sin(wristInside) / extension;
+        var deltaPivot = Math.asin(sin*WRIST_MID_LENGTH);
+        
+        var thirdAngle = Math.PI - wristInside - deltaPivot;
+        var newExtension = (1/sin)*Math.sin(thirdAngle);
+
+        return new SupersystemState(inverseKinematics.getTurretAngle(), pivot + deltaPivot, newExtension, wristAngle);
+    }
+
     /**
      * Convert from manipulator joint positions to the location of
      * the end of the lift x/y/z
@@ -281,6 +295,16 @@ public class Kinematics {
     }
 
     public static void main(String args[]){
+        //test new inverse kinematics from place point:
+        var targetXYZ = new Translation3d(0, 0, 1);
+        var targetState = inverseKinematics(targetXYZ, 0);
+        System.out.println("target state: " + targetState);
+        var check = kinematics(targetState);
+        System.out.println("check: " + check);
+        var placePoint = inverseKinematicsFromPlacePoint2(targetState, Math.PI/2);
+        System.out.println("place point: " + placePoint);
+        var check2 = kinematics(placePoint);
+        System.out.println("check: " + check2);
 
     }
 

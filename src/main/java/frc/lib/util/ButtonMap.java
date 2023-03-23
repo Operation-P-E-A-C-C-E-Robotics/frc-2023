@@ -2,6 +2,7 @@ package frc.lib.util;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -117,6 +118,33 @@ public class ButtonMap {
 
         public static MultiButton toggle(Command command, int... buttonNumbers){
             return new MultiButton(command, TriggerType.TOGGLE, buttonNumbers);
+        }
+    }
+
+    public static class OIMode implements OIEntry{
+        private final int selectButtonNumber;
+        private final OIEntry[] entries;
+        private final Joystick joystick;
+        private boolean selected;
+
+        public OIMode(int selectButtonNumber, boolean defaultSelected, Joystick joystick, OIEntry... entries){
+            this.selectButtonNumber = selectButtonNumber;
+            this.entries = entries;
+            this.joystick = joystick;
+            selected = defaultSelected;
+        }
+
+        @Override
+        public void bindTo(Trigger trigger) {
+            trigger.onTrue(new InstantCommand(() -> selected = !selected));
+            for(OIEntry entry : entries){
+                entry.bindTo(entry.getTrigger(joystick).and(new Trigger(() -> selected)));
+            }
+        }
+
+        @Override
+        public Trigger getTrigger(Joystick joystick) {
+            return new JoystickButton(joystick, selectButtonNumber);
         }
     }
 

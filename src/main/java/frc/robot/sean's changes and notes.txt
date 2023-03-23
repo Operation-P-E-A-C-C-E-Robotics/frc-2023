@@ -9,26 +9,31 @@ Started field points
 DID A LOTTA STUFF
 
 TODO LIST PRE-REVERE:
-[todo] re-zero cancoders as accurately as possible
+[OK] re-zero cancoders as accurately as possible
+[todo] speed up shit as much as possible
+[todo] improve turret accuracy
+[todo] color sensor
+[todo] mode selector (cube/cone)
 [todo] ensure all motors and air cylinders are going the correct direction
     [todo] the intake gripper is backwards
-[meh] measure actual max speeds for reference and eventual usage
 [todo] arm gravity feedfoward
 [todo] ensure accurate gear ratios and units for everything
-    [todo] fix drivetrain units
+    [OK] fix drivetrain units
     [todo] fix wrist units
 [todo] improve current setpoints
-[todo] fix drivetrain shifters
+[OK] fix drivetrain shifters
 [todo] tune current autos
-[todo] get odometry tracking accurately
-    [todo] tune apriltag rejection and standard devs.
-[todo] odometry-based auto cube scoring
+[OK] get odometry tracking accurately
+    [OK] tune apriltag rejection and standard devs.
+[OK] odometry-based auto cube scoring
 [todo] fix my nice drive mode
     [todo] remap buttons for new joysticks
 [todo] auto alignment for intaking
 [todo] vision tape tracking auto cone scoring
 [todo] tune path following
 [todo] better autos
+    [todo] 25 pt auto
+    [todo] 2 game piece auto
 [todo] auto tipped cone intaking (very complex)
 [todo] whatever else i've forgotten or discover
 
