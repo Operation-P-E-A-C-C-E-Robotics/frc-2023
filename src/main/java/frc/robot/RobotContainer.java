@@ -121,27 +121,7 @@ public class RobotContainer {
           intakeFloorSimple = setpoints.goToSetpoint(Setpoints.intakeFloor),
           intakeSubstation = setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation);
 
-  private final Command runIntake = new RunCommand(() -> {
-    endEffector.setPercent(-1);
-    endEffector.setClaw(true);
-  }, endEffector);
-
-  private final Command runOuttake = new RunCommand(() -> {
-    endEffector.setPercent(1);
-    endEffector.setClaw(true);
-  }, endEffector);
-
-  private final Command dropCone = new RunCommand(() -> {
-    endEffector.setPercent(0);
-    endEffector.setClaw(true);
-  }, endEffector);
-
-  private final Command intakeDefault = new RunCommand(() -> {
-    endEffector.setPercent(-0.1);
-    endEffector.setClaw(false);
-  }, endEffector);
-
-  private final Command hybridDropOuttake = dropCone.withTimeout(0.1).andThen(runOuttake);
+  private final Command hybridDropOuttake = endEffector.drop().withTimeout(0.1).andThen(endEffector.runOuttake());
 
   private final OIEntry[] driverOI = {
           Button.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
@@ -168,12 +148,12 @@ public class RobotContainer {
   };
 
   private final OIEntry[] intakeBindings = {
-          Button.onHold(intakeFloorSimple.alongWith(runIntake), 1),
-          Button.onHold(intakeSubstation.alongWith(runIntake), 3),
-          new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(runIntake), ButtonMap.TriggerType.WHILE_HOLD),
+          Button.onHold(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
+          Button.onHold(intakeSubstation.alongWith(endEffector.runIntake()), 3),
+          new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
-          Button.onHold(runIntake, 8),
-          Button.onHold(hybridDropOuttake, 6),
+          Button.onHold(endEffector.runIntake(), 8),
+          Button.onHold(endEffector.runOuttake(), 6),
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -222,7 +202,7 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureBindings() {
-    endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
+    endEffector.setDefaultCommand(endEffector.rest());
     new ButtonMap(driverJoystick).map(driverOI);
     var operatorMap = new ButtonMap(operatorJoystick);
     operatorMap.map(intakeBindings);

@@ -17,7 +17,7 @@ import static frc.robot.Kinematics.*;
 public class Setpoints {
 
     public static SupersystemState zero = new SupersystemState(0, 0, 0, 0);
-    public static SupersystemState ninetyPivot = new SupersystemState(0, -Math.PI/2, 0, 0);
+    public static SupersystemState ninetyPivot = new SupersystemState(0, Math.PI/2, 0, 0);
 
     public static SupersystemState placeLow = new SupersystemState(0, -1.5, 0, -1);
 

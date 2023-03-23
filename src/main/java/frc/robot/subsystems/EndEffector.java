@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -64,11 +65,11 @@ public class EndEffector extends SubsystemBase {
     if(intaking){
       //if the motors are intaking
       if(color.confidence < 0.5) { //TODO threshold
-        //the color sensor sees something, so we now have something:
+        //the color sensor sees something, so we now have sopmething:
         if(color.color == CONE_COLOR) state = IntakeState.HAS_CONE;
         else state = IntakeState.HAS_CUBE;
       } else if (beamBroken){
-        //the beam brake is broken so we have something in the claw
+        //the b+eam brake is broken so we have something in the claw
         state = IntakeState.GETTING_OBJECT;
       } else {
         //we don't have shit and we just spinning the wheels.
@@ -96,6 +97,33 @@ public class EndEffector extends SubsystemBase {
     }
   }
 
+  public Command runIntake(){
+    return new RunCommand(() -> {
+      setPercent(-1);
+      setClaw(true);
+    }, this);
+  }
+
+  public Command runOuttake(){
+    return new RunCommand(() -> {
+      setPercent(1);
+      setClaw(true);
+    }, this);
+  }
+
+  public Command drop(){
+    return new RunCommand(() -> {
+      setPercent(0);
+      setClaw(true);
+    }, this);
+  }
+
+  public Command rest(){
+    return new RunCommand(() -> {
+      setPercent(-0.04);
+      setClaw(false);
+    }, this);
+  }
   /**
    * spin the intake, 1 should intake and -1 should spit out
    */

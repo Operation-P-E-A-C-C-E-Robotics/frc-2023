@@ -44,7 +44,7 @@ public class SeanyDrive extends CommandBase {
         double throttle = driverJoystick.getY() * (invertFront ? 1 : -1);
         double wheel = driverJoystick.getX();
         double arcadeTwist = Util.handleDeadbandWithSlopeIncrease(-driverJoystick.getTwist(), 0.5);
-        boolean isHighGear = driverJoystick.getRawButton(3),
+        boolean isHighGear = !driverJoystick.getRawButton(3),
                 isFineControl = driverJoystick.getRawButton(7),
                 isFastAcceleration = driverJoystick.getRawButton(6),
                 isQuickTurn = driverJoystick.getRawButton(1),

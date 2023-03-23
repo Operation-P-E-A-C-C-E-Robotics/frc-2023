@@ -57,7 +57,7 @@ public class DriveTrain extends SubsystemBase {
           SHIFT_HIGH_PORT,
           SHIFT_LOW_PORT
   );
-  private boolean isBrakeMode = true;
+  private boolean isBrakeMode = false;
 
   private final DriveVelocityController highVelocityController = new DriveVelocityController(kV_LINEAR, kA_LINEAR, kV_ANGULAR, kA_ANGULAR);
   private final DriveVelocityController lowVelocityController = new DriveVelocityController(kV_LINEAR_LOW, kA_LINEAR_LOW, kV_ANGULAR_LOW, kA_ANGULAR_LOW);
@@ -67,8 +67,8 @@ public class DriveTrain extends SubsystemBase {
   private double leftVelocitySetpoint = 0, rightVelocitySetpoint = 0;
   private boolean isClosedLoop = false;
 
-  private static final Value HIGH_GEAR = Value.kReverse;
-  private static final Value LOW_GEAR = Value.kForward;
+  private static final Value HIGH_GEAR = Value.kForward;
+  private static final Value LOW_GEAR = Value.kReverse;
 
   /** Creates a new DriveTrain. */
   public DriveTrain(PigeonHelper pigeon) {
@@ -102,6 +102,7 @@ public class DriveTrain extends SubsystemBase {
   public void set(DriveSignal signal) {
     setHighGear(signal.isHighGear());
     setBrakeMode(signal.isBrakeMode());
+    SmartDashboard.putBoolean("AJKLFSJKDLF", signal.isBrakeMode());
 
     // if(shiftClutchTimer.get() < 0.2) return;
 
@@ -229,8 +230,8 @@ public class DriveTrain extends SubsystemBase {
 
       shiftClutchEngaged = false;
 
-      leftMaster.setInverted(!isHighGear);
-      rightMaster.setInverted(isHighGear);
+      leftMaster.setInverted(isHighGear);
+      rightMaster.setInverted(!isHighGear);
     // }
   }
 
@@ -238,7 +239,6 @@ public class DriveTrain extends SubsystemBase {
     if(isBrakeMode != this.isBrakeMode){
       leftMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
       rightMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
-      this.isBrakeMode = isBrakeMode;
     }
   }
 

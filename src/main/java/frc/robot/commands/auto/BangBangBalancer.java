@@ -8,7 +8,7 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 public class BangBangBalancer extends CommandBase {
-    private static final double DEADBAND = 1.5; //radians from center
+    private static final double DEADBAND = 3; //radians from center
     private static final double SPEED = 0.25; //drivetrain percentage
     private final RobotState robotState;
     private final DriveTrain driveTrain;
@@ -63,8 +63,8 @@ public class BangBangBalancer extends CommandBase {
                 left += headingError * 0.001;
                 right -= headingError * 0.001;
             } else {
-                left = 0;
-                right = 0;
+                driveTrain.set(DriveSignal.DEFAULT);
+                return;
             }
             driveTrain.set(DriveSignal.velocityDrive(left, right, true));
         }
