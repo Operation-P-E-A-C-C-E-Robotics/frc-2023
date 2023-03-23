@@ -134,6 +134,8 @@ public class RobotContainer {
     endEffector.setClaw(false);
   }, endEffector);
 
+  private final Command hybridDropOuttake = dropCone.withTimeout(0.1).andThen(runOuttake);
+
   private final OIEntry[] driverOI = {
           Button.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
           Button.onPress(new InstantCommand(wrist::zero, wrist), 8),
@@ -146,13 +148,7 @@ public class RobotContainer {
           MultiButton.toggle(placeLow, 2, 7),
           MultiButton.toggle(placeCubeHigh, 4, 5),
           MultiButton.toggle(placeCubeMid, 1, 5),
-          MultiButton.toggle(placeLow, 2, 5),
-          // SimpleButton.onPress(automations.pickUpConeFloor(), 5),
-          // SimpleButton.onPress(automations.pickUpCubeFloor(), 6),
-          Button.onHold(automations.smartZero(), 10),
-          Button.onHold(setpoints.goToSetpoint(Setpoints.zero), 9),
-          Button.onHold(setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation, SupersystemTolerance.INTAKE_SUBSTATION), 3), //mid right button
-          Button.onPress(new InstantCommand(endEffector::toggleClaw, endEffector), 8), //lower right trigger
+          MultiButton.toggle(placeLow, 2, 5)
   };
 
   private final OIEntry[] setpointBindings = {
@@ -170,7 +166,7 @@ public class RobotContainer {
           new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(runIntake), ButtonMap.TriggerType.WHILE_HOLD),
 
           Button.onHold(runIntake, 8),
-            Button.onHold(runOuttake, 7),
+          Button.onHold(hybridDropOuttake, 6),
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -217,7 +213,10 @@ public class RobotContainer {
   private void configureBindings() {
     endEffector.setDefaultCommand(new RunCommand(() -> endEffector.setPercent(0), endEffector));
     new ButtonMap(driverJoystick).map(driverOI);
-//    new ButtonMap(operatorJoystick).map(mainOperatorOI);
+    var operatorMap = new ButtonMap(operatorJoystick);
+    operatorMap.map(intakeBindings);
+    operatorMap.map(setpointBindings);
+    operatorMap.map(autoPlaceBindings);
     //   supersystem.setDefaultCommand(new DefaultStatemachine(
     //     supersystem,
     //     () -> robotXInRange(0, 4.5),
