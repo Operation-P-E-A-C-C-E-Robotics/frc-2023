@@ -68,7 +68,7 @@ public class Robot extends TimedRobot {
   public void disabledInit(){
     // photonicHRI.runElement(photonicHRI.blink(149, 56, 242, 1));
     //235, 165, 26
-    robotContainer.photonicHRI.runElement(robotContainer.photonicHRI.rainbow);
+    robotContainer.photonicHRI.off();
     robotContainer.wristCoastMode();
   }
 

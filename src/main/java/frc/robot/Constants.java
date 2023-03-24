@@ -33,7 +33,7 @@ public final class Constants {
                                     PIVOT = true,
                                     PIVOT_ENCODER = true,
                                     ARM = true,
-                                    WRIST = true,
+                                    WRIST = false,
                                     INTAKE_LEFT = false,
                                     INTAKE_RIGHT = true;
     }
@@ -246,7 +246,7 @@ public final class Constants {
 
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
-                4,
+                1,
                 7*5*4,
                 2048,
                 1.5,
@@ -255,7 +255,7 @@ public final class Constants {
                 3.0,
                 0.01,
                 0.01,
-                0.005,
+                0.0001,
                 0.001,
                 12,
                 0,

@@ -194,7 +194,7 @@ public class PhotonicHRI {
     }
 
     public void off() {
-        running.stop();
+        if(running != null) running.stop();
         running = null;
         for (var i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, 0, 0, 0);

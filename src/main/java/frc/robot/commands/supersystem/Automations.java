@@ -23,8 +23,8 @@ import java.util.function.DoubleSupplier;
 
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0.6, 0, 0.3); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(-0.4, 0, 0.1); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.35); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.2); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;

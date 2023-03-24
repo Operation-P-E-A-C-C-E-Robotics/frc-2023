@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.util.AllianceFlipUtil;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.InterferenceButton;
 import frc.lib.util.ButtonMap.MultiButton;
@@ -29,6 +30,7 @@ import frc.lib.util.ButtonMap.Button;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.commands.auto.BangBangBalancer;
+import frc.robot.commands.auto.MobilityOverStation;
 import frc.robot.commands.drive.TestVelocity;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
@@ -117,7 +119,7 @@ public class RobotContainer {
           midSetpoint = setpoints.goToPlace(PlaceLevel.MID, true),
           lowSetpoint = setpoints.goToPlace(PlaceLevel.LOW, false);
 
-  private final Command intakeFloorFancy = setpoints.groundIntake(operatorJoystick::getPOV, () -> robotState.getOdometryPose().getRotation().getRadians()),
+  private final Command intakeFloorFancy = setpoints.groundIntake(operatorJoystick::getPOV, () -> AllianceFlipUtil.apply(robotState.getOdometryPose()).getRotation().getRadians()),
           intakeFloorSimple = setpoints.goToSetpoint(Setpoints.intakeFloor),
           intakeSubstation = setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation);
 
@@ -154,6 +156,12 @@ public class RobotContainer {
 
           Button.onHold(endEffector.runIntake(), 8),
           Button.onHold(endEffector.runOuttake(), 6),
+          Button.onPress(new InstantCommand(() -> wrist.zero()),14)
+  };
+
+  private final OIEntry[] colorBindings = {
+        Button.onPress(new InstantCommand(() -> photonicHRI.runElement(photonicHRI.setSolidColor(255, 255, 0))), 7),
+        Button.onPress(new InstantCommand(() -> photonicHRI.runElement(photonicHRI.setSolidColor(255, 0, 255))), 5)
   };
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -189,6 +197,7 @@ public class RobotContainer {
                             new WaitCommand(0.5),
                             new DriveDistance(driveTrain, robotState, -6.5))
     );
+    autoMode.addOption("DO NOT RUN THIS (unless you know what it is)", new MobilityOverStation(driveTrain, robotState));
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
@@ -208,6 +217,7 @@ public class RobotContainer {
     operatorMap.map(intakeBindings);
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
+    operatorMap.map(colorBindings);
     //   supersystem.setDefaultCommand(new DefaultStatemachine(
     //     supersystem,
     //     () -> robotXInRange(0, 4.5),

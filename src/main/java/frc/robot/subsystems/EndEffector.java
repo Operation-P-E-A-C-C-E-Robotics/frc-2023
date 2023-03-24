@@ -46,8 +46,8 @@ public class EndEffector extends SubsystemBase {
     leftMotor.setInverted(Constants.Inversions.INTAKE_LEFT);
     rightMotor.setInverted(Constants.Inversions.INTAKE_RIGHT);
 
-    leftMotor.setSmartCurrentLimit(20);
-    rightMotor.setSmartCurrentLimit(20);
+    leftMotor.setSmartCurrentLimit(40);
+    rightMotor.setSmartCurrentLimit(40);
 
     colorMatcher.addColorMatch(CUBE_COLOR); //TODO
     colorMatcher.addColorMatch(CONE_COLOR); //TODO
@@ -120,7 +120,7 @@ public class EndEffector extends SubsystemBase {
 
   public Command rest(){
     return new RunCommand(() -> {
-      setPercent(-0.04);
+      setPercent(-0.03);
       setClaw(false);
     }, this);
   }
