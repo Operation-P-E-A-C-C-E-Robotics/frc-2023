@@ -45,9 +45,12 @@ public class EndEffector extends SubsystemBase {
   public EndEffector() {
     leftMotor.setInverted(Constants.Inversions.INTAKE_LEFT);
     rightMotor.setInverted(Constants.Inversions.INTAKE_RIGHT);
-
-    leftMotor.setSmartCurrentLimit(40);
-    rightMotor.setSmartCurrentLimit(40);
+    // leftMotor.setSmartCurrentLimit(10);
+    leftMotor.setSmartCurrentLimit(7, 20);
+    // rightMotor.setSmartCurrentLimit(10);
+    rightMotor.setSmartCurrentLimit(7, 20);
+    leftMotor.setOpenLoopRampRate(0.5);
+    rightMotor.setOpenLoopRampRate(0.5);
 
     colorMatcher.addColorMatch(CUBE_COLOR); //TODO
     colorMatcher.addColorMatch(CONE_COLOR); //TODO
@@ -104,10 +107,24 @@ public class EndEffector extends SubsystemBase {
     }, this);
   }
 
+  public Command runIntakeClosed(){
+    return new RunCommand(() -> {
+      setPercent(-1);
+      setClaw(false);
+    }, this);
+  }
+
   public Command runOuttake(){
     return new RunCommand(() -> {
       setPercent(1);
       setClaw(true);
+    }, this);
+  }
+
+  public Command runOuttakeClosed(){
+    return new RunCommand(() -> {
+      setPercent(1);
+      setClaw(false);
     }, this);
   }
 

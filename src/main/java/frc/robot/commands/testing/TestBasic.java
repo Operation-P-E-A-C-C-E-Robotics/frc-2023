@@ -24,7 +24,7 @@ public class TestBasic extends CommandBase {
      * @param wrist the wrist subsystem
      */
     public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist, Joystick joystick) {
-        addRequirements(supersystem, arm, pivot, turret, wrist);
+        addRequirements(supersystem, arm, pivot, turret/*, wrist*/);
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
@@ -53,7 +53,7 @@ public class TestBasic extends CommandBase {
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);
         turret.setPercent(turretSpeed);
-        wrist.setPercent(wristSpeed);
+        // wrist.setPercent(wristSpeed);
         SmartDashboard.putNumber("arm velocity", arm.getVelocity());
         SmartDashboard.putNumber("arm speed", armSpeed);
         SmartDashboard.putNumber("pivot speed", pivotSpeed);

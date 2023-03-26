@@ -8,10 +8,19 @@ Started field points
 
 DID A LOTTA STUFF
 
+HOLY FUK ITS REVERIE TODO:
+[OK] make sure wrist angle init and arm soft limits working (pre inspection)
+[todo] fix turret soft limit
+[OK??????????????????] add place to auto balance
+[todo] tune drivetrain
+[todo] better soft limits so can palce high cones
+
+
+
 TODO LIST PRE-REVERE:
 [OK] re-zero cancoders as accurately as possible
-[todo] speed up shit as much as possible
-[todo] improve turret accuracy
+[OK] speed up shit as much as possible
+[OK] improve turret accuracy
 [todo] color sensor
 [todo] mode selector (cube/cone)
 [todo] ensure all motors and air cylinders are going the correct direction
@@ -20,14 +29,14 @@ TODO LIST PRE-REVERE:
 [todo] ensure accurate gear ratios and units for everything
     [OK] fix drivetrain units
     [todo] fix wrist units
-[todo] improve current setpoints
+[OK] improve current setpoints
 [OK] fix drivetrain shifters
 [todo] tune current autos
 [OK] get odometry tracking accurately
     [OK] tune apriltag rejection and standard devs.
 [OK] odometry-based auto cube scoring
-[todo] fix my nice drive mode
-    [todo] remap buttons for new joysticks
+[OK] fix my nice drive mode
+[todo] remap drive buttons for new joysticks
 [todo] auto alignment for intaking
 [todo] vision tape tracking auto cone scoring
 [todo] tune path following

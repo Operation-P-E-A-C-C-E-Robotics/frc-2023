@@ -61,7 +61,12 @@ public class Supersystem extends SubsystemBase {
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
-        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
+        // wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
+    }
+
+    public boolean isInExtensionLimit(){
+        var currentState = getSupersystemState();
+        return Constraints.constrainArmExtension(currentState) == currentState;
     }
 
     public boolean withinTolerance(Constants.SupersystemTolerance tolerance){
@@ -257,7 +262,7 @@ public class Supersystem extends SubsystemBase {
     }
 
     public Subsystem[] getRequirements(){
-        return new Subsystem[]{this, turret, pivot, wrist, arm};
+        return new Subsystem[]{this, turret, pivot/*, wrist*/, arm};
     }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();

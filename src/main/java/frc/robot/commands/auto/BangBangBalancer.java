@@ -8,7 +8,7 @@ import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
 
 public class BangBangBalancer extends CommandBase {
-    private static final double DEADBAND = 3; //radians from center
+    private static final double DEADBAND = 4; //radians from center
     private static final double SPEED = 0.25; //drivetrain percentage
     private final RobotState robotState;
     private final DriveTrain driveTrain;
@@ -35,7 +35,7 @@ public class BangBangBalancer extends CommandBase {
         initialHeading = robotState.getPigeon().getHeading();
         robotState.getPigeon().zeroHeading();
     }
-    static double maxBangBangSpeed = 0.55, minBangBangSpeed = 0.05;
+    static double maxBangBangSpeed = 0.4, minBangBangSpeed = 0.02;
 
     @Override
     public void execute() {

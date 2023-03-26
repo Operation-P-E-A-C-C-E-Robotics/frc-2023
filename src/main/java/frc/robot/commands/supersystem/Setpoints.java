@@ -22,13 +22,13 @@ public class Setpoints {
     public static SupersystemState placeLow = new SupersystemState(0, -1.5, 0, -1);
 
     public static SupersystemState placeMidCube = new SupersystemState(0, 0, 0, 0);
-    public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.5, 10);
+    public static SupersystemState placeHighCube = new SupersystemState(0, 0.5, 1.6, 10);
 
     public static SupersystemState placeMidCone = new SupersystemState(0, Units.degreesToRadians(-66), 0.8, Units.degreesToRadians(-45));
-    public static SupersystemState placeHighCone = new SupersystemState(0, -0.99, 1.28, 0.5);
+    public static SupersystemState placeHighCone = new SupersystemState(0, -0.92, 1.33, -Units.degreesToRadians(90));
 
-    public static SupersystemState intakeFloor = new SupersystemState(0, Units.degreesToRadians(110), 0.93, Units.degreesToRadians(0));
-    public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0.76, 0.8, Units.degreesToRadians(80));
+    public static SupersystemState intakeFloor = new SupersystemState(0, Units.degreesToRadians(118), 0.93, Units.degreesToRadians(70));
+    public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0.76, 0.75, Units.degreesToRadians(90));
     public static SupersystemState wristFlipOffset = new SupersystemState(0, 0, 0, -0.5);
     private final Supersystem supersystem;
     private final DoubleSupplier x;

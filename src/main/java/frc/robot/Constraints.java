@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import frc.lib.util.Util;
 import frc.robot.Constants.Arm;
+import frc.robot.Kinematics.SupersystemState;
 import frc.robot.subsystems.Supersystem;
 
 import static frc.robot.Constants.Constraints.*;
@@ -38,9 +39,9 @@ public class Constraints {
         return Util.interpolate(normal, extended, (kinematics.getSupersystemState().getArmExtension() - Arm.MIN_EXTENSION) / (Arm.MAX_EXTENSION - Arm.MIN_EXTENSION));
     }
 
-    public static double ARM_EXTENSION_4FT = Units.feetToMeters(3); //TODO how far the arm is extended to reach out 4 feet
-    public static double MAX_X = Units.feetToMeters(3); //TODO add frame perimeter to this
-    public static double MAX_Y = Units.feetToMeters(3);
+    public static double ARM_EXTENSION_4FT = Units.feetToMeters(0); //TODO how far the arm is extended to reach out 4 feet
+    public static double MAX_X = Units.inchesToMeters(43); //TODO add frame perimeter to this
+    public static double MAX_Y = Units.inchesToMeters(43);
     public static double MAX_Z = Units.feetToMeters(6); //TODO the maximum z value of the robot's end effector (max height)
 
 
@@ -55,7 +56,7 @@ public class Constraints {
         //limit maximum extension of the arm
         if(state.getArmExtension() > ARM_EXTENSION_4FT){
             //the arm could be too far out, so use the kinematics to find the actual end effector position
-            var prev = Kinematics.wristKinematics(state).getEndPosition();
+            var prev = Kinematics.kinematics(state);
 
             //limit the end effector position to the maximums
             var limited = new Translation3d(
@@ -63,9 +64,23 @@ public class Constraints {
                     Util.limit(prev.getY(), MAX_Y),
                     Util.limit(prev.getZ(), MAX_Z)
             );
-            state = Kinematics.inverseKinematicsFromEndEffector(limited, state.getWristAngle());
+            state = Kinematics.inverseKinematics(limited, state.getWristAngle());
         }
         return state;
+    }
+
+    public static boolean armTooFar(SupersystemState state){
+        //limit maximum extension of the arm
+        if(state.getArmExtension() > ARM_EXTENSION_4FT){
+            //the arm could be too far out, so use the kinematics to find the actual end effector position
+            var kinematics = Kinematics.kinematics(state);
+
+            //limit the end effector position to the maximums
+            if(Math.abs(kinematics.getX()) > MAX_X) return true;
+            if(Math.abs(kinematics.getY()) > MAX_Y) return true;
+            if(Math.abs(kinematics.getZ()) > MAX_Z) return true;
+        }
+        return false;
     }
 
     /**

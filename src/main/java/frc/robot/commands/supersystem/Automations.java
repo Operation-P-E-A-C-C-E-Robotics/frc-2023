@@ -76,11 +76,11 @@ public class Automations {
      * @return a command to place a cube
      */
     public Command placeCube(PlaceLevel level){
-        return goToCubePosition(level)
-                .raceWith(new SpitGamepiece(
-                        endEffector,
-                        () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
-                ));
+        return goToCubePosition(level);
+                // .raceWith(new SpitGamepiece(
+                //         endEffector,
+                //         () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                // ));
     }
 
     /**
@@ -100,7 +100,7 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePrePlaceOffset),
-                Units.degreesToRadians(20),
+                Units.degreesToRadians(80),
                 SupersystemTolerance.PRE_PLACE,
                 robotState,
                 true

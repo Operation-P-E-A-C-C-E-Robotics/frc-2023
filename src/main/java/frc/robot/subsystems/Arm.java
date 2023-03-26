@@ -18,8 +18,10 @@ import frc.lib.util.Util;
 import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
+import frc.robot.RobotState;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -27,6 +29,9 @@ public class Arm extends SubsystemBase {
     private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getExtension, this::getVelocity);
     private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT);
     private double setpoint = 0;
+    private Supplier<Boolean> softLimit;
+    private static final double SOFT_LIMIT = 1.13;
+    private boolean needsToRectractToSoftLimit = false;
 
     /** Creates a new ExampleSubsystem. */
     public Arm() {
@@ -40,6 +45,10 @@ public class Arm extends SubsystemBase {
         DankPids.registerDankTalon(armMaster);
     }
 
+    public void setSoftLimit(Supplier<Boolean> tripped){
+        this.softLimit = tripped;
+    }
+
     /**
      * set the lift motors as a percentage (-1 to 1)
      * of full power
@@ -47,10 +56,18 @@ public class Arm extends SubsystemBase {
      */
     public void setPercent(double speed){
         servoController.disableLoop();
+        if(softLimit.get()) {
+            armMaster.set(-0.4);
+            return;
+        }
         armMaster.set(speed);
     }
 
     public void setVoltage(double voltage){
+        if(softLimit.get()) {
+            armMaster.setVoltage(-4);
+            return;
+        }
         armMaster.setVoltage(voltage);
     }
 

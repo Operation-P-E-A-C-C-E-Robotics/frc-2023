@@ -47,7 +47,7 @@ public class Wrist extends SubsystemBase {
 
         wristMaster.setNeutralMode(NeutralMode.Coast);
 
-        wristMaster.setSelectedSensorPosition(Util.rotationsToCounts(0, SYSTEM_CONSTANTS));
+        wristMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(-110), SYSTEM_CONSTANTS));
 
         this.pivotAngle = pivotAngle;
 

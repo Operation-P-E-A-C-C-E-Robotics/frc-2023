@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -45,7 +46,6 @@ import frc.robot.commands.drive.ArcadeDrive;
 import frc.robot.commands.drive.ChesyDriv;
 import frc.robot.commands.drive.DriveDistance;
 import frc.robot.commands.drive.SeanyDrive;
-import frc.robot.subsystems.PhotonicHRI;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -109,6 +109,9 @@ public class RobotContainer {
           driverJoystick::getX,
           () -> driverJoystick.getRawButton(2)
   );
+  private final Command driverManualWrist = new RunCommand(() -> {
+        wrist.setAngle(Rotation2d.fromDegrees(driverJoystick.getRawAxis(3) * -90));
+  }, wrist);
   private final Command placeConeHigh = automations.placeConeNoVision(PlaceLevel.HIGH),
           placeConeMid = automations.placeConeNoVision(PlaceLevel.MID),
           placeLow = automations.placeCube(PlaceLevel.LOW),
@@ -132,12 +135,12 @@ public class RobotContainer {
   };
 
   private final OIEntry[] autoPlaceBindings = {
-          MultiButton.toggle(placeConeHigh, 4, 7),
-          MultiButton.toggle(placeConeMid, 1, 7),
-          MultiButton.toggle(placeLow, 2, 7),
-          MultiButton.toggle(placeCubeHigh, 4, 5),
-          MultiButton.toggle(placeCubeMid, 1, 5),
-          MultiButton.toggle(placeLow, 2, 5)
+          MultiButton.onHold(placeConeHigh, 4, 7),
+          MultiButton.onHold(placeConeMid, 1, 7),
+          MultiButton.onHold(placeLow, 2, 7),
+          MultiButton.onHold(placeCubeHigh, 4, 5),
+          MultiButton.onHold(placeCubeMid, 1, 5),
+          MultiButton.onHold(placeLow, 2, 5)
   };
 
   private final OIEntry[] setpointBindings = {
@@ -151,11 +154,16 @@ public class RobotContainer {
 
   private final OIEntry[] intakeBindings = {
           Button.onHold(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
-          Button.onHold(intakeSubstation.alongWith(endEffector.runIntake()), 3),
+          Button.onHold(intakeSubstation.alongWith(
+                endEffector.runIntake(),
+                new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
+        ), 3),
           new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
           Button.onHold(endEffector.runIntake(), 8),
+          Button.onRelease(endEffector.runIntakeClosed().withTimeout(0.1), 8),
           Button.onHold(endEffector.runOuttake(), 6),
+          Button.onHold(endEffector.runOuttakeClosed(), 13),
           Button.onPress(new InstantCommand(() -> wrist.zero()),14)
   };
 
@@ -167,8 +175,12 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     enableCompressor();
+    arm.setSoftLimit(() -> {
+        var currentState = supersystem.getSupersystemState();
+        return Constraints.armTooFar(currentState);
+    });
 
-    photonicHRI.runElement(photonicHRI.fire());
+    photonicHRI.off();
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
@@ -181,6 +193,17 @@ public class RobotContainer {
 
 
     autoMode.addOption("DO NOTHING", null);
+    autoMode.addOption("placeAndBalance",
+        new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
+                    .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(2),
+                            new InstantCommand(() -> endEffector.setClaw(true), endEffector),
+                            new RunCommand(() -> endEffector.setPercent(1), endEffector).withTimeout(1),
+                            new InstantCommand(() -> endEffector.setPercent(0), endEffector),
+                            new WaitCommand(0.3),
+                            setpoints.goToSetpoint(Setpoints.ninetyPivot).withTimeout(0.15),
+                            new WaitCommand(0.4),
+                            new BangBangBalancer(driveTrain, robotState, false)
+    ));
     autoMode.addOption("auto balance",
             new BangBangBalancer(driveTrain, robotState, false)
                     .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
@@ -195,7 +218,7 @@ public class RobotContainer {
                             new WaitCommand(0.5),
                             autoZeroCommand1.withTimeout(0.5),
                             new WaitCommand(0.5),
-                            new DriveDistance(driveTrain, robotState, -6.5))
+                            new DriveDistance(driveTrain, robotState, 2.5))
     );
     autoMode.addOption("DO NOT RUN THIS (unless you know what it is)", new MobilityOverStation(driveTrain, robotState));
     SmartDashboard.putData("Auto Mode", autoMode);
@@ -218,6 +241,7 @@ public class RobotContainer {
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
     operatorMap.map(colorBindings);
+    wrist.setDefaultCommand(driverManualWrist);
     //   supersystem.setDefaultCommand(new DefaultStatemachine(
     //     supersystem,
     //     () -> robotXInRange(0, 4.5),
@@ -226,6 +250,10 @@ public class RobotContainer {
     //  ));
     supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
     // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+  }
+
+  public Supersystem getSupersystem(){
+        return supersystem;
   }
 
   public void wristBrakeMode(){
