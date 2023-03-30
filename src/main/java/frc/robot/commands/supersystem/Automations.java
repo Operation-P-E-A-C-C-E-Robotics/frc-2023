@@ -23,8 +23,8 @@ import java.util.function.DoubleSupplier;
 
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.35); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.2); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.2); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.05); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
@@ -104,17 +104,17 @@ public class Automations {
                 SupersystemTolerance.PRE_PLACE,
                 robotState,
                 true
-        );
+        ).withTimeout(3);
         var goToPlace = new GoToFieldPoint(
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePlaceOffset),
-                Units.degreesToRadians(90),
+                Units.degreesToRadians(110),
                 tolerance,
                 robotState,
                 true
-        );
-        return goToPrePlace.andThen(new WaitCommand(0.5),goToPlace);//.andThen(new DropGamepiece(endEffector, () -> true)));
+        ).withTimeout(1);
+        return goToPrePlace.andThen(new WaitCommand(0.5),goToPlace).andThen(new DropGamepiece(endEffector, () -> true));
     }
 
     private static final double SENSITIVITY = 0.02;
@@ -144,8 +144,9 @@ public class Automations {
     }
 
     public Command smartZero(){
-        return new RunCommand(() -> supersystem.setArm(0), supersystem.getRequirements())
-            .until(() -> supersystem.withinTolerance(SupersystemTolerance.ZERO_ARM))
+        return new RunCommand(() -> supersystem.setArm(0), supersystem.getRequirements()).withTimeout(0.5)
+            .andThen(new WaitCommand(0.5))
+            .andThen(new RunCommand(() -> supersystem.setPivot(new Rotation2d()), supersystem.getRequirements())).withTimeout(0.5)
             .andThen(setpoints.goToSetpoint(Setpoints.zero));
     }
 

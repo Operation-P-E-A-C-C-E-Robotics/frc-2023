@@ -8,12 +8,22 @@ Started field points
 
 DID A LOTTA STUFF
 
+FINAL CONTROL SCHEME PLAN:
+- place
+    - low
+    - mid
+    - high
+- intake
+    - floor
+    - single substation
+    - double substation
+
 HOLY FUK ITS REVERIE TODO:
 [OK] make sure wrist angle init and arm soft limits working (pre inspection)
 [todo] fix turret soft limit
 [OK??????????????????] add place to auto balance
 [todo] tune drivetrain
-[todo] better soft limits so can palce high cones
+[OK] better soft limits so can palce high cones
 
 
 
@@ -31,7 +41,7 @@ TODO LIST PRE-REVERE:
     [todo] fix wrist units
 [OK] improve current setpoints
 [OK] fix drivetrain shifters
-[todo] tune current autos
+[OK] tune current autos
 [OK] get odometry tracking accurately
     [OK] tune apriltag rejection and standard devs.
 [OK] odometry-based auto cube scoring

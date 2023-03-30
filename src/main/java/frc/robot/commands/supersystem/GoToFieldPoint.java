@@ -58,6 +58,7 @@ public class GoToFieldPoint extends CommandBase {
 
     @Override
     public void execute(){
+        System.out.println(":)");
         var target = targetLocation.get();
         if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
         var robotRelative = robotState.fieldToDrivetrain(new Pose3d(target, new Rotation3d()));
@@ -68,7 +69,6 @@ public class GoToFieldPoint extends CommandBase {
         var pivot = supersystem.getSupersystemState().getPivotAngle();
         if(Math.abs(pivot) < 0.1) return new Rotation2d();
         var wrist = pivot < 0 ? -wristAngle : wristAngle;
-//        wrist -= pivot; TODO take this out? - changed wrist to absolute angle
         return new Rotation2d(wrist);
     }
 

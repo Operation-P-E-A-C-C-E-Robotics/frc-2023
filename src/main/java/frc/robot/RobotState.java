@@ -75,7 +75,7 @@ public class RobotState {
         var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
         DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
 
-        var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
+        var conePose = getConePose().get(new Pose3d());
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
@@ -134,12 +134,12 @@ public class RobotState {
 
     public Value<Pose3d> getConePose(){
         var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
+        // if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
 
-        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        // if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
         prevConePose = pose;
         return new Value<>(pose);
     }

@@ -24,7 +24,7 @@ public class TestBasic extends CommandBase {
      * @param wrist the wrist subsystem
      */
     public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist, Joystick joystick) {
-        addRequirements(supersystem, arm, pivot, turret/*, wrist*/);
+        addRequirements(supersystem, arm, pivot, turret, wrist);
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
@@ -48,12 +48,12 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
         var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
-        var turretSpeed = PeaccyDriveHelper.applySinCurve(Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(2), 0.05), false) * 0.13;
+        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(Math.pow(testJoystick.getRawAxis(2),2), 0.05) * 0.13;
         var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);
         turret.setPercent(turretSpeed);
-        // wrist.setPercent(wristSpeed);
+        wrist.setPercent(wristSpeed);
         SmartDashboard.putNumber("arm velocity", arm.getVelocity());
         SmartDashboard.putNumber("arm speed", armSpeed);
         SmartDashboard.putNumber("pivot speed", pivotSpeed);

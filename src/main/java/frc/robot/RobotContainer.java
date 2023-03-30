@@ -155,15 +155,15 @@ public class RobotContainer {
   private final OIEntry[] intakeBindings = {
           Button.onHold(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
           Button.onHold(intakeSubstation.alongWith(
-                endEffector.runIntake(),
-                new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
+                endEffector.runIntake()
+                // new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(Setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
         ), 3),
           new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
-          Button.onHold(endEffector.runIntake(), 8),
+          Button.onHold(endEffector.runIntake().until(endEffector::colorSensorSeesThing), 8),
           Button.onRelease(endEffector.runIntakeClosed().withTimeout(0.1), 8),
           Button.onHold(endEffector.runOuttake(), 6),
-          Button.onHold(endEffector.runOuttakeClosed(), 13),
+          Button.onHold(endEffector.runIntakeClosed(), 13),
           Button.onPress(new InstantCommand(() -> wrist.zero()),14)
   };
 
@@ -241,7 +241,7 @@ public class RobotContainer {
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
     operatorMap.map(colorBindings);
-    wrist.setDefaultCommand(driverManualWrist);
+//     wrist.setDefaultCommand(driverManualWrist);
     //   supersystem.setDefaultCommand(new DefaultStatemachine(
     //     supersystem,
     //     () -> robotXInRange(0, 4.5),

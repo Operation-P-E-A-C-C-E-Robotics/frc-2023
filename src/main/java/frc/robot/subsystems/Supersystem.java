@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
@@ -56,12 +57,12 @@ public class Supersystem extends SubsystemBase {
      */
     public void setSupersystemState(SupersystemState state){
         state = Kinematics.optimize(state, getSupersystemState());
-        // state = Constraints.constrainArmExtension(state);
+        state = Constraints.constrainArmExtension(state);
         // state = Constraints.constrainPivotCollision(state);
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
-        // wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
+        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle() - state.getPivotAngle()));
     }
 
     public boolean isInExtensionLimit(){
@@ -262,7 +263,17 @@ public class Supersystem extends SubsystemBase {
     }
 
     public Subsystem[] getRequirements(){
-        return new Subsystem[]{this, turret, pivot/*, wrist*/, arm};
+        return new Subsystem[]{this, turret, pivot, wrist, arm};
+    }
+
+    @Override
+    public void periodic(){
+        var currentState = getSupersystemState();
+        var offset = Kinematics.wristOffset(currentState.getTurretAngle(), currentState.getWristAngle()).getMidPosition();
+        SmartDashboard.putNumber("wrist offset x", offset.getX());
+        SmartDashboard.putNumber("wrist offset y", offset.getY());
+        SmartDashboard.putNumber("wrist offset z", offset.getZ());
+        
     }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();
