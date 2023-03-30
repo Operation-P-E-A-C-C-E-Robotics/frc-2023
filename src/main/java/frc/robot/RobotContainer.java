@@ -246,6 +246,10 @@ public class RobotContainer {
     //  ));
     supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
     // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
+
+    new Trigger(endEffector::colorSensorSeesThing).onTrue(new InstantCommand(
+            () -> photonicHRI.runElement(photonicHRI.setSolidColor(0,255,0))
+    ));
   }
 
   public Supersystem getSupersystem(){

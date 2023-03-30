@@ -166,8 +166,8 @@ public class PeaccyDriveHelper {
     }
 
     private double getNegInertiaScalar(double wheel, double deltaWheel, boolean gear){
-        if(gear) return HIGH_NEG_INERTIA_SCALAR;
-        if (wheel * deltaWheel > 0) return LOW_NEG_INERTIA_TURN_SCALAR; // If we are moving away from 0.0, aka, trying to get more wheel.
+//        if(gear) return HIGH_NEG_INERTIA_SCALAR;
+        if (wheel * deltaWheel > 0) return gear ? HIGH_NEG_INERTIA_SCALAR : LOW_NEG_INERTIA_TURN_SCALAR; // If we are moving away from 0.0, aka, trying to get more wheel.
         if (Math.abs(wheel) > LOW_NEG_INERTIA_THRESHOLD) return LOW_NEG_INERTIA_FAR_SCALAR; // Otherwise, we are attempting to go back to 0.0.
         return LOW_NEG_INERTIA_CLOSE_SCALAR;
     }
