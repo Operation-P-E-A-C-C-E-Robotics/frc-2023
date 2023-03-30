@@ -41,7 +41,7 @@ public class Supersystem extends SubsystemBase {
             turret.getAngle().getRadians(),
             pivot.getRotation().getRadians(),
             arm.getExtension(),
-            wrist.getAngle().getRadians()
+            wrist.getAngle().getRadians() + pivot.getRotation().getRadians()
         );
     }
 
@@ -50,6 +50,11 @@ public class Supersystem extends SubsystemBase {
      */
     public Kinematics getKinematics(){
         return kinematics;
+    }
+
+
+    public Rotation2d getWristFlipAngle(){
+        return wrist.getWristFlipAngle();
     }
 
     /**

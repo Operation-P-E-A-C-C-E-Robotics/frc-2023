@@ -272,7 +272,7 @@ public final class Constants {
 
         public static final double TIME_TO_EJECT = 0.2; //TODO
         public static final double TIME_FOR_CLAW_TO_OPEN = 0.2; //TODO
-        public static final Color CUBE_COLOR = new Color(0,0,0), CONE_COLOR = new Color(0,0,0);
+        public static final Color CUBE_COLOR = new Color(0,0,255), CONE_COLOR = new Color(255,177,0);
     }
     public static final class Kinematics {
         public static final double  PIVOT_HEIGHT = 0.64,

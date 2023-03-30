@@ -69,7 +69,6 @@ public class RobotState {
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters());
         if(!new Joystick(0).getRawButton(14)) apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
 
-        SmartDashboard.putBoolean("tolerance bs", supersystem.withinTolerance(SupersystemTolerance.PLACE_MID));
         DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
         var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
@@ -355,6 +354,19 @@ public class RobotState {
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
         return Util.globalToLocalPose(
                 new Pose3d(endEffectorPosition, new Rotation3d(0,endEffectorAngle,0)),
+                endEffectorPoint
+        );
+    }
+
+    public Pose3d endEffectorToDriveTrain(Pose3d endEffectorPoint){
+        Translation3d endEffectorPosition = supersystem.getKinematics()
+                .getEndEffectorPosition()
+                .getEndPosition();
+        double wristPitch = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
+        double wristRoll = supersystem.getWristFlipAngle().getRadians();
+        double turretYaw = supersystem.getSupersystemState().getTurretAngle();
+        return Util.globalToLocalPose(
+                new Pose3d(endEffectorPosition, new Rotation3d(wristRoll,wristPitch,turretYaw)),
                 endEffectorPoint
         );
     }

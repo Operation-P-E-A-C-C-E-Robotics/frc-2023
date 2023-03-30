@@ -81,7 +81,6 @@ public class Wrist extends SubsystemBase {
     public void setAngle(Rotation2d angle){
         servoController.enableLoop();
         setpoint = angle.getRadians();
-        SmartDashboard.putNumber("setpoint", setpoint);
         // servoController.goToState(angle.getRadians() - pivotAngle.getAsDouble());
         servoController.goToState(angle.getRadians());
     }
@@ -93,6 +92,15 @@ public class Wrist extends SubsystemBase {
            wristTimer.start();
        }
         previousFlipState = flipped;
+    }
+
+    public Rotation2d getWristFlipAngle(){
+        var rotation = new Rotation2d(Math.min(wristTimer.get() / WRIST_FLIP_TIME, 1) * Math.PI);
+        return isFlipped() ? rotation : new Rotation2d(Math.PI).minus(rotation);
+    }
+
+    public boolean isFlipped(){
+        return wristSolenoid.get();
     }
 
     public boolean flipping(){
@@ -143,7 +151,6 @@ public class Wrist extends SubsystemBase {
     @Override
     public void periodic(){
         setFlipped(pivotAngle.getAsDouble() < 0);
-        SmartDashboard.putBoolean("looping", servoController.isLooping());
         if(servoController.isLooping()) servoController.goToState(setpoint - pivotAngle.getAsDouble());
     }
 

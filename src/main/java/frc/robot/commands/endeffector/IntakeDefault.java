@@ -13,9 +13,11 @@ public class IntakeDefault extends CommandBase {
 
     @Override
     public void execute(){
-        if(endEffector.beamBroken() && !(endEffector.hasCube() || endEffector.hasCone())) {
-            endEffector.setPercent(0.3);
+        if(endEffector.colorSensorSeesThing() && !(endEffector.hasCube() || endEffector.hasCone())) {
+            endEffector.setPercent(0.5);
+            endEffector.setClaw(false);
+        } else if (endEffector.hasCube() || endEffector.hasCone()){
+            endEffector.setPercent(0.02);
         }
-        endEffector.setClaw(!endEffector.hasCone());
     }
 }

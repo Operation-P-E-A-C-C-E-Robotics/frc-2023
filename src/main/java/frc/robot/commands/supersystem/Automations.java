@@ -76,11 +76,11 @@ public class Automations {
      * @return a command to place a cube
      */
     public Command placeCube(PlaceLevel level){
-        return goToCubePosition(level);
-                // .raceWith(new SpitGamepiece(
-                //         endEffector,
-                //         () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
-                // ));
+        return goToCubePosition(level)
+                 .raceWith(new SpitGamepiece(
+                         endEffector,
+                         () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                 ));
     }
 
     /**
@@ -169,6 +169,7 @@ public class Automations {
             targetPose(cubePose);
         }, supersystem.getRequirements());
     }
+
 
     /**
      * Not a command! a helper to be run from other commands.

@@ -50,7 +50,6 @@ public class Turret extends SubsystemBase {
     turretMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MAX_ANGLE_RAD)));
     turretMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MIN_ANGLE_RAD)));
 
-    if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
     DankPids.registerDankTalon(turretMaster);
   }
 

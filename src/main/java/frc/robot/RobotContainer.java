@@ -109,9 +109,6 @@ public class RobotContainer {
           driverJoystick::getX,
           () -> driverJoystick.getRawButton(2)
   );
-  private final Command driverManualWrist = new RunCommand(() -> {
-        wrist.setAngle(Rotation2d.fromDegrees(driverJoystick.getRawAxis(3) * -90));
-  }, wrist);
   private final Command placeConeHigh = automations.placeConeNoVision(PlaceLevel.HIGH),
           placeConeMid = automations.placeConeNoVision(PlaceLevel.MID),
           placeLow = automations.placeCube(PlaceLevel.LOW),
@@ -184,16 +181,15 @@ public class RobotContainer {
 
     teleopDriveMode.addOption("Arcade Drive", arcadeDrive);
     teleopDriveMode.addOption("Velocity Drive", velocityDrive);
-    teleopDriveMode.addOption("seany drive (test)", seansFancyDriveMode);
-    teleopDriveMode.setDefaultOption("Peaccy Drive",peaccyDrive);
+    teleopDriveMode.setDefaultOption("seany drive (test)", seansFancyDriveMode);
+    teleopDriveMode.addOption("Peaccy Drive",peaccyDrive);
 
     Command autoZeroCommand1 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
-    Command autoZeroCommand2 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
 
 
 
     autoMode.addOption("DO NOTHING", null);
-    autoMode.addOption("placeAndBalance",
+    autoMode.addOption("place and balance",
         new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
                     .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(2),
                             new InstantCommand(() -> endEffector.setClaw(true), endEffector),
@@ -208,8 +204,8 @@ public class RobotContainer {
             new BangBangBalancer(driveTrain, robotState, false)
                     .raceWith(setpoints.goToSetpoint(Setpoints.ninetyPivot))
     );
-    autoMode.addOption("test auto", new DriveDistance(driveTrain, robotState, -3.4));
-    autoMode.addOption("helpplease",
+    autoMode.addOption("test drive distance", new DriveDistance(driveTrain, robotState, -3.4));
+    autoMode.addOption("Place and drive",
             new InstantCommand(()  -> endEffector.setClaw(true), endEffector)
                     .andThen(setpoints.goToSetpoint(Setpoints.placeHighCone, SupersystemTolerance.DEFAULT, true).withTimeout(7),
                             new InstantCommand(() -> endEffector.setClaw(false), endEffector),

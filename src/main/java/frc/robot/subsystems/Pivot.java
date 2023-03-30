@@ -120,7 +120,6 @@ public class Pivot extends SubsystemBase {
       servoController.disableLoop();
       setVoltage(0);
     }
-    SmartDashboard.putBoolean("PIVOT BRAKE ENGAGED", isBrakeEngaged());
   }
 
   public boolean isBrakeEngaged() {

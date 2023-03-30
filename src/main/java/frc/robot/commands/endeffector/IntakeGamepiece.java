@@ -25,7 +25,7 @@ public class IntakeGamepiece extends CommandBase {
     @Override
     public void execute(){
         endEffector.setPercent(1);
-        endEffector.setClaw(!(endEffector.beamBroken() && isIntakingCone));
+        endEffector.setClaw(!(endEffector.colorSensorSeesThing()));
     }
 
     @Override

@@ -41,9 +41,10 @@ public class TestBasic extends CommandBase {
     public void execute(){
         // System.out.println("Testing basic controls - executing");
         SmartDashboard.putNumber("arm extension", arm.getExtension());
-        SmartDashboard.putNumber("pivot angle (deg)", Units.radiansToDegrees(pivot.getAngleRadians()));
-        SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
-        SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
+        SmartDashboard.putNumber("pivot angle (rad)", Units.radiansToDegrees(pivot.getAngleRadians()));
+        SmartDashboard.putNumber("turret angle (rad)", turret.getAngle().getRadians());
+        SmartDashboard.putNumber("wrist angle (rad)", wrist.getAngle().getRadians());
+        SmartDashboard.putNumber("wrist flip angle (rad)", wrist.getWristFlipAngle().getRadians());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
@@ -54,10 +55,5 @@ public class TestBasic extends CommandBase {
         pivot.setPercent(pivotSpeed);
         turret.setPercent(turretSpeed);
         wrist.setPercent(wristSpeed);
-        SmartDashboard.putNumber("arm velocity", arm.getVelocity());
-        SmartDashboard.putNumber("arm speed", armSpeed);
-        SmartDashboard.putNumber("pivot speed", pivotSpeed);
-        SmartDashboard.putNumber("turret speed", turretSpeed);
-        SmartDashboard.putNumber("wrist speed", wristSpeed);
     }
 }

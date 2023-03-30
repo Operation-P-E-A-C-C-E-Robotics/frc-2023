@@ -65,11 +65,12 @@ public class EndEffector extends SubsystemBase {
   public void periodic() {
     // Update the intake state using data from the color sensor and beam brake sensor
     var color = colorMatcher.matchClosestColor(colorSensor.getColor());
-    var hasGamepiece = colorSensor.getProximity() > 49;
+    var hasGamepiece = colorSensorSeesThing();
     SmartDashboard.putBoolean("Has gamepiece", hasGamepiece);
+    SmartDashboard.putString("Intake state", state.toString());
 
-    var intaking = leftMotor.get() > 0.1; //TODO threshold
-    var ejecting = leftMotor.get() < -0.1;
+    var intaking = leftMotor.get() > 0.3;
+    var ejecting = leftMotor.get() < -0.3;
 
     if(isClawOpen() && hasGamepiece){
       setClaw(false);
@@ -80,39 +81,39 @@ public class EndEffector extends SubsystemBase {
     SmartDashboard.putNumber("g", colorSensor.getGreen());
     SmartDashboard.putNumber("b", colorSensor.getBlue());
 
-    // if(intaking){
-    //   //if the motors are intaking
-    //   if(color.confidence < 0.2) { //TODO threshold
-    //     //the color sensor sees something, so we now have sopmething:
-    //     if(color.color == CONE_COLOR) state = IntakeState.HAS_CONE;
-    //     else state = IntakeState.HAS_CUBE;
-    //   } else if (beamBroken){
-    //     //the b+eam brake is broken so we have something in the claw
-    //     state = IntakeState.GETTING_OBJECT;
-    //   } else {
-    //     //we don't have shit and we just spinning the wheels.
-    //     state = IntakeState.INTAKING;
-    //   }
-    // } else if (ejecting) {
-    //   //check if we're ejecting a cone or a cube:
-    //   if(state == IntakeState.HAS_CONE) state = IntakeState.EJECTING_CONE;
-    //   else if(state == IntakeState.HAS_CUBE) state = IntakeState.EJECTING_CUBE;
-    //   else if(!ejecting()) state = IntakeState.EJECTING_UNKNOWN; //we haven't detected a cone or a cube yet
+     if(intaking){
+       //if the motors are intaking
+       if(color.confidence < 0.2) {
+         //the color sensor sees something, so we now have sopmething:
+         if(color.color == CONE_COLOR) state = IntakeState.HAS_CONE;
+         else state = IntakeState.HAS_CUBE;
+       } else if (hasGamepiece){
+         //the beam brake is broken so we have something in the claw
+         state = IntakeState.GETTING_OBJECT;
+       } else {
+         //we don't have shit and we just spinning the wheels.
+         state = IntakeState.INTAKING;
+       }
+     } else if (ejecting) {
+       //check if we're ejecting a cone or a cube:
+       if(state == IntakeState.HAS_CONE) state = IntakeState.EJECTING_CONE;
+       else if(state == IntakeState.HAS_CUBE) state = IntakeState.EJECTING_CUBE;
+       else if(!ejecting()) state = IntakeState.EJECTING_UNKNOWN; //we haven't detected a cone or a cube yet
 
-    //   //start the timer once the object is out of the beam brake:
-    //   if(!beamBroken) ejectTimer.start();
-    //   if(ejectTimer.get() > TIME_TO_EJECT) state = IntakeState.EJECTING_NOTHING;
-    // } else {
-    //   //we aren't spinning the wheels
-    //   if(state != IntakeState.HAS_CONE && state != IntakeState.HAS_CUBE){
-    //     //we're just chillin:
-    //     state = IntakeState.RESTING;
-    //   }
-    // }
-    // if(!ejecting){
-    //   ejectTimer.stop();
-    //   ejectTimer.reset();
-    // }
+       //start the timer once the object is out of the beam brake:
+       if(!hasGamepiece) ejectTimer.start();
+       if(ejectTimer.get() > TIME_TO_EJECT) state = IntakeState.EJECTING_NOTHING;
+     } else {
+       //we aren't spinning the wheels
+       if(state != IntakeState.HAS_CONE && state != IntakeState.HAS_CUBE){
+         //we're just chillin:
+         state = IntakeState.RESTING;
+       }
+     }
+     if(!ejecting){
+       ejectTimer.stop();
+       ejectTimer.reset();
+     }
   }
 
   public Command runIntake(){
@@ -181,13 +182,15 @@ public class EndEffector extends SubsystemBase {
   }
 
   public boolean isClawOpen(){
-    return false;
-    // return clawSolenoid.get() == DoubleSolenoid.Value.kForward && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+    return clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean isClawClosed(){
-    return false;
-    // return clawSolenoid.get() == DoubleSolenoid.Value.kReverse && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+     return !clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+  }
+
+  public boolean ejecting(){
+    return state == IntakeState.EJECTING_CONE || state == IntakeState.EJECTING_CUBE || state == IntakeState.EJECTING_NOTHING || state == IntakeState.EJECTING_UNKNOWN;
   }
 
   public boolean hasCube(){
@@ -198,8 +201,8 @@ public class EndEffector extends SubsystemBase {
     return state == IntakeState.HAS_CONE || state == IntakeState.EJECTING_CONE;
   }
 
-  public boolean ejecting(){
-    return state == IntakeState.EJECTING_CONE || state == IntakeState.EJECTING_CUBE || state == IntakeState.EJECTING_NOTHING;
+  public IntakeState getState() {
+    return state;
   }
 
    public Command grabCommand(boolean open){
@@ -209,14 +212,6 @@ public class EndEffector extends SubsystemBase {
    public Command ejectCommand(){
         return new InstantCommand(() -> setPercent(1), this);
    }
-
-  public boolean beamBroken(){
-    return beamBrakeSensor.get();
-  }
-
-  public IntakeState getState(){
-    return state;
-  }
 
   public enum IntakeState{
     INTAKING,

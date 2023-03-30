@@ -8,6 +8,36 @@ Started field points
 
 DID A LOTTA STUFF
 
+ROBOT DEFAULT BEHAVIORS:
+- intake:
+    - rest open after ejecting, closed after intaking
+    - always close intake when gamepiece detected
+    - always open when intaking, ejecting
+- supersystem:
+    - slight angle in anticipated direction of travel, turret zeroed, when in center of field
+    - angle towards targets in community
+    - angle towards pickup when near substation
+
+CYCLE PATTERN:
+1. robot drives to substation
+    - pivot angles towards substation once in zone
+    - intake resting open
+    - turret zeroes till near substation
+2. robot intakes game piece (intake button pressed)
+    a. targets substation
+    b. reaches out to grab
+    c. intake closes
+    d. arm retracts
+3. robot drives to place
+    - pivot angles towards place once in zone
+    - intake resting closed
+    - turret zeroes till near place
+4. robot places game piece (place button pressed)
+    a. targets place
+    b. reaches out to place
+    c. intake opens
+    d. arm retracts
+
 FINAL CONTROL SCHEME PLAN:
 - place
     - low
