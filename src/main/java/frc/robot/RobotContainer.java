@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import org.opencv.photo.Photo;
+import frc.robot.commands.supersystem.DefaultStatemachine;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.sensors.PigeonIMU;
@@ -13,10 +13,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -24,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.util.AllianceFlipUtil;
 import frc.lib.util.ButtonMap;
-import frc.lib.util.ButtonMap.InterferenceButton;
 import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
 import frc.lib.util.ButtonMap.Button;
@@ -60,7 +56,7 @@ public class RobotContainer {
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
           armLimelight = new Limelight("armLimelight");
   private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
-  public PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
+  public static PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
 
   //subsystems
   private final DriveTrain driveTrain = new DriveTrain(pigeon);
@@ -132,12 +128,12 @@ public class RobotContainer {
   };
 
   private final OIEntry[] autoPlaceBindings = {
-          MultiButton.onHold(placeConeHigh, 4, 7),
-          MultiButton.onHold(placeConeMid, 1, 7),
-          MultiButton.onHold(placeLow, 2, 7),
-          MultiButton.onHold(placeCubeHigh, 4, 5),
-          MultiButton.onHold(placeCubeMid, 1, 5),
-          MultiButton.onHold(placeLow, 2, 5)
+          MultiButton.onPress(placeConeHigh, 4, 7),
+          MultiButton.onPress(placeConeMid, 1, 7),
+          MultiButton.onPress(placeLow, 2, 7),
+          MultiButton.onPress(placeCubeHigh, 4, 5),
+          MultiButton.onPress(placeCubeMid, 1, 5),
+          MultiButton.onPress(placeLow, 2, 5)
   };
 
   private final OIEntry[] simplifiedAutoPlace = {
@@ -147,15 +143,15 @@ public class RobotContainer {
   };
 
   private final OIEntry[] setpointBindings = {
-        //   InterferenceButton.onHold(highSetpoint, 4, 7, 5),
-        //   InterferenceButton.onHold(midSetpoint, 1, 7, 5),
-        //   InterferenceButton.onHold(lowSetpoint, 2, 7, 5),
+          ButtonMap.SimplePOV.onHold(highSetpoint, 0),
+          ButtonMap.SimplePOV.onHold(midSetpoint, 90),
+          ButtonMap.SimplePOV.onHold(lowSetpoint, 180),
 
           Button.onHold(automations.smartZero(), 10),
           Button.onHold(setpoints.goToSetpoint(Setpoints.zero), 9),
   };
 
-  private final OIEntry[] intakeBindings = {
+  private final OIEntry[] manualBindings = {
           Button.onHold(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
           Button.onHold(intakeSubstation.alongWith(
                 endEffector.runIntake()
@@ -166,7 +162,8 @@ public class RobotContainer {
           Button.onHold(endEffector.runIntake().until(endEffector::colorSensorSeesThing), 8),
           Button.onHold(endEffector.runOuttake(), 6),
           Button.onHold(endEffector.runIntakeClosed(), 13),
-          Button.onPress(new InstantCommand(() -> wrist.zero()),14)
+          Button.onPress(new InstantCommand(() -> wrist.zero()),14),
+          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 0, 0.2)
   };
 
   private final OIEntry[] colorBindings = {
@@ -181,6 +178,7 @@ public class RobotContainer {
         var currentState = supersystem.getSupersystemState();
         return Constraints.armTooFar(currentState);
     });
+    driveTrain.setRobotState(robotState);
 
     photonicHRI.off();
 
@@ -238,19 +236,18 @@ public class RobotContainer {
     endEffector.setDefaultCommand(endEffector.rest());
     new ButtonMap(driverJoystick).map(driverOI);
     var operatorMap = new ButtonMap(operatorJoystick);
-    operatorMap.map(intakeBindings);
+    operatorMap.map(manualBindings);
     operatorMap.map(simplifiedAutoPlace);
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
     operatorMap.map(colorBindings);
-//     wrist.setDefaultCommand(driverManualWrist);
-    //   supersystem.setDefaultCommand(new DefaultStatemachine(
-    //     supersystem,
-    //     () -> robotXInRange(0, 4.5),
-    //     () -> robotXInRange(12, 30),
-    //     () -> robotState.getOdometryPose().getRotation().getRadians()
-    //  ));
-    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
+       supersystem.setDefaultCommand(new DefaultStatemachine(
+         supersystem,
+         () -> false,//robotXInRange(0, 4.5),
+         () -> false,//robotXInRange(12, 30),
+         () -> robotState.getOdometryPose().getRotation().getRadians()
+      ));
+//    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
     // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
 
     new Trigger(endEffector::colorSensorSeesThing).onTrue(new InstantCommand(

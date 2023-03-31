@@ -49,7 +49,8 @@ public class TestBasic extends CommandBase {
         SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
         var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
         var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
-        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(Math.pow(testJoystick.getRawAxis(2),2), 0.05) * 0.13;
+        var turretJoy = testJoystick.getRawAxis(2);
+        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(Math.copySign(Math.pow(turretJoy,2), turretJoy), 0.05) * 0.13;
         var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);

@@ -287,6 +287,7 @@ public class LimelightHelper {
 
         if(botposeArray.length == 0) return;
         if(botposeArray[0] == 0) return;
+        if(!hasTarget()) return;
 
         var visionPose = new Pose2d(
             botposeArray[0] + halfFieldWidth,

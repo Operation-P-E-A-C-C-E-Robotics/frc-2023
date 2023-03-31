@@ -33,6 +33,7 @@ import frc.lib.safety.DankPids;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
 import frc.robot.Constants;
+import frc.robot.RobotState;
 
 import static frc.robot.Constants.DriveTrain.*;
 
@@ -48,6 +49,7 @@ public class DriveTrain extends SubsystemBase {
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
   private final PigeonHelper pigeon;
   private final Timer shiftClutchTimer = new Timer();
+  private RobotState robotState;
   private boolean shiftClutchEngaged = false;
 
   //SHIFTING!:
@@ -96,6 +98,11 @@ public class DriveTrain extends SubsystemBase {
     DankPids.registerDankTalon(rightMaster);
     DankPids.registerDankTalon(leftSlave);
     DankPids.registerDankTalon(rightSlave);
+  }
+
+  //terrible i know
+  public void setRobotState(RobotState state){
+    this.robotState = state;
   }
 
 
@@ -218,9 +225,9 @@ public class DriveTrain extends SubsystemBase {
   }
 
   private void setHighGear(boolean isHighGear){
-    // if(isHighGear == isHighGear()){
-      leftPositionOffset = getLeftMeters() - countsToMeters(leftMaster.getSelectedSensorPosition(), isHighGear);
-      rightPositionOffset = getRightMeters() - countsToMeters(rightMaster.getSelectedSensorPosition(), isHighGear);
+     if(isHighGear == isHighGear()){
+//      leftPositionOffset = getLeftMeters() - countsToMeters(leftMaster.getSelectedSensorPosition(), isHighGear);
+//      rightPositionOffset = getRightMeters() - countsToMeters(rightMaster.getSelectedSensorPosition(), isHighGear);
 
       shiftSolenoid.set(isHighGear ? HIGH_GEAR : LOW_GEAR);
 
@@ -231,7 +238,10 @@ public class DriveTrain extends SubsystemBase {
 
       leftMaster.setInverted(isHighGear);
       rightMaster.setInverted(!isHighGear);
-    // }
+
+      resetEncoders(0,0);
+      if(robotState != null) robotState.handleDrivetrainShift();
+     }
   }
 
   private void setBrakeMode(boolean isBrakeMode){

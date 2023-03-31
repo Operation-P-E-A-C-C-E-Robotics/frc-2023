@@ -78,6 +78,10 @@ public class RobotState {
         DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
     }
 
+    public void handleDrivetrainShift(){
+        resetOdometry(prevRobotPose);
+    }
+
     public static final double PLACE_DISTANCE = 2; //TODO meters
     public static final double PLACE_MAX_VELOCITY = 1; //TODO meters per second
 

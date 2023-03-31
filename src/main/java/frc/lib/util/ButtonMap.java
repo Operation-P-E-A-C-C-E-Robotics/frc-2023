@@ -294,6 +294,53 @@ public class ButtonMap {
         }
     }
 
+    public static class JoystickTrigger implements OIEntry{
+        public final Joystick joystick;
+        public final Command command;
+        public final int axis;
+        public final double threshold;
+        public final TriggerType triggerType;
+
+        public JoystickTrigger(Joystick joystick, Command command, int axis, double threshold, TriggerType triggerType){
+            this.joystick = joystick;
+            this.axis = axis;
+            this.threshold = threshold;
+            this.triggerType = triggerType;
+            this.command = command;
+        }
+
+        @Override
+        public void bindTo(Trigger trigger) {
+            switch (triggerType) {
+                case ON_PRESS -> trigger.onTrue(command);
+                case ON_RELEASE -> trigger.onFalse(command);
+                case WHILE_HOLD -> trigger.whileTrue(command);
+                case TOGGLE -> trigger.toggleOnTrue(command);
+            }
+        }
+
+        @Override
+        public Trigger getTrigger(Joystick joystick) {
+            return new Trigger(() -> this.joystick.getRawAxis(axis) > threshold);
+        }
+
+        public static JoystickTrigger whileMoved(Joystick joystick, Command command, int axis, double threshold){
+            return new JoystickTrigger(joystick, command, axis, threshold, TriggerType.WHILE_HOLD);
+        }
+
+        public static JoystickTrigger onMove(Joystick joystick, Command command, int axis, double threshold){
+            return new JoystickTrigger(joystick, command, axis, threshold, TriggerType.ON_PRESS);
+        }
+
+        public static JoystickTrigger onZero(Joystick joystick, Command command, int axis, double threshold){
+            return new JoystickTrigger(joystick, command, axis, threshold, TriggerType.ON_RELEASE);
+        }
+
+        public static JoystickTrigger toggle(Joystick joystick, Command command, int axis, double threshold){
+            return new JoystickTrigger(joystick, command, axis, threshold, TriggerType.TOGGLE);
+        }
+    }
+
     public static enum TriggerType {
         ON_PRESS, ON_RELEASE, WHILE_HOLD, TOGGLE
     }

@@ -8,8 +8,11 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.RobotState;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.PhotonicHRI;
 import frc.robot.subsystems.Supersystem;
 
 import java.util.function.DoubleSupplier;
@@ -22,6 +25,10 @@ public class GoToFieldPoint extends CommandBase {
     private final Constants.SupersystemTolerance tolerance;
     private final RobotState robotState;
     private final boolean stopWhenInTolerance;
+    private final PhotonicHRI.PhotonicLingualElement outOfRange = RobotContainer.photonicHRI.blink(252, 102, 38, 0.2),
+                                                    normal = RobotContainer.photonicHRI.blink(0, 255, 0, 0.2),
+                                                    finished = RobotContainer.photonicHRI.setSolidColor(255, 0, 0),
+                                                    interrupted = RobotContainer.photonicHRI.setSolidColor(0, 255, 0);
 
     /**
      * A command that moves the supersystem to a point on the field.
@@ -57,12 +64,26 @@ public class GoToFieldPoint extends CommandBase {
     }
 
     @Override
+    public void initialize(){
+    }
+
+    @Override
     public void execute(){
         System.out.println(":)");
         var target = targetLocation.get();
-        if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) return;
+        if(!robotState.inRangeOfTarget(new Translation2d(target.getX(), target.getY()))) {
+            RobotContainer.photonicHRI.runElement(outOfRange);
+            return;
+        }
+        RobotContainer.photonicHRI.runElement(normal);
         var robotRelative = robotState.fieldToDrivetrain(new Pose3d(target, new Rotation3d()));
         supersystem.setPlacePosition(robotRelative.getTranslation(), getTargetWristAngle());
+    }
+
+    @Override
+    public void end(boolean interrupted){
+        if(interrupted) RobotContainer.photonicHRI.runElement(this.interrupted);
+        else RobotContainer.photonicHRI.runElement(finished);
     }
 
     public Rotation2d getTargetWristAngle(){

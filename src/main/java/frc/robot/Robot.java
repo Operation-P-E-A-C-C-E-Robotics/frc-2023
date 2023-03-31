@@ -39,10 +39,10 @@ public class Robot extends TimedRobot {
     // } else {
     //   Inspiration.inspireProgrammersInit();
     // }
-    disabledLEDChooser.setDefaultOption("rainbow", robotContainer.photonicHRI.rainbow);
+    disabledLEDChooser.setDefaultOption("rainbow", RobotContainer.photonicHRI.rainbow);
     disabledLEDChooser.addOption("off", null);
-    disabledLEDChooser.addOption("random", robotContainer.photonicHRI.random);
-    disabledLEDChooser.addOption("fire", robotContainer.photonicHRI.fire());
+    disabledLEDChooser.addOption("random", RobotContainer.photonicHRI.random);
+    disabledLEDChooser.addOption("fire", RobotContainer.photonicHRI.fire());
     SmartDashboard.putData("LEDS", disabledLEDChooser);
 
   }

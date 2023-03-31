@@ -64,6 +64,7 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(cubePlaceOffset),
+                135,
                 tolerance,
                 robotState,
                 false

@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 import static frc.robot.Constants.EndEffector.*;
 
@@ -41,6 +42,11 @@ public class EndEffector extends SubsystemBase {
   private IntakeState state = IntakeState.RESTING;
   private Timer ejectTimer = new Timer();
   private Timer clawTimer = new Timer();
+
+  PhotonicHRI.PhotonicLingualElement ejectCone = RobotContainer.photonicHRI.blink(255, 177, 0, 0.1);
+  PhotonicHRI.PhotonicLingualElement ejectCube = RobotContainer.photonicHRI.blink(0, 0, 255, 0.1);
+  PhotonicHRI.PhotonicLingualElement ejectUnknown = RobotContainer.photonicHRI.blink(255, 0, 0, 0.1);
+  PhotonicHRI.PhotonicLingualElement ejectNothing = RobotContainer.photonicHRI.blink(0, 255, 0, 0.1);
 
   /** Creates a new Intake. */
   public EndEffector() {
@@ -100,14 +106,30 @@ public class EndEffector extends SubsystemBase {
        }
      } else if (ejecting) {
        //check if we're ejecting a cone or a cube:
-       if(state == IntakeState.HAS_CONE) state = IntakeState.EJECTING_CONE;
-       else if(state == IntakeState.HAS_CUBE) state = IntakeState.EJECTING_CUBE;
-       else if(!ejecting()) state = IntakeState.EJECTING_UNKNOWN; //we haven't detected a cone or a cube yet
+       if(state == IntakeState.HAS_CONE) {
+         state = IntakeState.EJECTING_CONE;
+         RobotContainer.photonicHRI.runElement(ejectCone);
+       }
+       else if(state == IntakeState.HAS_CUBE) {
+         state = IntakeState.EJECTING_CUBE;
+         RobotContainer.photonicHRI.runElement(ejectCube);
+       }
+       else if(!ejecting()) {
+         state = IntakeState.EJECTING_UNKNOWN; //we haven't detected a cone or a cube yet
+         RobotContainer.photonicHRI.runElement(ejectUnknown);
+       }
 
        //start the timer once the object is out of the beam brake:
        if(!hasGamepiece) ejectTimer.start();
-       if(ejectTimer.get() > TIME_TO_EJECT) state = IntakeState.EJECTING_NOTHING;
+       if(ejectTimer.get() > TIME_TO_EJECT){
+         state = IntakeState.EJECTING_NOTHING;
+         RobotContainer.photonicHRI.runElement(ejectNothing);
+       }
      } else {
+       var running = RobotContainer.photonicHRI.running;
+         if(running.equals(ejectCone) || running.equals(ejectCube) || running.equals(ejectUnknown) || running.equals(ejectNothing)){
+            RobotContainer.photonicHRI.off();
+         }
       if(hasGamepiece && color.confidence > 0.47) {
         //the color sensor sees something, so we now have sopmething:
         if(color.color.equals(CONE_COLOR)) state = IntakeState.HAS_CONE;
@@ -117,6 +139,7 @@ public class EndEffector extends SubsystemBase {
        if(state != IntakeState.HAS_CONE && state != IntakeState.HAS_CUBE){
          //we're just chillin:
          state = IntakeState.RESTING;
+
        }
      }
      if(!ejecting){
