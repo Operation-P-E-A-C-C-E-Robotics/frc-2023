@@ -124,7 +124,7 @@ public class RobotState {
         if(!poseRelativeToCamera.isNormal()) return getCubePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+        var pose = drivetrainToField(endEffectorToDriveTrain(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d())))));
 
         if(armCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
 
@@ -136,7 +136,7 @@ public class RobotState {
         // if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+        var pose = drivetrainToField(endEffectorToDriveTrain(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d())))));
 
         // if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
         prevConePose = pose;

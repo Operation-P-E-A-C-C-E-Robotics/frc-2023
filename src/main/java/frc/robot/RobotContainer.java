@@ -140,10 +140,16 @@ public class RobotContainer {
           MultiButton.onHold(placeLow, 2, 5)
   };
 
+  private final OIEntry[] simplifiedAutoPlace = {
+        Button.onPress(automations.place(PlaceLevel.HIGH), 4),
+        Button.onPress(automations.place(PlaceLevel.MID), 1),
+        Button.onPress(automations.place(PlaceLevel.LOW), 2)
+  };
+
   private final OIEntry[] setpointBindings = {
-          InterferenceButton.onHold(highSetpoint, 4, 7, 5),
-          InterferenceButton.onHold(midSetpoint, 1, 7, 5),
-          InterferenceButton.onHold(lowSetpoint, 2, 7, 5),
+        //   InterferenceButton.onHold(highSetpoint, 4, 7, 5),
+        //   InterferenceButton.onHold(midSetpoint, 1, 7, 5),
+        //   InterferenceButton.onHold(lowSetpoint, 2, 7, 5),
 
           Button.onHold(automations.smartZero(), 10),
           Button.onHold(setpoints.goToSetpoint(Setpoints.zero), 9),
@@ -158,7 +164,6 @@ public class RobotContainer {
           new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
           Button.onHold(endEffector.runIntake().until(endEffector::colorSensorSeesThing), 8),
-          Button.onRelease(endEffector.runIntakeClosed().withTimeout(0.1), 8),
           Button.onHold(endEffector.runOuttake(), 6),
           Button.onHold(endEffector.runIntakeClosed(), 13),
           Button.onPress(new InstantCommand(() -> wrist.zero()),14)
@@ -234,6 +239,7 @@ public class RobotContainer {
     new ButtonMap(driverJoystick).map(driverOI);
     var operatorMap = new ButtonMap(operatorJoystick);
     operatorMap.map(intakeBindings);
+    operatorMap.map(simplifiedAutoPlace);
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
     operatorMap.map(colorBindings);

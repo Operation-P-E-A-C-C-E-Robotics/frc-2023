@@ -47,18 +47,18 @@ public class EndEffector extends SubsystemBase {
     leftMotor.setInverted(Constants.Inversions.INTAKE_LEFT);
     rightMotor.setInverted(Constants.Inversions.INTAKE_RIGHT);
     // leftMotor.setSmartCurrentLimit(10);
-    leftMotor.setSmartCurrentLimit(7, 20);
+    leftMotor.setSmartCurrentLimit(10, 20);
     // rightMotor.setSmartCurrentLimit(10);
-    rightMotor.setSmartCurrentLimit(7, 20);
-    leftMotor.setOpenLoopRampRate(0.5);
-    rightMotor.setOpenLoopRampRate(0.5);
+    rightMotor.setSmartCurrentLimit(10, 20);
+    leftMotor.setOpenLoopRampRate(0.3);
+    rightMotor.setOpenLoopRampRate(0.3);
 
     colorMatcher.addColorMatch(CUBE_COLOR); //TODO
     colorMatcher.addColorMatch(CONE_COLOR); //TODO
   }
 
   public boolean colorSensorSeesThing(){
-    return colorSensor.getProximity() > 49;
+    return colorSensor.getProximity() > (isClawOpen() ? 44 : 90);
   }
 
   @Override
@@ -69,8 +69,8 @@ public class EndEffector extends SubsystemBase {
     SmartDashboard.putBoolean("Has gamepiece", hasGamepiece);
     SmartDashboard.putString("Intake state", state.toString());
 
-    var intaking = leftMotor.get() > 0.3;
-    var ejecting = leftMotor.get() < -0.3;
+    var ejecting = leftMotor.get() > 0.3;
+    var intaking = leftMotor.get() < -0.3;
 
     if(isClawOpen() && hasGamepiece){
       setClaw(false);
@@ -80,12 +80,16 @@ public class EndEffector extends SubsystemBase {
     SmartDashboard.putNumber("r", colorSensor.getRed());
     SmartDashboard.putNumber("g", colorSensor.getGreen());
     SmartDashboard.putNumber("b", colorSensor.getBlue());
+    SmartDashboard.putNumber("asomething", clawTimer.get());
+
+    SmartDashboard.putBoolean("aisCone", color.color.equals(CONE_COLOR));
+    SmartDashboard.putNumber("aconfidence", color.confidence);
 
      if(intaking){
        //if the motors are intaking
-       if(color.confidence < 0.2) {
+       if(hasGamepiece && color.confidence > 0.44) {
          //the color sensor sees something, so we now have sopmething:
-         if(color.color == CONE_COLOR) state = IntakeState.HAS_CONE;
+         if(color.color.equals(CONE_COLOR)) state = IntakeState.HAS_CONE;
          else state = IntakeState.HAS_CUBE;
        } else if (hasGamepiece){
          //the beam brake is broken so we have something in the claw
@@ -104,6 +108,11 @@ public class EndEffector extends SubsystemBase {
        if(!hasGamepiece) ejectTimer.start();
        if(ejectTimer.get() > TIME_TO_EJECT) state = IntakeState.EJECTING_NOTHING;
      } else {
+      if(hasGamepiece && color.confidence > 0.47) {
+        //the color sensor sees something, so we now have sopmething:
+        if(color.color.equals(CONE_COLOR)) state = IntakeState.HAS_CONE;
+        else state = IntakeState.HAS_CUBE;
+      }
        //we aren't spinning the wheels
        if(state != IntakeState.HAS_CONE && state != IntakeState.HAS_CUBE){
          //we're just chillin:
@@ -182,11 +191,11 @@ public class EndEffector extends SubsystemBase {
   }
 
   public boolean isClawOpen(){
-    return clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+    return !clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean isClawClosed(){
-     return !clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
+     return clawSolenoid.get() && clawTimer.get() > TIME_FOR_CLAW_TO_OPEN;
   }
 
   public boolean ejecting(){
