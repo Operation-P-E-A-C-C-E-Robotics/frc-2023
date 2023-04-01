@@ -127,6 +127,7 @@ public class Pivot extends SubsystemBase {
 
   private void reconfigureDevicesPeriodic(){
     if(pivotMaster.hasResetOccurred() || pivotSlave.hasResetOccurred()){
+      servoController.disableLoop();
       pivotMaster.configFactoryDefault();
       pivotSlave.configFactoryDefault();
 
@@ -145,6 +146,7 @@ public class Pivot extends SubsystemBase {
       pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
     }
     if(pivotEncoder.hasResetOccurred()){
+      servoController.disableLoop();
       pivotEncoder.configFactoryDefault();
 
       pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
