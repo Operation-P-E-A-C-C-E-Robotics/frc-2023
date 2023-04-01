@@ -36,7 +36,8 @@ import static frc.robot.Constants.Pivot.*;
 public class Pivot extends SubsystemBase {
   private final ServoArm servoController;
 
-  private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER);
+  private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER),
+          pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);;
   private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
           Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
           PneumaticsModuleType.CTREPCM,
@@ -52,10 +53,10 @@ public class Pivot extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public Pivot(boolean withBrake, DoubleSupplier armLengthSupplier) {
     servoController = new ServoArm(SYSTEM_CONSTANTS, armLengthSupplier, this::setVoltage, this::getAngleRadians, this::getAngularVelocityRadiansPerSecond, MASS);
-    WPI_TalonFX pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
 
     pivotMaster.configFactoryDefault();
     pivotSlave.configFactoryDefault();
+    pivotEncoder.configFactoryDefault();
 
     pivotMaster.setNeutralMode(NeutralMode.Brake);
     pivotSlave.setNeutralMode(NeutralMode.Brake);
@@ -66,10 +67,12 @@ public class Pivot extends SubsystemBase {
     pivotMaster.setInverted(Constants.Inversions.PIVOT);
     pivotSlave.setInverted(InvertType.OpposeMaster);
 
+    pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    pivotSlave.configStatorCurrentLimit(CURRENT_LIMIT);
+
     pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
     pivotEncoder.setPositionToAbsolute();
     pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
-    pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
     pivotEncoder.configMagnetOffset(169);
 
     pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
@@ -85,7 +88,7 @@ public class Pivot extends SubsystemBase {
     }
     if(withBrake) {
       setBrakeEngaged(true);
-      servoController.setPeriodicFunction(this::updateBrakePeriodic);
+      servoController.setPeriodicFunction(this::reconfigureDevicesPeriodic);
     }
     setBrakeEngaged(false);
 
@@ -119,6 +122,35 @@ public class Pivot extends SubsystemBase {
     if(isBrakeEngaged()){
       servoController.disableLoop();
       setVoltage(0);
+    }
+  }
+
+  private void reconfigureDevicesPeriodic(){
+    if(pivotMaster.hasResetOccurred() || pivotSlave.hasResetOccurred()){
+      pivotMaster.configFactoryDefault();
+      pivotSlave.configFactoryDefault();
+
+      pivotMaster.setNeutralMode(NeutralMode.Brake);
+      pivotSlave.setNeutralMode(NeutralMode.Brake);
+
+      pivotSlave.follow(pivotMaster);
+      pivotMaster.setNeutralMode(NeutralMode.Brake);
+
+      pivotMaster.setInverted(Constants.Inversions.PIVOT);
+      pivotSlave.setInverted(InvertType.OpposeMaster);
+
+      pivotMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+      pivotSlave.configStatorCurrentLimit(CURRENT_LIMIT);
+
+      pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
+    }
+    if(pivotEncoder.hasResetOccurred()){
+      pivotEncoder.configFactoryDefault();
+
+      pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+      pivotEncoder.setPositionToAbsolute();
+      pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
+      pivotEncoder.configMagnetOffset(169);
     }
   }
 
