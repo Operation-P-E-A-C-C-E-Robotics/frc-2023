@@ -284,7 +284,7 @@ public class Kinematics {
             pivot = -pivot;
         }
         // if we move too far, return the original state:
-        if(!Util.inRange(turret, Units.degreesToRadians(270))) return target;
+        if(!Util.inRange(turret, Units.degreesToRadians(Constants.Turret.MAX_ANGLE_RAD))) return target;
 
         //return whichever state is closer to the current state:
         var flippedState = new SupersystemState(turret, pivot, target.getArmExtension(), target.getWristAngle());

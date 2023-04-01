@@ -247,7 +247,7 @@ public final class Constants {
         public static final SystemConstants SYSTEM_CONSTANTS = new SystemConstants(
                 DCMotor.getFalcon500(1),
                 50,
-                7*5*5, //TODO
+                200,//7*5*5, //TODO
                 2048,
                 1.5,
                 2,

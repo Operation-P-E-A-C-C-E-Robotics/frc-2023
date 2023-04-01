@@ -23,8 +23,8 @@ import java.util.function.DoubleSupplier;
 
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.2); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.05); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.14); //TODO
+    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.00); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
@@ -101,7 +101,7 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePrePlaceOffset),
-                Units.degreesToRadians(80),
+                Units.degreesToRadians(100),
                 SupersystemTolerance.PRE_PLACE,
                 robotState,
                 true
@@ -110,7 +110,7 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(conePlaceOffset),
-                Units.degreesToRadians(110),
+                Units.degreesToRadians(125),
                 tolerance,
                 robotState,
                 true

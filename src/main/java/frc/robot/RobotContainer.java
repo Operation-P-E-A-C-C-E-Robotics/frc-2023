@@ -29,6 +29,7 @@ import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.commands.auto.BangBangBalancer;
 import frc.robot.commands.auto.MobilityOverStation;
 import frc.robot.commands.drive.TestVelocity;
+import frc.robot.commands.endeffector.IntakeDefault;
 import frc.robot.commands.supersystem.Automations;
 import frc.robot.commands.supersystem.Automations.PlaceLevel;
 import frc.robot.commands.supersystem.Setpoints;
@@ -156,14 +157,17 @@ public class RobotContainer {
           Button.onHold(intakeSubstation.alongWith(
                 endEffector.runIntake()
                 // new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(Setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
-        ), 3),
+        ).until(endEffector::colorSensorSeesThing), 3),
           new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
           Button.onHold(endEffector.runIntake().until(endEffector::colorSensorSeesThing), 8),
           Button.onHold(endEffector.runOuttake(), 6),
           Button.onHold(endEffector.runIntakeClosed(), 13),
           Button.onPress(new InstantCommand(() -> wrist.zero()),14),
-          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 0, 0.2)
+          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 0, 0.1),
+          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 1, 0.1),
+          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 2, 0.1),
+          ButtonMap.JoystickTrigger.onMove(operatorJoystick, new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick), 3, 0.1)
   };
 
   private final OIEntry[] colorBindings = {
@@ -241,12 +245,13 @@ public class RobotContainer {
     operatorMap.map(setpointBindings);
     operatorMap.map(autoPlaceBindings);
     operatorMap.map(colorBindings);
-       supersystem.setDefaultCommand(new DefaultStatemachine(
-         supersystem,
-         () -> false,//robotXInRange(0, 4.5),
-         () -> false,//robotXInRange(12, 30),
-         () -> robotState.getOdometryPose().getRotation().getRadians()
-      ));
+//        supersystem.setDefaultCommand(new DefaultStatemachine(
+//          supersystem,
+//          () -> false,//robotXInRange(0, 4.5),
+//          () -> false,//robotXInRange(12, 30),
+//          () -> robotState.getOdometryPose().getRotation().getRadians()
+//       ));
+supersystem.setDefaultCommand(automations.smartZero());
 //    supersystem.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist, operatorJoystick));
     // pivot.setDefaultCommand(new TestBasic(supersystem, arm, pivot, turret, wrist));
 

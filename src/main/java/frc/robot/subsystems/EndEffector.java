@@ -127,9 +127,11 @@ public class EndEffector extends SubsystemBase {
        }
      } else {
        var running = RobotContainer.photonicHRI.running;
-         if(running.equals(ejectCone) || running.equals(ejectCube) || running.equals(ejectUnknown) || running.equals(ejectNothing)){
+       if(running != null){
+         if(running == ejectCone || running == ejectCube || running == ejectUnknown || running == ejectNothing){
             RobotContainer.photonicHRI.off();
          }
+        }
       if(hasGamepiece && color.confidence > 0.47) {
         //the color sensor sees something, so we now have sopmething:
         if(color.color.equals(CONE_COLOR)) state = IntakeState.HAS_CONE;
@@ -139,6 +141,7 @@ public class EndEffector extends SubsystemBase {
        if(state != IntakeState.HAS_CONE && state != IntakeState.HAS_CUBE){
          //we're just chillin:
          state = IntakeState.RESTING;
+        //  RobotContainer.photonicHRI.off();
 
        }
      }
