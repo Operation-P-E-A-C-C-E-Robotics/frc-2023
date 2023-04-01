@@ -321,7 +321,7 @@ public class ButtonMap {
 
         @Override
         public Trigger getTrigger(Joystick joystick) {
-            return new Trigger(() -> this.joystick.getRawAxis(axis) > threshold);
+            return new Trigger(() -> Math.abs(this.joystick.getRawAxis(axis)) > threshold);
         }
 
         public static JoystickTrigger whileMoved(Joystick joystick, Command command, int axis, double threshold){

@@ -25,10 +25,10 @@ public class GoToFieldPoint extends CommandBase {
     private final Constants.SupersystemTolerance tolerance;
     private final RobotState robotState;
     private final boolean stopWhenInTolerance;
-    private final PhotonicHRI.PhotonicLingualElement outOfRange = RobotContainer.photonicHRI.blink(252, 102, 38, 0.2),
-                                                    normal = RobotContainer.photonicHRI.blink(0, 255, 0, 0.2),
-                                                    finished = RobotContainer.photonicHRI.setSolidColor(255, 0, 0),
-                                                    interrupted = RobotContainer.photonicHRI.setSolidColor(0, 255, 0);
+    private final PhotonicHRI.PhotonicLingualElement outOfRange = RobotContainer.photonicHRI.blink(252, 90, 38, 0.1),
+                                                    normal = RobotContainer.photonicHRI.blink(0, 255, 0, 0.1),
+                                                    finished = RobotContainer.photonicHRI.setSolidColor(0, 255, 0),
+                                                    interrupted = RobotContainer.photonicHRI.setSolidColor(255, 0, 0);
 
     /**
      * A command that moves the supersystem to a point on the field.

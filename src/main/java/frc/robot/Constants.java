@@ -49,6 +49,7 @@ public final class Constants {
 
         //physical constants
         public static final double  DRIVE_ENCODER_CPR = 2048,
+                COUNTS_PER_METER = 44000,
                 GEARBOX_RATIO_HIGH = 10.66,//:1
                 GEARBOX_RATIO_LOW = 17.88,//:1
                 WHEEL_CIRCUMFERENCE = 0.4785,
@@ -57,10 +58,10 @@ public final class Constants {
                 TRACK_WIDTH = 0.6096; //m
 
         //state space constants
-        public static final double  LQR_ERROR_TOLERANCE = 0.5,
-                LQR_EFFORT = 12.0,
+        public static final double  LQR_ERROR_TOLERANCE = 0.3,
+                LQR_EFFORT = 11.0,
                 KALMAN_MODEL_ACCURACY = 3,
-                KALMAN_SENSOR_ACCURACY = 0.1;
+                KALMAN_SENSOR_ACCURACY = 0.01;
 
         public static final double wheelDiameter = 0.477522;
 
@@ -68,11 +69,12 @@ public final class Constants {
         public static final double DT = 0.02;
 
         //velocity constants:
-        public static final double  kS = 0.10351, //Volts
-                kV_LINEAR = 2.4155, //Volts per meter per second
-                kA_LINEAR = 0.2751, //Volts per meter per second squared
-                kV_ANGULAR = 2, //Volts per radian per second
-                kA_ANGULAR = 0.2, //Volts per radian per second squared
+        public static final double  kS = 0.188, //Volts
+                kV_LINEAR = 2.2067, //Volts per meter per second
+                kA_LINEAR = 0.1,//90592, //Volts per meter per second squared
+                kS_ANGULAR = 0.34486,
+                kV_ANGULAR = 2.4287, //Volts per radian per second
+                kA_ANGULAR = 0.1,//0.68216, //Volts per radian per second squared
                 kV_LINEAR_LOW = 2.4155, //Volts per meter per second
                 kA_LINEAR_LOW = 0.2751, //Volts per meter per second squared
                 kV_ANGULAR_LOW = 2, //Volts per radian per second
@@ -80,9 +82,9 @@ public final class Constants {
                 kP = 0.24921,
                 kI = 0,
                 kD = 0,
-                AUTO_VOLTAGE_MAX = 7,
-                AUTO_MAX_SPEED_METERS_PER_SECOND = 1, //3
-                AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 1.1;
+                AUTO_VOLTAGE_MAX = 11,
+                AUTO_MAX_SPEED_METERS_PER_SECOND = 0.5, //3
+                AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED = 0.5;
 
         public static final StatorCurrentLimitConfiguration CURRENT_LIMIT = new StatorCurrentLimitConfiguration(
                 false,

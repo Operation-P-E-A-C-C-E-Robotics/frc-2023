@@ -6,8 +6,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.util.DriveSignal;
+import frc.robot.Constants;
 import frc.robot.DashboardManager;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
@@ -36,9 +38,10 @@ public class PathFollower extends CommandBase{
         this.trajectory = trajectory;
         this.robotState = robotState;
         controller = new LTVUnicycleController(
-                VecBuilder.fill(0.1,0.2,0.5), //maximum desired error tolerances (x meters, y meters, rotation rad)
-                VecBuilder.fill(0.5,0.3), //maximum desired control effort (meters/second, rad/second)
-                0.020 //discretion timestep (loop time) seconds
+                // VecBuilder.fill(0.1,0.2,0.5), //maximum desired error tolerances (x meters, y meters, rotation rad)
+                // VecBuilder.fill(3,1), //maximum desired control effort (meters/second, rad/second)
+                0.020, //discretion timestep (loop time) seconds
+                Constants.DriveTrain.AUTO_MAX_SPEED_METERS_PER_SECOND
         );
         timer = new Timer();
         addRequirements(driveTrain);
@@ -66,7 +69,10 @@ public class PathFollower extends CommandBase{
 
         //get wheel speeds
         var speeds = DRIVE_KINEMATICS.toWheelSpeeds(chassis);
-        speeds = new DifferentialDriveWheelSpeeds(speeds.rightMetersPerSecond, speeds.leftMetersPerSecond);
+        speeds = new DifferentialDriveWheelSpeeds(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond);
+
+        SmartDashboard.putNumber("WTF LEFT", speeds.leftMetersPerSecond);
+        SmartDashboard.putNumber("WTF RIGHT", speeds.rightMetersPerSecond);
 
         //drive
         driveTrain.set(DriveSignal.velocityDrive(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond, true));

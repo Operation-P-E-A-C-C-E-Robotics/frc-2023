@@ -4,7 +4,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 
 public class PeaccyDriveHelper {
     private static final double THROTTLE_DEADBAND = 0.02, WHEEL_DEADBAND = 0.02;
-    private static final double HIGH_WEEL_NON_LINEARITY = 0.01,
+    private static final double HIGH_WEEL_NON_LINEARITY = 0.5,
             HIGH_SENSITIVITY = 0.7,
             HIGH_NEG_INERTIA_SCALAR = 5.0; //how sensitive the robot is to the change in wheel
     private static final double LOW_WHEEL_NON_LINEARITY = 0.5,
@@ -72,7 +72,7 @@ public class PeaccyDriveHelper {
 //        wheel = applySinCurve(wheel, false);
         throttle *= FINE_THROTTLE_SENSITIVITY;
         wheel *= FINE_TURN_SENSITIVITY;
-        return new DriveSignal(throttle + wheel, throttle - wheel, false, false, DriveSignal.ControlMode.VELOCITY);
+        return new DriveSignal(throttle + wheel, throttle - wheel, false, true, DriveSignal.ControlMode.VELOCITY);
     }
 
     /**

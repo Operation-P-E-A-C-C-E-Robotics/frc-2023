@@ -213,15 +213,18 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double countsToMeters(double encoderCounts){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * WHEEL_CIRCUMFERENCE;
+    return encoderCounts / COUNTS_PER_METER;
+    // return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * WHEEL_CIRCUMFERENCE;
   }
 
   public double countsToMeters(double encoderCounts, boolean isHighGear){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * WHEEL_CIRCUMFERENCE;
+    return encoderCounts / COUNTS_PER_METER;
+    // return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * WHEEL_CIRCUMFERENCE;
   }
 
   public double metersToCounts(double meters){
-    return ((meters / WHEEL_CIRCUMFERENCE) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
+    return meters * COUNTS_PER_METER;
+    // return ((meters / WHEEL_CIRCUMFERENCE) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
   }
 
   private void setHighGear(boolean isHighGear){
@@ -262,8 +265,13 @@ public class DriveTrain extends SubsystemBase {
   @Override
   public void periodic(){
     SmartDashboard.putBoolean("HIGH GEAR", isHighGear());
+    SmartDashboard.putNumber("left counts", leftMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("right counts", rightMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("EXP DISTANCE", rightMaster.getSelectedSensorPosition() / COUNTS_PER_METER);
+    SmartDashboard.putNumber("OLD DISTANCE", getAverageEncoderDistance());
     if(isClosedLoop){
-      var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
+      // var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
+      var loop = highVelocityController.loop;
 
       loop.setNextR(VecBuilder.fill(leftVelocitySetpoint, rightVelocitySetpoint));
       loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));

@@ -123,7 +123,6 @@ public class RobotContainer {
   private final Command hybridDropOuttake = endEffector.drop().withTimeout(0.1).andThen(endEffector.runOuttake());
 
   private final OIEntry[] driverOI = {
-          Button.onHold(new BangBangBalancer(driveTrain, robotState, false), 12),
           Button.onPress(new InstantCommand(wrist::zero, wrist), 8),
           Button.onPress(new InstantCommand(() -> driveTrain.resetEncoders(0,0)), 16)
   };
@@ -158,7 +157,6 @@ public class RobotContainer {
                 endEffector.runIntake()
                 // new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(Setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
         ).until(endEffector::colorSensorSeesThing), 3),
-          new ButtonMap.AnyPOV(intakeFloorFancy.alongWith(endEffector.runIntake()), ButtonMap.TriggerType.WHILE_HOLD),
 
           Button.onHold(endEffector.runIntake().until(endEffector::colorSensorSeesThing), 8),
           Button.onHold(endEffector.runOuttake(), 6),
@@ -224,6 +222,7 @@ public class RobotContainer {
                             new DriveDistance(driveTrain, robotState, 2.5))
     );
     autoMode.addOption("DO NOT RUN THIS (unless you know what it is)", new MobilityOverStation(driveTrain, robotState));
+    autoMode.addOption("test path", paths.testPath(robotState));
     SmartDashboard.putData("Auto Mode", autoMode);
     SmartDashboard.putData("Drive Mode", teleopDriveMode);
     configureBindings();
