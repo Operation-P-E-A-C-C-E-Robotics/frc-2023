@@ -64,7 +64,7 @@ public class Automations {
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
                         .plus(cubePlaceOffset),
-                135,
+                160,
                 tolerance,
                 robotState,
                 false
@@ -121,6 +121,7 @@ public class Automations {
                 goToPlace
         ).andThen(
                 new WaitCommand(0.5).until(robotState::isReadyToPlace),
+                new WaitCommand(0.3),
                 new DropGamepiece(endEffector, () -> true)
         );
     }

@@ -8,6 +8,13 @@ Started field points
 
 DID A LOTTA STUFF
 
+TODO pre districs (if we make it):
+- test additional auto place checks
+- better ground intake
+- 2nd limelight
+- make sure auto balance works with ballast
+- place cone auto?
+
 ROBOT DEFAULT BEHAVIORS:
 - intake:
     - rest open after ejecting, closed after intaking
