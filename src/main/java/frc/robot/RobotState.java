@@ -9,13 +9,10 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.PoseFilter;
 import frc.lib.util.Util;
 import frc.lib.safety.Value;
-import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Supersystem;
@@ -28,11 +25,11 @@ public class RobotState {
             visionTargetPoseSmoothed = new PoseFilter();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
-    private final Limelight apriltagCamera, armCamera;
+    private final Limelight drivetrainCameraMiddle, drivetrainCameraTwo;
     private final PowerDistribution pdp;
     private Pose3d prevConePose = new Pose3d();
     private Pose3d prevCubePose = new Pose3d();
-    private Pose2d prevRobotPose;
+    private Pose2d prevRobotPose, currentRobotPose;
 
 
     /**
@@ -44,8 +41,8 @@ public class RobotState {
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         this.imu = imu;
-        this.apriltagCamera = apriltagCamera;
-        this.armCamera = armCamera;
+        this.drivetrainCameraMiddle = apriltagCamera;
+        this.drivetrainCameraTwo = armCamera;
         this.pdp = new PowerDistribution();
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 DRIVE_KINEMATICS,
@@ -57,6 +54,7 @@ public class RobotState {
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+        currentRobotPose = prevRobotPose;
     }
 
      /**
@@ -64,10 +62,12 @@ public class RobotState {
      */
     public void update(){
         supersystem.getKinematics().reset();
-        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+        prevRobotPose = currentRobotPose;
         // apriltagCamera.updatePoseEstimatorOld(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
         fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters());
-        if(!new Joystick(0).getRawButton(14)) apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+        drivetrainCameraMiddle.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+//        drivetrainCameraTwo.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+        currentRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
 
         DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
@@ -92,7 +92,7 @@ public class RobotState {
      * @return whether the drivetrain is near enough a target to start placing or intaking
      */
     public boolean inRangeOfTarget(Translation2d target){
-        var pose = getOdometryPose().getTranslation();
+        var pose = currentRobotPose.getTranslation();
         var distanceToTarget = pose.minus(target).getNorm();
         var distanceOkay = distanceToTarget < PLACE_DISTANCE;
         var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < PLACE_MAX_VELOCITY;
@@ -101,47 +101,47 @@ public class RobotState {
 
     public boolean isReadyToPlace(){
         var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < 0.1;
-        return velocityOkay && apriltagCamera.isOdometryCorrected();
+        return velocityOkay && drivetrainCameraMiddle.isOdometryCorrected();
     }
 
     public Value<Pose3d> getConePoseFromDrivetrainLimelight(){
-        var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
+        var poseRelativeToCamera = drivetrainCameraMiddle.getConePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return new Value<>(prevConePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
-        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        if(drivetrainCameraMiddle.hasTarget()) pose = conePoseSmoothed.calculate(pose);
         prevConePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePoseFromDrivetrainLimelight(){
-        var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
+        var poseRelativeToCamera = drivetrainCameraMiddle.getCubePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return new Value<>(prevCubePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
-        if(apriltagCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
+        if(drivetrainCameraMiddle.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
         prevCubePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePose(){
-        var poseRelativeToCamera = armCamera.getCubePoseRelativeToCamera();
+        var poseRelativeToCamera = drivetrainCameraTwo.getCubePoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return getCubePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(endEffectorToDriveTrain(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d())))));
 
-        if(armCamera.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
+        if(drivetrainCameraTwo.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
 
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getConePose(){
-        var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
+        var poseRelativeToCamera = drivetrainCameraTwo.getConePoseRelativeToCamera();
         // if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
@@ -153,7 +153,7 @@ public class RobotState {
     }
 
     public Value<Pose3d> getVisionTargetPose(double z){
-        var poseRelativeToCamera = armCamera.getVisionTargetPoseRelativeToCamera();
+        var poseRelativeToCamera = drivetrainCameraTwo.getVisionTargetPoseRelativeToCamera();
         if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
@@ -161,25 +161,25 @@ public class RobotState {
                 Util.toPose3d(poseRelativeToCamera.get(new Translation2d()), z)
         ))));
 
-        if(armCamera.hasTarget()) pose = visionTargetPoseSmoothed.calculate(pose);
+        if(drivetrainCameraTwo.hasTarget()) pose = visionTargetPoseSmoothed.calculate(pose);
         prevCubePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Double> getConeAngleFromCamera(){
-        armCamera.setPipeline(Limelight.CONE_PIPELINE);
-        if(armCamera.getPipeline() != Limelight.CONE_PIPELINE) return Value.notAvailable();
+        drivetrainCameraTwo.setPipeline(Limelight.CONE_PIPELINE);
+        if(drivetrainCameraTwo.getPipeline() != Limelight.CONE_PIPELINE) return Value.notAvailable();
 
-        var angle = armCamera.getTargetX();
+        var angle = drivetrainCameraTwo.getTargetX();
         if(!angle.isNormal()) return Value.notAvailable();
         return angle;
     }
 
     public Value<Double> getCubeAngleFromCamera(){
-        armCamera.setPipeline(Limelight.CUBE_PIPELINE);
-        if(armCamera.getPipeline() != Limelight.CUBE_PIPELINE) return Value.notAvailable();
+        drivetrainCameraTwo.setPipeline(Limelight.CUBE_PIPELINE);
+        if(drivetrainCameraTwo.getPipeline() != Limelight.CUBE_PIPELINE) return Value.notAvailable();
 
-        var angle = armCamera.getTargetX();
+        var angle = drivetrainCameraTwo.getTargetX();
         if(!angle.isNormal()) return Value.notAvailable();
         return angle;
     }
@@ -220,7 +220,7 @@ public class RobotState {
      * @return robot's position, relative to the field
      */
     public Value<Pose3d> getRawApriltagBotpose(){
-        return apriltagCamera.getBotpose();
+        return drivetrainCameraMiddle.getBotpose();
     }
 
     /**
@@ -228,7 +228,7 @@ public class RobotState {
      * @return robot's position, relative to the field
      */
     public Pose2d getOdometryPose(){
-        return fieldToDrivetrainEstimator.getEstimatedPosition();
+        return currentRobotPose;
     }
 
     /**
@@ -238,7 +238,7 @@ public class RobotState {
      */
     public Pose3d getRobotPose(){
         Pose2d odometryPose = getOdometryPose();
-        Pose3d botpose = apriltagCamera.getBotpose().get(new Pose3d());
+        Pose3d botpose = drivetrainCameraMiddle.getBotpose().get(new Pose3d());
         return new Pose3d(
                 odometryPose.getX(),
                 odometryPose.getY(),
