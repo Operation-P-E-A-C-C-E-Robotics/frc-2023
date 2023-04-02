@@ -18,8 +18,10 @@ public class SpitGamepiece extends CommandBase {
     @Override
     public void execute() {
         if (readyToEject.getAsBoolean()) {
+            endEffector.setClaw(true);
             endEffector.setPercent(-1);
         } else {
+            endEffector.setClaw(false);
             endEffector.setPercent(0);
         }
     }

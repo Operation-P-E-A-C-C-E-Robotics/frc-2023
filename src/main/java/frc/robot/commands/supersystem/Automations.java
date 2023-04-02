@@ -115,7 +115,14 @@ public class Automations {
                 robotState,
                 true
         ).withTimeout(1);
-        return goToPrePlace.andThen(new WaitCommand(0.5),goToPlace).andThen(new DropGamepiece(endEffector, () -> true));
+        return goToPrePlace.andThen(
+                new WaitCommand(1).until(robotState::isReadyToPlace),
+                new WaitCommand(0.3),
+                goToPlace
+        ).andThen(
+                new WaitCommand(0.5).until(robotState::isReadyToPlace),
+                new DropGamepiece(endEffector, () -> true)
+        );
     }
 
     private static final double SENSITIVITY = 0.02;

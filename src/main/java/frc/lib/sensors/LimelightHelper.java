@@ -29,6 +29,7 @@ public class LimelightHelper {
     private IntegerPublisher ledMode, camMode, stream, snapshot, pipeline;
     private DoubleArrayPublisher crop;
     private MedianFilter xFilter = new MedianFilter(10);
+    private boolean visionAgreesWithOdometry = false;
 
     private DoubleSubscriber dSub(String name){
         return limelight.getDoubleTopic(name).subscribe(0);
@@ -294,9 +295,17 @@ public class LimelightHelper {
             botposeArray[1] + halfFieldHeight,
             Rotation2d.fromDegrees(botposeArray[5])
         );
+
+        visionAgreesWithOdometry = visionPose.getTranslation().getDistance(robotPose.getTranslation()) < 0.03
+                && Math.abs(visionPose.getRotation().getRadians() - robotPose.getRotation().getRadians()) < 0.01;
+
         var stdev = getVisionStdev(visionPose, robotPose, leftVelocity, rightVelocity);
         SmartDashboard.putString("current vision stdev", stdev.toString());
         estimator.addVisionMeasurement(visionPose, Timer.getFPGATimestamp() - 0.5, stdev);
+    }
+
+    public boolean isOdometryCorrected(){
+        return visionAgreesWithOdometry;
     }
 
     private Matrix<N3, N1> getVisionStdev(Pose2d visionPose, Pose2d robotPose, double leftVelocity, double rightVelocity){

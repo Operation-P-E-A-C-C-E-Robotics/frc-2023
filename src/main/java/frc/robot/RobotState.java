@@ -82,8 +82,8 @@ public class RobotState {
         resetOdometry(prevRobotPose);
     }
 
-    public static final double PLACE_DISTANCE = 2; //TODO meters
-    public static final double PLACE_MAX_VELOCITY = 1; //TODO meters per second
+    public static final double PLACE_DISTANCE = Units.inchesToMeters(43); //TODO meters
+    public static final double PLACE_MAX_VELOCITY = 0.35; //TODO meters per second
 
     /**
      * determine whether the drivetrain is near enough a target to start placing or intaking
@@ -97,6 +97,11 @@ public class RobotState {
         var distanceOkay = distanceToTarget < PLACE_DISTANCE;
         var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < PLACE_MAX_VELOCITY;
         return distanceOkay && velocityOkay;
+    }
+
+    public boolean isReadyToPlace(){
+        var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < 0.1;
+        return velocityOkay && apriltagCamera.isOdometryCorrected();
     }
 
     public Value<Pose3d> getConePoseFromDrivetrainLimelight(){
