@@ -9,11 +9,13 @@ Started field points
 DID A LOTTA STUFF
 
 TODO pre districs (if we make it):
-- test additional auto place checks
-- better ground intake
-- 2nd limelight
-- make sure auto balance works with ballast
-- place cone auto?
+[TODO] test additional auto place checks
+[TODO] better ground intake
+[TODO] 2nd limelight
+[TODO] make sure auto balance works with ballast
+[TODO] place cone auto?
+
+
 
 ROBOT DEFAULT BEHAVIORS:
 - intake:
@@ -68,10 +70,10 @@ TODO LIST PRE-REVERE:
 [OK] re-zero cancoders as accurately as possible
 [OK] speed up shit as much as possible
 [OK] improve turret accuracy
-[todo] color sensor
-[todo] mode selector (cube/cone)
-[todo] ensure all motors and air cylinders are going the correct direction
-    [todo] the intake gripper is backwards
+[OK] color sensor
+[OK] mode selector (cube/cone)
+[OK] ensure all motors and air cylinders are going the correct direction
+    [OK] the intake gripper is backwards
 [todo] arm gravity feedfoward
 [todo] ensure accurate gear ratios and units for everything
     [OK] fix drivetrain units
