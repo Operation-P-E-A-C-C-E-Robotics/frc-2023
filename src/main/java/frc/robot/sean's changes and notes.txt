@@ -14,7 +14,7 @@ TODO pre districs (if we make it):
 [TODO] 2nd limelight
 [TODO] make sure auto balance works with ballast
 [TODO] place cone auto?
-
+[TODO] add 2nd limelight to additional auto place checks so it wont be screwey
 
 
 ROBOT DEFAULT BEHAVIORS:
