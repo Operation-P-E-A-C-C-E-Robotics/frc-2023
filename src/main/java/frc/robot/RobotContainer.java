@@ -128,18 +128,18 @@ public class RobotContainer {
   };
 
   private final OIEntry[] autoPlaceBindings = {
-          MultiButton.onPress(placeConeHigh, 4, 7),
-          MultiButton.onPress(placeConeMid, 1, 7),
-          MultiButton.onPress(placeLow, 2, 7),
-          MultiButton.onPress(placeCubeHigh, 4, 5),
-          MultiButton.onPress(placeCubeMid, 1, 5),
-          MultiButton.onPress(placeLow, 2, 5)
+          MultiButton.toggle(placeConeHigh, 4, 7),
+          MultiButton.toggle(placeConeMid, 1, 7),
+          MultiButton.toggle(placeLow, 2, 7),
+          MultiButton.toggle(placeCubeHigh, 4, 5),
+          MultiButton.toggle(placeCubeMid, 1, 5),
+          MultiButton.toggle(placeLow, 2, 5)
   };
 
   private final OIEntry[] simplifiedAutoPlace = {
-        Button.onPress(automations.place(PlaceLevel.HIGH), 4),
-        Button.onPress(automations.place(PlaceLevel.MID), 1),
-        Button.onPress(automations.place(PlaceLevel.LOW), 2)
+        Button.toggle(automations.place(PlaceLevel.HIGH), 4),
+        Button.toggle(automations.place(PlaceLevel.MID), 1),
+        Button.toggle(automations.place(PlaceLevel.LOW), 2)
   };
 
   private final OIEntry[] setpointBindings = {
@@ -190,8 +190,6 @@ public class RobotContainer {
     teleopDriveMode.addOption("Peaccy Drive",peaccyDrive);
 
     Command autoZeroCommand1 = setpoints.goToSetpoint(Setpoints.zero, SupersystemTolerance.DEFAULT, true);
-
-
 
     autoMode.addOption("DO NOTHING", null);
     autoMode.addOption("place and balance",

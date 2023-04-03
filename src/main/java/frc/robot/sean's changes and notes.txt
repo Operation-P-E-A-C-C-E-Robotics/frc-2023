@@ -20,6 +20,10 @@ P.S. HOLY FUK WE MADE IT
 [TODO] better substation setpoint
 [TODO] better apriltag std devs.
 
+race spitgamepiece for cones too
+tune timeouts
+lower place a little bit for cones, bring pre-place back a little bit.
+
 
 ROBOT DEFAULT BEHAVIORS:
 - intake:

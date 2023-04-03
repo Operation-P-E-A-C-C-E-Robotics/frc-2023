@@ -23,7 +23,7 @@ import java.util.function.DoubleSupplier;
 
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0, 0, 0.14); //TODO
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0.07, 0, 0.14); //TODO
     public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.00); //TODO
     private final Supersystem supersystem;
     private final RobotState robotState;
@@ -105,7 +105,7 @@ public class Automations {
                 SupersystemTolerance.PRE_PLACE,
                 robotState,
                 true
-        ).withTimeout(3);
+        ).withTimeout(4);
         var goToPlace = new GoToFieldPoint(
                 supersystem,
                 () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
@@ -118,11 +118,15 @@ public class Automations {
         return goToPrePlace.andThen(
                 new WaitCommand(1).until(robotState::isReadyToPlace),
                 new WaitCommand(0.3),
-                goToPlace
-        ).andThen(
-                new WaitCommand(0.5).until(robotState::isReadyToPlace),
-                new WaitCommand(0.3),
-                new DropGamepiece(endEffector, () -> true)
+                goToPlace,
+                goToPlace.raceWith( //TODO this may cause error, if so, make a second goToPlace command.
+                    new WaitCommand(1).until(robotState::isReadyToPlace),
+                    new WaitCommand(0.3),
+                    new DropGamepiece(
+                            endEffector,
+                            () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                    )
+                )
         );
     }
 

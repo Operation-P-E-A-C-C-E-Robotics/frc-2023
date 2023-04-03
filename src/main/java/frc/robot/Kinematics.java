@@ -201,7 +201,7 @@ public class Kinematics {
     }
 
     public static final double WRIST_LENGTH = 0.2,
-                              WRIST_MID_LENGTH = -0.5; //todo move to constants
+                              WRIST_MID_LENGTH = -0.45; //todo move to constants
     /**
      * Convert from supersystem joint positions to location of the wrist
      * @param liftState the state of the lift

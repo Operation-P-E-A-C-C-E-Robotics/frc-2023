@@ -235,8 +235,8 @@ public class LimelightHelper {
 
     int divergentVisionReadings = 50;
     private static final double DIVERGENT_VISION_TRANSLATION = 0.3, //METERS
-                                DIVERGENT_VISION_ROTATION = 0.1, //radians
-                                RESET_VISION_THRESHOLD = 4, //Divergent vision readings
+                                DIVERGENT_VISION_ROTATION = 0.4, //radians
+                                RESET_VISION_THRESHOLD = 10, //Divergent vision readings
                                 HIGH_VELOCITY_LINEAR = 0.3, //m/s
                                 HIGH_VELOCITY_ANGULAR = 0.3; //IDK LMAO
 
@@ -244,7 +244,7 @@ public class LimelightHelper {
     private static final Matrix<N3, N1> DIVERGENT_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(100,100,100);
     private static final Matrix<N3, N1> FIELD_CENTER_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(10,10,40);
     private static final Matrix<N3, N1> HIGH_VELOCITY_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(20,20,40);
-    private static final Matrix<N3, N1> RESET_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.01,0.01,0.001);
+    private static final Matrix<N3, N1> RESET_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0001,0.0001,0.001);
 
     /**
      * update a pose estimator from vision measurements
