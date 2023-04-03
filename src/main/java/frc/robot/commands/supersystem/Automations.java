@@ -120,11 +120,12 @@ public class Automations {
                 new WaitCommand(0.3),
                 goToPlace,
                 goToPlace.raceWith( //TODO this may cause error, if so, make a second goToPlace command.
-                    new WaitCommand(1).until(robotState::isReadyToPlace),
-                    new WaitCommand(0.3),
-                    new DropGamepiece(
-                            endEffector,
-                            () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                    new WaitCommand(1).until(robotState::isReadyToPlace).andThen(
+                        new WaitCommand(0.3),
+                        new DropGamepiece(
+                                endEffector,
+                                () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
+                        )
                     )
                 )
         );

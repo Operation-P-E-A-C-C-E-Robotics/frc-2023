@@ -8,9 +8,7 @@ import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoderSimCollection;
-import com.ctre.phoenix.sensors.WPI_CANCoder;
+import com.ctre.phoenix.sensors.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -39,6 +37,7 @@ public class Pivot extends SubsystemBase {
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER),
           pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private final WPI_CANCoder pivotEncoder = new WPI_CANCoder(PIVOT_ENCODER);
+  private final CANCoderFaults faults = new CANCoderFaults();
   private double setpoint = 0;
 
 
@@ -54,7 +53,6 @@ public class Pivot extends SubsystemBase {
     pivotSlave.setNeutralMode(NeutralMode.Brake);
 
     pivotSlave.follow(pivotMaster);
-    pivotMaster.setNeutralMode(NeutralMode.Brake);
 
     pivotMaster.setInverted(Constants.Inversions.PIVOT);
     pivotSlave.setInverted(InvertType.OpposeMaster);
@@ -63,9 +61,9 @@ public class Pivot extends SubsystemBase {
     pivotSlave.configStatorCurrentLimit(CURRENT_LIMIT);
 
     pivotEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
-    pivotEncoder.setPositionToAbsolute();
     pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
     pivotEncoder.configMagnetOffset(169);
+    pivotEncoder.setPositionToAbsolute();
 
     pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
     pivotMaster.configForwardSoftLimitEnable(false);
@@ -114,7 +112,8 @@ public class Pivot extends SubsystemBase {
 
       pivotMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(pivotEncoder.getAbsolutePosition()), 2048, SYSTEM_CONSTANTS.gearing));
     }
-    if(pivotEncoder.hasResetOccurred()){
+    pivotEncoder.getFaults(faults);
+    if(faults.ResetDuringEn){
       servoController.disableLoop();
       pivotEncoder.configFactoryDefault();
 
@@ -122,6 +121,9 @@ public class Pivot extends SubsystemBase {
       pivotEncoder.setPositionToAbsolute();
       pivotEncoder.configSensorDirection(Constants.Inversions.PIVOT_ENCODER);
       pivotEncoder.configMagnetOffset(169);
+    }
+    if(faults.hasAnyFault()){
+      servoController.disableLoop();
     }
   }
 
