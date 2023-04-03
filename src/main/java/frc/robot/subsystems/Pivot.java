@@ -37,16 +37,8 @@ public class Pivot extends SubsystemBase {
   private final ServoArm servoController;
 
   private final WPI_TalonFX pivotMaster = new WPI_TalonFX(PIVOT_MASTER),
-          pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);;
-  private final DoubleSolenoid brakeSolenoid = new DoubleSolenoid(
-          Constants.UPPER_PNEUMATICS_MODULE_CAN_ID,
-          PneumaticsModuleType.CTREPCM,
-          BRAKE_SOLENOID_FORWARD,
-          BRAKE_SOLENOID_REVERSE
-  );
+          pivotSlave = new WPI_TalonFX(PIVOT_SLAVE);
   private final WPI_CANCoder pivotEncoder = new WPI_CANCoder(PIVOT_ENCODER);
-  private final Timer brakeTimer = new Timer();
-  private final SupersystemTolerance brakeTolerance = SupersystemTolerance.PIVOT_BRAKE;
   private double setpoint = 0;
 
 
@@ -86,11 +78,6 @@ public class Pivot extends SubsystemBase {
       SmartDashboard.putNumber("pivot setpoint angle", 0);
       SmartDashboard.putNumber("pivot setpoint percent", 0);
     }
-    if(withBrake) {
-      setBrakeEngaged(true);
-      servoController.setPeriodicFunction(this::reconfigureDevicesPeriodic);
-    }
-    setBrakeEngaged(false);
 
     DankPids.registerDankTalon(pivotMaster);
     DankPids.registerDankTalon(pivotSlave);
@@ -105,24 +92,6 @@ public class Pivot extends SubsystemBase {
     if(getAngleRadians() > MAX_ANGLE_RAD && speed > 0) pivotMaster.set(0);
     else if(getAngleRadians() < MIN_ANGLE_RAD && speed < 0) pivotMaster.set(0);
     else pivotMaster.set(speed);
-  }
-
-  private void setBrakeEngaged(boolean engageBrake) {
-      var brakeDirection = engageBrake ? Value.kForward : Value.kReverse;
-      if(brakeSolenoid.get() != brakeDirection) {
-          brakeSolenoid.set(brakeDirection);
-          brakeTimer.reset();
-          brakeTimer.start();
-      }
-  }
-
-  private void updateBrakePeriodic(){
-    if(!servoController.isLooping()) setBrakeEngaged(false);
-    else setBrakeEngaged(withinTolerance(brakeTolerance));
-    if(isBrakeEngaged()){
-      servoController.disableLoop();
-      setVoltage(0);
-    }
   }
 
   private void reconfigureDevicesPeriodic(){
@@ -156,10 +125,6 @@ public class Pivot extends SubsystemBase {
     }
   }
 
-  public boolean isBrakeEngaged() {
-      return brakeSolenoid.get() == Value.kForward && brakeTimer.get() > TIME_FOR_BRAKE_TO_ENGAGE;
-  }
-
   /**
    * set the pivot voltage - positive values move towards the front of the robot.
    * @param volts -12 to 12
@@ -181,7 +146,6 @@ public class Pivot extends SubsystemBase {
    */
   public void setAngle(Rotation2d angle){
     setpoint = angle.getRadians();
-    if(isBrakeEngaged()) return;
     servoController.enableLoop();
     servoController.goToState(angle.getRadians(), 0);
   }
