@@ -9,6 +9,7 @@ Started field points
 DID A LOTTA STUFF
 
 TODO pre districs (if we make it):
+P.S. HOLY FUK WE MADE IT
 [TODO] test additional auto place checks
 [TODO] better ground intake
 [TODO] 2nd limelight
@@ -17,6 +18,7 @@ TODO pre districs (if we make it):
 [TODO] add 2nd limelight to additional auto place checks so it wont be screwey
 [TODO] triple check extension limits
 [TODO] better substation setpoint
+[TODO] better apriltag std devs.
 
 
 ROBOT DEFAULT BEHAVIORS:
