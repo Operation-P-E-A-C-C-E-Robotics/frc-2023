@@ -15,7 +15,7 @@ P.S. HOLY FUK WE MADE IT
 [TODO] 2nd limelight
 [TODO] make sure auto balance works with ballast
 [TODO] place cone auto?
-[TODO] add 2nd limelight to additional auto place checks so it wont be screwey
+[TEST] add 2nd limelight to additional auto place checks so it won't be screwey
 [TODO] triple check extension limits
 [TODO] better substation setpoint
 [TODO] better apriltag std devs.

@@ -9,12 +9,7 @@ import com.revrobotics.ColorMatch;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -22,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+
+import java.awt.*;
 
 import static frc.robot.Constants.EndEffector.*;
 
@@ -37,7 +34,10 @@ public class EndEffector extends SubsystemBase {
   
   private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
   private final ColorMatch colorMatcher = new ColorMatch();
-  private final DigitalInput beamBrakeSensor = new DigitalInput(BEAM_BRAKE_PORT); //TODO
+  private final Notifier colorSensorIsPiecaShit;
+
+  private Color colorSensorReading = new Color(0,0,0);
+  private double colorSensorProximity = 0;
 
   private IntakeState state = IntakeState.RESTING;
   private Timer ejectTimer = new Timer();
@@ -61,16 +61,22 @@ public class EndEffector extends SubsystemBase {
 
     colorMatcher.addColorMatch(CUBE_COLOR); //TODO
     colorMatcher.addColorMatch(CONE_COLOR); //TODO
+
+    colorSensorIsPiecaShit = new Notifier(() -> {
+      colorSensorReading = colorSensor.getColor();
+      colorSensorProximity = colorSensor.getProximity();
+    });
+    colorSensorIsPiecaShit.startPeriodic(0.02);
   }
 
   public boolean colorSensorSeesThing(){
-    return colorSensor.getProximity() > (isClawOpen() ? 44 : 90);
+    return colorSensorProximity > (isClawOpen() ? 44 : 90);
   }
 
   @Override
   public void periodic() {
     // Update the intake state using data from the color sensor and beam brake sensor
-    var color = colorMatcher.matchClosestColor(colorSensor.getColor());
+    var color = colorMatcher.matchClosestColor(colorSensorReading);
     var hasGamepiece = colorSensorSeesThing();
     SmartDashboard.putBoolean("Has gamepiece", hasGamepiece);
     SmartDashboard.putString("Intake state", state.toString());
@@ -78,14 +84,7 @@ public class EndEffector extends SubsystemBase {
     var ejecting = leftMotor.get() > 0.3;
     var intaking = leftMotor.get() < -0.3;
 
-    if(isClawOpen() && hasGamepiece){
-      setClaw(false);
-    }
-
-    SmartDashboard.putNumber("color snessor proximity", colorSensor.getProximity());
-    SmartDashboard.putNumber("r", colorSensor.getRed());
-    SmartDashboard.putNumber("g", colorSensor.getGreen());
-    SmartDashboard.putNumber("b", colorSensor.getBlue());
+    SmartDashboard.putNumber("color snessor proximity", colorSensorProximity);
     SmartDashboard.putNumber("asomething", clawTimer.get());
 
     SmartDashboard.putBoolean("aisCone", color.color.equals(CONE_COLOR));

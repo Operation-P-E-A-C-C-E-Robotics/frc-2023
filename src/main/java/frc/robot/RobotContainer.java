@@ -152,8 +152,8 @@ public class RobotContainer {
   };
 
   private final OIEntry[] manualBindings = {
-          Button.onHold(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
-          Button.onHold(intakeSubstation.alongWith(
+          Button.toggle(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
+          Button.toggle(intakeSubstation.alongWith(
                 endEffector.runIntake()
                 // new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(Setpoints.intakeDoubleSubstation.getWristAngle())), wrist)
         ).until(endEffector::colorSensorSeesThing), 3),

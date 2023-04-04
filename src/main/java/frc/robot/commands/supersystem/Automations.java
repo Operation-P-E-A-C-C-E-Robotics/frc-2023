@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 
 public class Automations {
-    public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35); //TODO
-    public static Translation3d conePrePlaceOffset = new Translation3d(-0.07, 0, 0.14); //TODO
-    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.00); //TODO
+    public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35);
+    public static Translation3d conePrePlaceOffset = new Translation3d(-0.07, 0, 0.14);
+    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.00);
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
