@@ -24,7 +24,7 @@ import java.util.function.DoubleSupplier;
 public class Automations {
     public static Translation3d cubePlaceOffset = new Translation3d(0, 0, 0.35);
     public static Translation3d conePrePlaceOffset = new Translation3d(-0.07, 0, 0.14);
-    public static Translation3d conePlaceOffset = new Translation3d(-0, 0, 0.00);
+    public static Translation3d conePlaceOffset = new Translation3d(-0.01, 0, 0.00);
     private final Supersystem supersystem;
     private final RobotState robotState;
     private final EndEffector endEffector;
@@ -115,19 +115,29 @@ public class Automations {
                 robotState,
                 true
         ).withTimeout(1);
+        var goToPlace2 = new GoToFieldPoint(
+                supersystem,
+                () -> FieldConstants.Grids.getNearestNode(robotState.getRobotPose().getTranslation(), scoreLocations)
+                        .plus(conePlaceOffset),
+                Units.degreesToRadians(125),
+                tolerance,
+                robotState,
+                false
+        ).withTimeout(1);
         return goToPrePlace.andThen(
-                new WaitCommand(1).until(robotState::isReadyToPlace),
+                // new WaitCommand(1).until(robotState::isReadyToPlace),
+                new WaitCommand(3).until(robotState::isReadyToPlace),
                 new WaitCommand(0.3),
                 goToPlace,
-                goToPlace.raceWith( //TODO this may cause error, if so, make a second goToPlace command.
-                    new WaitCommand(1).until(robotState::isReadyToPlace).andThen(
-                        new WaitCommand(0.3),
-                        new DropGamepiece(
-                                endEffector,
-                                () -> supersystem.withinTolerance(SupersystemTolerance.forLevel(level))
-                        )
-                    )
-                )
+                // goToPlace2.raceWith( //TODO this may cause error, if so, make a second goToPlace command.
+                //     new WaitCommand(1).until(robotState::isReadyToPlace).andThen(
+                //         new WaitCommand(0.3)
+                //     )
+                // ),
+                new DropGamepiece(
+                    endEffector,
+                    () -> true
+                ).alongWith(new WaitCommand(0.1), smartZero().withTimeout(0.4))
         );
     }
 

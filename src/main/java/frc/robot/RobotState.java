@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.PoseFilter;
 import frc.lib.util.Util;
@@ -50,7 +51,7 @@ public class RobotState {
                 driveTrain.getRightMeters(),
                 new Pose2d(0, 0, new Rotation2d()), //TODO starting pose
                 new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.01, 0.01, 0.005),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.5, 0.5, 3)
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
         currentRobotPose = prevRobotPose;
@@ -68,6 +69,8 @@ public class RobotState {
         drivetrainCameraRight.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
         currentRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
 
+        // SmartDashboard.putBoolean("ready to place", isReadyToPlace());
+
         DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
         var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
         var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
@@ -81,7 +84,7 @@ public class RobotState {
         resetOdometry(prevRobotPose);
     }
 
-    public static final double PLACE_DISTANCE = Units.inchesToMeters(43); //TODO meters
+    public static final double PLACE_DISTANCE = 2; //TODO meters
     public static final double PLACE_MAX_VELOCITY = 0.35; //TODO meters per second
 
     /**
@@ -99,7 +102,7 @@ public class RobotState {
     }
 
     public boolean isReadyToPlace(){
-        var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < 0.1;
+        var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < 0.01;
         var leftCameraOkay = drivetrainCameraLeft.isOdometryCorrected();
         var rightCameraOkay = drivetrainCameraRight.isOdometryCorrected();
         var leftCameraHasTarget = drivetrainCameraLeft.hasTarget();

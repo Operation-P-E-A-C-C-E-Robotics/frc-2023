@@ -31,7 +31,7 @@ public class EndEffector extends SubsystemBase {
           GRIP_PNEUMATICS_PORT
   );
   
-  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
+  private final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
   private final ColorMatch colorMatcher = new ColorMatch();
   private final Notifier colorSensorIsPiecaShit;
 

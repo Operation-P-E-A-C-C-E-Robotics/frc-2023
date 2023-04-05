@@ -237,11 +237,11 @@ public class LimelightHelper {
     private static final double DIVERGENT_VISION_TRANSLATION = 0.3, //METERS
                                 DIVERGENT_VISION_ROTATION = 0.4, //radians
                                 RESET_VISION_THRESHOLD = 10, //Divergent vision readings
-                                HIGH_VELOCITY_LINEAR = 0.3, //m/s
-                                HIGH_VELOCITY_ANGULAR = 0.3; //IDK LMAO
+                                HIGH_VELOCITY_LINEAR = 0.1, //m/s
+                                HIGH_VELOCITY_ANGULAR = 0.1; //IDK LMAO
 
-    private static final Matrix<N3, N1> NEAR_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(3,3,20);
-    private static final Matrix<N3, N1> DIVERGENT_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(100,100,100);
+    private static final Matrix<N3, N1> NEAR_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.05,0.05,0.05);
+    private static final Matrix<N3, N1> DIVERGENT_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(100,100,1000);
     private static final Matrix<N3, N1> FIELD_CENTER_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(10,10,40);
     private static final Matrix<N3, N1> HIGH_VELOCITY_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(20,20,40);
     private static final Matrix<N3, N1> RESET_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0001,0.0001,0.001);
@@ -301,7 +301,7 @@ public class LimelightHelper {
 
         var stdev = getVisionStdev(visionPose, robotPose, leftVelocity, rightVelocity);
         SmartDashboard.putString("current vision stdev", stdev.toString());
-        estimator.addVisionMeasurement(visionPose, Timer.getFPGATimestamp() - 0.5, stdev);
+        estimator.addVisionMeasurement(visionPose,Timer.getFPGATimestamp() - 0.5, stdev);
     }
 
     public boolean isOdometryCorrected(){

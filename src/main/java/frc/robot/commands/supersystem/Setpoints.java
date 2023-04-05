@@ -27,8 +27,10 @@ public class Setpoints {
     public static SupersystemState placeMidCone = new SupersystemState(0, Units.degreesToRadians(-66), 0.8, Units.degreesToRadians(-45));
     public static SupersystemState placeHighCone = new SupersystemState(0, -0.92, 1.33, -Units.degreesToRadians(90));
 
-    public static SupersystemState intakeFloor = new SupersystemState(0, Units.degreesToRadians(118), 0.93, Units.degreesToRadians(70));
+    public static SupersystemState intakeFloor = new SupersystemState(0, Units.degreesToRadians(120), 0.853, Units.degreesToRadians(90));
+    public static SupersystemState intakeTippedPre = new SupersystemState(0, Units.degreesToRadians(87), 0.853, Units.degreesToRadians(90));
     public static SupersystemState intakeDoubleSubstation = new SupersystemState(0, 0.765, 0.73, Units.degreesToRadians(110));
+    public static SupersystemState intakeDoubleSubstationTest = new SupersystemState(0, 0.365, 0.69, Units.degreesToRadians(100));
     public static SupersystemState wristFlipOffset = new SupersystemState(0, 0, 0, -0.5);
     private final Supersystem supersystem;
     private final DoubleSupplier x;

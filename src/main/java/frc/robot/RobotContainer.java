@@ -23,6 +23,7 @@ import frc.lib.util.AllianceFlipUtil;
 import frc.lib.util.ButtonMap;
 import frc.lib.util.ButtonMap.MultiButton;
 import frc.lib.util.ButtonMap.OIEntry;
+import frc.lib.util.ButtonMap.SimplePOV;
 import frc.lib.util.ButtonMap.Button;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
@@ -55,7 +56,7 @@ public class RobotContainer {
   //sensors
   private final PigeonHelper pigeon = new PigeonHelper(new PigeonIMU(Constants.DriveTrain.PIGEON_IMU));
   private final Limelight drivetrainLimelight = new Limelight("limelight"),
-          armLimelight = new Limelight("armLimelight");
+          armLimelight = new Limelight("limelight-arm");
   private final Compressor compressor = new Compressor(6, PneumaticsModuleType.REVPH);
   public static PhotonicHRI photonicHRI = new PhotonicHRI(0, 120);
 
@@ -73,8 +74,8 @@ public class RobotContainer {
 
   //OI
   private final Joystick driverJoystick = new Joystick(Constants.OperatorInterface.DRIVER_JOYSTICK),
-          operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK),
-          backupJoystick = new Joystick(Constants.OperatorInterface.BACKUP_JOYSTICK);
+          operatorJoystick = new Joystick(Constants.OperatorInterface.OPERATOR_JOYSTICK);
+        //   backupJoystick = new Joystick(Constants.OperatorInterface.BACKUP_JOYSTICK);
   private final SendableChooser<Command> teleopDriveMode = new SendableChooser<Command>(),
           autoMode = new SendableChooser<Command>();
 
@@ -83,10 +84,10 @@ public class RobotContainer {
   private final Paths paths = new Paths(robotState, driveTrain);
   private final Setpoints setpoints = new Setpoints(
           supersystem,
-          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(0), 0.2),
-          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(1), 0.2),
-          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(2), 0.2),
-          () -> Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(3), 0.2)
+          () -> 0,//Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(0), 0.2),
+          () -> 0,//Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(1), 0.2),
+          () -> 0,//Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(2), 0.2),
+          () -> 0//Util.handleDeadbandWithSlopeIncrease(backupJoystick.getRawAxis(3), 0.2)
   );
 
   private final Automations automations = new Automations(supersystem, robotState, endEffector, setpoints);
@@ -118,7 +119,7 @@ public class RobotContainer {
 
   private final Command intakeFloorFancy = setpoints.groundIntake(operatorJoystick::getPOV, () -> AllianceFlipUtil.apply(robotState.getOdometryPose()).getRotation().getRadians()),
           intakeFloorSimple = setpoints.goToSetpoint(Setpoints.intakeFloor),
-          intakeSubstation = setpoints.goToSetpoint(Setpoints.intakeDoubleSubstation);
+          intakeSubstation = setpoints.goToSetpoint(Setpoints.intakeDoubleSubstationTest);
 
   private final Command hybridDropOuttake = endEffector.drop().withTimeout(0.1).andThen(endEffector.runOuttake());
 
@@ -152,7 +153,7 @@ public class RobotContainer {
   };
 
   private final OIEntry[] manualBindings = {
-          Button.toggle(intakeFloorSimple.alongWith(endEffector.runIntake()), 1),
+          SimplePOV.toggle(intakeFloorSimple.alongWith(endEffector.runIntake()).until(endEffector::colorSensorSeesThing), 270),
           Button.toggle(intakeSubstation.alongWith(
                 endEffector.runIntake()
                 // new RunCommand(() -> wrist.setAngle(Rotation2d.fromRadians(Setpoints.intakeDoubleSubstation.getWristAngle())), wrist)

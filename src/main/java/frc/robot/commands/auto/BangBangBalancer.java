@@ -36,6 +36,7 @@ public class BangBangBalancer extends CommandBase {
         robotState.getPigeon().zeroHeading();
     }
     static double maxBangBangSpeed = 0.4, minBangBangSpeed = 0.02;
+    static double headingP = 0.000001;
 
     @Override
     public void execute() {
@@ -56,12 +57,12 @@ public class BangBangBalancer extends CommandBase {
             if (angle > DEADBAND) {
                 left = right = -speed;
                 //adjust for heading error to keep the robot straight
-                right += headingError * 0.001;
-                left -= headingError * 0.001;
+                right += headingError * headingP;
+                left -= headingError * headingP;
             } else if (angle < -DEADBAND) {
                 left = right = speed;
-                left += headingError * 0.001;
-                right -= headingError * 0.001;
+                left += headingError * headingP;
+                right -= headingError * headingP;
             } else {
                 driveTrain.set(DriveSignal.DEFAULT);
                 return;
