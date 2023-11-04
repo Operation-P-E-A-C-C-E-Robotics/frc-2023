@@ -7,12 +7,18 @@ import frc.lib.safety.Value;
 public class Limelight extends LimelightHelper {
     private static final double CONE_WIDTH = 0.21,
                                 CONE_HEIGHT = 0.32,
-                                CUBE_SIDE = 0.195;
+                                CUBE_SIDE = 0.195,
+                                RETROREFLECTIVE_TAPE_WIDTH = 0.254, //TODO: Measure
+                                RETROREFLECTIVE_TAPE_HEIGHT = 0.254;
 
     @SuppressWarnings("unused")
-    private static final int APRILTAG_PIPELINE = 0,
-                             CONE_PIPELINE = 1,
-                             CUBE_PIPELINE = 2;
+    private static final int APRILTAG_PIPELINE = 0;
+    @SuppressWarnings("unused")
+    public static final int CONE_PIPELINE = 1;
+    @SuppressWarnings("unused")
+    public static final int CUBE_PIPELINE = 2;
+    @SuppressWarnings("unused")
+    public static final int VISION_TARGET_PIPELINE = 3;
 
     public Limelight(String networktablesName) {
         super(networktablesName);
@@ -29,6 +35,14 @@ public class Limelight extends LimelightHelper {
             return Value.none();
         }
         return getPose(CUBE_SIDE, CUBE_SIDE);
+    }
+
+    public Value<Translation2d> getVisionTargetPoseRelativeToCamera(){
+        if(getPipeline() != VISION_TARGET_PIPELINE) {
+            setPipeline(VISION_TARGET_PIPELINE);
+            return Value.none();
+        }
+        return getPose(RETROREFLECTIVE_TAPE_WIDTH, RETROREFLECTIVE_TAPE_HEIGHT);
     }
 
     private Value<Translation2d> getPose(double width, double height){

@@ -1,17 +1,25 @@
 package frc.lib.sensors;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.field.FieldConstants;
 import frc.lib.safety.Value;
+import frc.lib.util.AllianceFlipUtil;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class LimelightHelper {
-    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters
+    private static final double FOCAL_LENGTH = (1*83)/0.32;//(1 * 240) / 0.32; //183 px = 0.21 meters // (distance * pixels) / size
     NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
     NetworkTable limelight;
 
@@ -21,6 +29,7 @@ public class LimelightHelper {
     private IntegerPublisher ledMode, camMode, stream, snapshot, pipeline;
     private DoubleArrayPublisher crop;
     private MedianFilter xFilter = new MedianFilter(10);
+    private boolean visionAgreesWithOdometry = false;
 
     private DoubleSubscriber dSub(String name){
         return limelight.getDoubleTopic(name).subscribe(0);
@@ -116,7 +125,7 @@ public class LimelightHelper {
 
     public double getLatency(){
         if(tl == null) tl = dSub("tl");
-        return tl.get() / 1000;
+        return (tl.get() * 1000) + (dSub("cl").get() * 1000);
     }
 
     public Value<double[]> getCameraTranslation(){
@@ -224,34 +233,45 @@ public class LimelightHelper {
     double halfFieldWidth = 16.48/2;
     double halfFieldHeight = 8.1/2;
 
-    int divergentVisionReadings = 0;
-    static final double ERRONIOUS_VISION_THRESHOLD = 1; //meters
-    static final double RESET_VISION_THRESHOLD = 10; //divergent readings
+    int divergentVisionReadings = 50;
+    private static final double DIVERGENT_VISION_TRANSLATION = 0.3, //METERS
+                                DIVERGENT_VISION_ROTATION = 0.4, //radians
+                                RESET_VISION_THRESHOLD = 10, //Divergent vision readings
+                                HIGH_VELOCITY_LINEAR = 0.1, //m/s
+                                HIGH_VELOCITY_ANGULAR = 0.1; //IDK LMAO
+
+    private static final Matrix<N3, N1> NEAR_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.05,0.05,0.05);
+    private static final Matrix<N3, N1> DIVERGENT_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(100,100,1000);
+    private static final Matrix<N3, N1> FIELD_CENTER_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(10,10,40);
+    private static final Matrix<N3, N1> HIGH_VELOCITY_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(20,20,40);
+    private static final Matrix<N3, N1> RESET_STDEV = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0001,0.0001,0.001);
 
     /**
      * update a pose estimator from vision measurements
      * @param estimator the pose estimator to update
      */
-    public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator, DoubleSupplier drivetrainLeft, DoubleSupplier drivetrainRight, Supplier<Rotation2d> imuHeading){
+    public void updatePoseEstimatorOld(DifferentialDrivePoseEstimator estimator, DoubleSupplier drivetrainLeft, DoubleSupplier drivetrainRight, Supplier<Rotation2d> imuHeading){
         var visionMeasurements = botpose.readQueue();
         var currentPose = estimator.getEstimatedPosition();
+        SmartDashboard.putNumber("divergent vision readings", divergentVisionReadings);
 
         //add vision measurements to the estimator
         for(TimestampedDoubleArray i : visionMeasurements){
             var time = Timer.getFPGATimestamp() - getLatency() - 0.011;
+            // var time = i.timestamp;
             double[] val = i.value;
-            if(val.length == 6) {
+            if(val.length == 6 && val[0] != 0) {
                 var visionPose = new Pose2d(
                         val[0] + halfFieldWidth,
                         val[1] + halfFieldHeight,
                         Rotation2d.fromDegrees(val[5])
                 );
                 //if the vision measurement is too far off, add to the divergent vision readings and don't add it to the estimator
-                if(visionPose.getTranslation().getDistance(currentPose.getTranslation()) > ERRONIOUS_VISION_THRESHOLD){
+                if(visionPose.getTranslation().getDistance(currentPose.getTranslation()) > DIVERGENT_VISION_TRANSLATION){
                     divergentVisionReadings++;
                 } else {
                     estimator.addVisionMeasurement(visionPose, time);
-                    divergentVisionReadings--;
+                    if(divergentVisionReadings > 0) divergentVisionReadings--;
                 }
                 //if there are too many divergent vision readings, reset the estimator to the vision pose
                 if(divergentVisionReadings > RESET_VISION_THRESHOLD){
@@ -260,6 +280,62 @@ public class LimelightHelper {
                 }
             }
         }
+    }
+
+    public void updatePoseEstimator(DifferentialDrivePoseEstimator estimator, Pose2d robotPose, double leftVelocity, double rightVelocity) {
+        var botposeReading = botpose.getAtomic();
+        var botposeArray = botposeReading.value;
+
+        if(botposeArray.length == 0) return;
+        if(botposeArray[0] == 0) return;
+        if(!hasTarget()) return;
+
+        var visionPose = new Pose2d(
+            botposeArray[0] + halfFieldWidth,
+            botposeArray[1] + halfFieldHeight,
+            Rotation2d.fromDegrees(botposeArray[5])
+        );
+
+        visionAgreesWithOdometry = visionPose.getTranslation().getDistance(robotPose.getTranslation()) < 0.03
+                && Math.abs(visionPose.getRotation().getRadians() - robotPose.getRotation().getRadians()) < 0.01;
+
+        var stdev = getVisionStdev(visionPose, robotPose, leftVelocity, rightVelocity);
+        SmartDashboard.putString("current vision stdev", stdev.toString());
+        estimator.addVisionMeasurement(visionPose,Timer.getFPGATimestamp() - 0.5, stdev);
+    }
+
+    public boolean isOdometryCorrected(){
+        return visionAgreesWithOdometry;
+    }
+
+    private Matrix<N3, N1> getVisionStdev(Pose2d visionPose, Pose2d robotPose, double leftVelocity, double rightVelocity){
+        //are we in our community?
+        boolean isNear = robotPose.getX() < FieldConstants.Community.innerX
+                || AllianceFlipUtil.flip(robotPose).getX() < FieldConstants.Community.innerX;
+
+        //is the new vision pose far away from the current odometry pose?
+        boolean isTranslationDivergent = robotPose.getTranslation().getDistance(visionPose.getTranslation()) > DIVERGENT_VISION_TRANSLATION;
+        boolean isRotationDivergent = Math.abs(robotPose.getRotation().getRadians() - visionPose.getRotation().getRadians()) > DIVERGENT_VISION_ROTATION;
+
+        //is the robot moving fast?
+        boolean highLinearVelocity = (leftVelocity + rightVelocity) / 2 > HIGH_VELOCITY_LINEAR;
+        boolean highAngVelocity = Math.abs(leftVelocity - rightVelocity) > HIGH_VELOCITY_ANGULAR;
+
+        //add to divergent vision accumulator
+        if(isTranslationDivergent || isRotationDivergent) divergentVisionReadings++;
+        else if (divergentVisionReadings > 0) divergentVisionReadings--;
+        SmartDashboard.putNumber("divergent vision readings", divergentVisionReadings);
+
+        boolean isOverResetThreshold = divergentVisionReadings > RESET_VISION_THRESHOLD;
+
+        if(isOverResetThreshold) {
+            divergentVisionReadings = 0;
+            return RESET_STDEV;
+        }
+        if(isTranslationDivergent || isRotationDivergent) return DIVERGENT_STDEV;
+        if(highAngVelocity || highLinearVelocity) return HIGH_VELOCITY_STDEV;
+        if(isNear) return FIELD_CENTER_STDEV;
+        return NEAR_STDEV;
     }
 
     /**

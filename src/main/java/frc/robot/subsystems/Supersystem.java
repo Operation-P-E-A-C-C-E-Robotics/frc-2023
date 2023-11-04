@@ -6,12 +6,11 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.Util;
 import frc.robot.Constants;
+import frc.robot.Constraints;
 import frc.robot.Kinematics;
 import frc.robot.Kinematics.SupersystemState;
-import frc.robot.Robot;
 import frc.robot.RobotState;
 
-//TODO change to use RobotState
 public class Supersystem extends SubsystemBase {
     private final Arm arm;
     private final Pivot pivot;
@@ -22,7 +21,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * unify motion of entire supersystem
      * @param arm arm subsystem
-     * @param pivot pivot subsystem
+     * @param pivot pivot subsystem0000000000000000000000000000000000000000
      * @param turret turret subsystem
      * @param wrist wrist subsystem
      */
@@ -42,7 +41,7 @@ public class Supersystem extends SubsystemBase {
             turret.getAngle().getRadians(),
             pivot.getRotation().getRadians(),
             arm.getExtension(),
-            wrist.getAngle().getRadians()
+            wrist.getAngle().getRadians() + pivot.getRotation().getRadians()
         );
     }
 
@@ -53,15 +52,27 @@ public class Supersystem extends SubsystemBase {
         return kinematics;
     }
 
+
+    public Rotation2d getWristFlipAngle(){
+        return wrist.getWristFlipAngle();
+    }
+
     /**
      * set the position of all supersystem joints
      */
     public void setSupersystemState(SupersystemState state){
         state = Kinematics.optimize(state, getSupersystemState());
+        state = Constraints.constrainArmExtension(state);
+        // state = Constraints.constrainPivotCollision(state);
         arm.setExtension(state.getArmExtension());
         turret.setAngle(Rotation2d.fromRadians(state.getTurretAngle()));
         pivot.setAngle(Rotation2d.fromRadians(state.getPivotAngle()));
-        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle()));
+        wrist.setAngle(Rotation2d.fromRadians(state.getWristAngle() - state.getPivotAngle()));
+    }
+
+    public boolean isInExtensionLimit(){
+        var currentState = getSupersystemState();
+        return Constraints.constrainArmExtension(currentState) == currentState;
     }
 
     public boolean withinTolerance(Constants.SupersystemTolerance tolerance){
@@ -110,9 +121,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * set the place point to a field relative point
      * @param position the point on the field
-     * @param robotPose the robot's pose
-     * @param height the height above the field translation
-     * @param wristAngle the angle of the wrist - 0 is straight up.
+     * @param robotState the robot state
      */
     public void setPlacePositionFieldRelative(Translation3d position, RobotState robotState){
         var drivetrainRelativePosition = robotState.fieldToDrivetrain(new Pose3d(position, new Rotation3d()));
@@ -187,7 +196,7 @@ public class Supersystem extends SubsystemBase {
     /**
      * set only the lift
      */
-    public Supersystem setLift(double extension){
+    public Supersystem setArm(double extension){
         var state = getSupersystemState();
         setSupersystemState(new SupersystemState(
                 state.getTurretAngle(),
@@ -220,6 +229,7 @@ public class Supersystem extends SubsystemBase {
         var pivot = getSupersystemState().getPivotAngle();
         var newWrist = (Math.PI/2  + pivot) * Math.signum(pivot);
         if(Util.epsilonEquals(pivot, 0, 0.1)) newWrist = 0;
+        System.out.println("PIVOT: " + pivot + " WRIST: " + newWrist);
         setWrist(new Rotation2d(newWrist));
         return this;
     }
@@ -235,7 +245,7 @@ public class Supersystem extends SubsystemBase {
     }
 
     public Supersystem addArmOffset(double offset){
-        setLift(getSupersystemState().getArmExtension() + offset);
+        setArm(getSupersystemState().getArmExtension() + offset);
         return this;
     }
 
@@ -257,39 +267,23 @@ public class Supersystem extends SubsystemBase {
         return this;
     }
 
-    public static class SupersystemTolerance{
-        private final double armTolerance;
-        private final Rotation2d turretTolerance;
-        private final Rotation2d pivotTolerance;
-        private final Rotation2d wristTolerance;
-
-        public SupersystemTolerance(double armTolerance, Rotation2d turretTolerance, Rotation2d pivotTolerance, Rotation2d wristTolerance){
-            this.armTolerance = armTolerance;
-            this.turretTolerance = turretTolerance;
-            this.pivotTolerance = pivotTolerance;
-            this.wristTolerance = wristTolerance;
-        }
-
-        public double getArmTolerance() {
-            return armTolerance;
-        }
-        public Rotation2d getTurretTolerance() {
-            return turretTolerance;
-        }
-        public Rotation2d getWristTolerance() {
-            return wristTolerance;
-        }
-        public Rotation2d getPivotTolerance() {
-            return pivotTolerance;
-        }
-    }
-
     public Subsystem[] getRequirements(){
         return new Subsystem[]{this, turret, pivot, wrist, arm};
+    }
+
+    @Override
+    public void periodic(){
+        var currentState = getSupersystemState();
+        var offset = Kinematics.wristOffset(currentState.getTurretAngle(), currentState.getWristAngle()).getMidPosition();
+        SmartDashboard.putNumber("wrist offset x", offset.getX());
+        SmartDashboard.putNumber("wrist offset y", offset.getY());
+        SmartDashboard.putNumber("wrist offset z", offset.getZ());
+        
     }
     //SIMULATION TESTING:
     Translation3d previousTestSetpoint = new Translation3d();
     @Override
     public void simulationPeriodic(){
+
     }
 }

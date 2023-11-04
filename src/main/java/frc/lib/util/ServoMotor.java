@@ -10,25 +10,25 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.LinearSystemLoop;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.trajectory.Trajectory;
-import frc.lib.trajectory.TrapezoidalMotion;
+import frc.lib.motion.Trajectory;
 
 import java.util.ArrayList;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
-public class DCMotorSystemBase extends SubsystemBase {
+public class ServoMotor extends SubsystemBase {
+    //state space controller:
     private final LinearSystem<N2, N1, N2> plant;
     private final LinearSystemLoop<N2, N1, N2> loop;
     private final ArrayList<Feedforward> feedforwards = new ArrayList<>();
 
+    //constants:
     private final SystemConstants constants;
 
+    //variables to keep track of the trajectory:
     private final Timer profileTimer = new Timer();
     private boolean followingProfile = false, looping = false;
 
@@ -36,24 +36,31 @@ public class DCMotorSystemBase extends SubsystemBase {
     private Trajectory trajectory;
     private State trajectoryStart = new State(0,0), trajectoryEnd = new State(0,0);
     private boolean recalculateTrajectory = false; //whether we need to recalculate the trajectory
-    private double lookahead = 0; //how far ahead to look in the trajectory (todo may not be used)
 
+    //setters and getters:
     private DoubleConsumer voltDriveFunction;
-    private DoubleSupplier getPosition, getVelocity;
+    private DoubleSupplier positionSupplier, velocitySupplier;
 
-    private Runnable superPeriodic;
+    private Runnable superPeriodic; // a function to run every periodic.
 
     /**
      * A messy ass helper class to run trajectories on a DC Motor state space controller.
      * @param constants The constants for the system
      */
-    public DCMotorSystemBase(SystemConstants constants) {
+    public ServoMotor(SystemConstants constants, DoubleConsumer voltDriveFunction, DoubleSupplier positionSupplier, DoubleSupplier velocitySupplier) {
         this.constants = constants;
-        plant = LinearSystemId.createDCMotorSystem(
+        this.voltDriveFunction = voltDriveFunction;
+        this.positionSupplier = positionSupplier;
+        this.velocitySupplier = velocitySupplier;
+
+        //set up teh statey spacey contraollr
+        plant = LinearSystemId.createDCMotorSystem( //create the mathy calculator thingy
                 constants.motor,
                 constants.inertia,
                 constants.gearing
         );
+        //this thingy figures out where the motor is.
+        //it does this by using the plant to predict where the motor is, and then using the sensor to correct it.
         KalmanFilter<N2, N1, N2> observer = new KalmanFilter<>(
                 Nat.N2(),
                 Nat.N2(),
@@ -62,13 +69,18 @@ public class DCMotorSystemBase extends SubsystemBase {
                 VecBuilder.fill(constants.kalmanSensorAccuracyPosition, constants.kalmanSensorAccuracyVelocity),
                 constants.dt
         );
+        // this figures out how to make motor go spinny to get to where it needs to go
+        // I haveno fukin clue how this works. sorry, no explanations here.
         LinearQuadraticRegulator<N2, N1, N2> linearQuadraticRegulator = new LinearQuadraticRegulator<>(
                 plant,
                 VecBuilder.fill(constants.lqrPositionTolerance, constants.lqrVelocityTolerance),
                 VecBuilder.fill(constants.lqrControlEffortTolerance),
                 constants.dt
         );
-        //linearQuadraticRegulator.latencyCompensate(plant, constants.dt, constants.lqrSensorDelay);
+
+        //compensate for latency if needed. This can make things be weird though.
+        if(constants.lqrSensorDelay > 0) linearQuadraticRegulator.latencyCompensate(plant, constants.dt, constants.lqrSensorDelay);
+        //the loop knows how to make everything work together, because I have no idea how to do that.
         loop = new LinearSystemLoop<>(
                 plant,
                 linearQuadraticRegulator,
@@ -76,27 +88,32 @@ public class DCMotorSystemBase extends SubsystemBase {
                 constants.maxVoltage,
                 constants.dt
         );
+        //set up a default trajectory (to avoid errors)
         trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
     }
 
+    /**
+     * add a feedforward to the controller
+     * @param feedforward the feedforward to add
+     */
     public void addFeedforward(Feedforward feedforward){
         feedforwards.add(feedforward);
     }
 
+    /**
+     * get the linear system that is used to calculate the state space controller
+     * @return the system
+     */
     public LinearSystem<N2, N1, N2> getSystem(){
         return plant;
     }
 
     /**
      * enable the feedback loop with a consumer to set the voltage, and a supplier to get the position and velocity
-     * @param voltDriveFunction The function to set the voltage
-     * @param getPosition The function to get the position
-     * @param getVelocity The function to get the velocity
      */
-    protected void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
-        this.voltDriveFunction = voltDriveFunction;
-        this.getPosition = getPosition;
-        this.getVelocity = getVelocity;
+    public void enableLoop() {
+        if(looping) return;
+        loop.reset(VecBuilder.fill(positionSupplier.getAsDouble(),velocitySupplier.getAsDouble()));
         looping = true;
     }
 
@@ -105,6 +122,7 @@ public class DCMotorSystemBase extends SubsystemBase {
      */
     public void disableLoop() {
         looping = false;
+        stopTrajectory();
     }
 
     /**
@@ -139,26 +157,39 @@ public class DCMotorSystemBase extends SubsystemBase {
         // we want to do option 2 if the new distance is close to the current profile, and we are close to the end of the profile
         // we want to do option 3 if the new distance is close to the current profile, and we are not close to the end of the profile
 
-        if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.2){
-            // option 1
-            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
-            trajectoryEnd = new State(position, 0);
-            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
-            profileTimer.reset();
-            profileTimer.start();
-            followingProfile = true;
-            recalculateTrajectory = false;
-        } else if(Math.abs(position - trajectoryEnd.position) < 0.2 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
-            // option 2
-            trajectoryStart = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
-            trajectoryEnd = new State(position, 0);
-            trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
-            recalculateTrajectory = false;
-        } else {
-            // option 3
-            trajectoryEnd = new State(position, 0);
-            recalculateTrajectory = true;
+        // if(!followingProfile || Math.abs(position - trajectoryEnd.position) > 0.03){
+        //     // option 1
+        //     trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        //     trajectoryEnd = new State(position, 0);
+        //     trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        //     profileTimer.reset();
+        //     profileTimer.start();
+        //     followingProfile = true;
+        //     recalculateTrajectory = false;
+        // } else if(Math.abs(position - trajectoryEnd.position) < 0.03 && profileTimer.get() > trajectory.getTotalTime() - 0.5){
+        //     // option 2
+        //     trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        //     trajectoryEnd = new State(position, 0);
+        //     trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        //     recalculateTrajectory = false;
+        // } else {
+        //     // option 3
+        //     trajectoryEnd = new State(position, 0);
+        //     recalculateTrajectory = true;
+        // }
+        if(Math.abs(position - trajectoryEnd.position) < 0.01 && followingProfile){
+            // // option 2
+            // trajectoryEnd = new State(position, 0);
+            // recalculateTrajectory = true;
+            return;
         }
+        trajectoryStart = new State(positionSupplier.getAsDouble(), velocitySupplier.getAsDouble());
+        trajectoryEnd = new State(position, 0);
+        trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
+        profileTimer.reset();
+        profileTimer.start();
+        followingProfile = true;
+        recalculateTrajectory = false;
     }
 
     /**
@@ -188,10 +219,8 @@ public class DCMotorSystemBase extends SubsystemBase {
         if(!looping) return; // don't run the feedback loop if it's not enabled
 
         var time = profileTimer.get(); // get the time since the profile started
-        double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
+        double position = positionSupplier.getAsDouble(), velocity = velocitySupplier.getAsDouble();
 
-        SmartDashboard.putNumber("DCMotor Velocity", velocity);
-        SmartDashboard.putNumber("DCMotor Position", position);
         var feedforward = 0.0;
 
         if(recalculateTrajectory){
@@ -201,21 +230,17 @@ public class DCMotorSystemBase extends SubsystemBase {
 
         // if we're following a profile, calculate the next reference
         if(followingProfile){
-//            var output = profile.calculate(time);
-            var output = trajectory.calculate(time + 0.1);
+            var output = trajectory.calculate(time + (constants.dt/2));
             setNextR(output.position, output.velocity);
-            SmartDashboard.putNumber("DCMotor Profile Position", output.position);
-            SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);
             for (var i : feedforwards) {
                 feedforward += i.calculate(output.position, output.velocity);
             }
         } else {
+            // otherwise, just calculate the feedforward to hold the current reference
             for (var i : feedforwards) {
                 feedforward += i.calculate(loop.getNextR(0), loop.getNextR(1));
             }
         }
-
-        SmartDashboard.putNumber("Feedforward", feedforward);
 
         // run the feedback
         loop.correct(VecBuilder.fill(position, velocity));
@@ -225,7 +250,7 @@ public class DCMotorSystemBase extends SubsystemBase {
     }
 
     public static final class SystemConstants {
-        public final double inertia,
+        public double inertia,
                 gearing,
                 cpr,
                 maxVelocity,

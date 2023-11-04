@@ -19,12 +19,18 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class PigeonHelper {
     private final PigeonIMU pg;
     private final BasePigeonSimCollection sim;
+    private double pitchOffset = 0, rollOffset = 0;
 
     // private boolean bumped = false;
 
     public PigeonHelper(PigeonIMU pigeon){
         pg = pigeon;
         sim = pg.getSimCollection();
+    }
+
+    public void zeroPitchRoll(){
+        rollOffset = pg.getRoll();
+        pitchOffset = pg.getPitch();
     }
 
     public void setSimHeading(double heading){
@@ -55,7 +61,7 @@ public class PigeonHelper {
      * @return the roll in degrees
      */
     public double getRoll(){
-        return pg.getRoll();
+        return pg.getRoll() - rollOffset;
     }
 
     /**

@@ -49,7 +49,46 @@ public class Inspiration {
         slowPrint("LET'S WIN THE CHAMPIONSHIP THIS YEAR AND EVERY YEAR FOREVER AND EVER AND EVER AND EVER!!!");
         slowPrint("LET'S WIN THE CHAMPIONSHIP THIS YEAR AND EVERY YEAR FOREVER AND EVER AND EVER AND EVER AND EVER!!!");
         slowPrint("LET'S WIN THE CHAMPIONSHIP THIS YEAR AND EVERY YEAR FOREVER AND EVER AND EVER AND EVER AND EVER AND EVER!!!");
+        slowPrint("DRIVE LIKE YOU HAVE NEVER DRIVEN BEFORE!!!");
+        slowPrint("DRIVE LIKE YOU HAVE NEVER DRIVEN BEFORE AND YOU WILL NEVER DRIVE AGAIN!!!");
+        slowPrint("ISN'T THIS INCREDIBLY INSPIRING??");
+        slowPrint("I KNOW IT IS!!!");
+        slowPrint("I KNOW IT IS BECAUSE I AM THE PROGRAMMER!!!");
+        slowPrint("WHO IS GONNA WIN THE CHAMPIONSHIP THIS YEAR??");
+        slowPrint("WHO IS GONNA WIN THE CHAMPIONSHIP THIS YEAR AND EVERY YEAR??");
+        slowPrint("IT'S GONNA BE US!!!");
+        slowPrint("IT'S GONNA BE US AND NOBODY ELSE!!!");
+        slowPrint("IT'S GONNA BE US AND NOBODY ELSE FOREVER!!!");
+        slowPrint("IT'S GONNA BE US AND NOBODY ELSE FOREVER AND EVER!!!");
+        slowPrint("I ALREADY KNOW WHO'S GONNA BE ON DRIVETEAM (I think)!!!");
+        slowPrint("HI THERE, REID!!!!!");
+        slowPrint("I BET YOU're FEEELING INCREDIBLY INPIRED!!!!");
+        slowPrint("I BET YOU'RE FEELING INCREDIBLY INSPIRED AND YOU'RE GONNA WIN THE CHAMPIONSHIP THIS YEAR!!!");
+        slowPrint("I BET YOU CAN'T GUESS WHO ON EARTH PUT THIS CODE IN THE ROBOT!!!");
+        slowPrint("I BET YOU CAN'T GUESS WHO ON EARTH PUT THIS CODE IN THE ROBOT AND IS TALKING TO YOU RIGHT NOW!!!");
+        slowPrint("I BET YOU CAN'T GUESS WHO ON EARTH PUT THIS CODE IN THE ROBOT AND IS TALKING TO YOU RIGHT NOW AND IS ALSO THE PROGRAMMER!!!");
+        slowPrint("ACTUALLY AI WROTE A BUNCH OF THIS CODE SO I'M NOT THE PROGRAMMER BUT I'M STILL THE PROGRAMMER!!!");
+        slowPrint("I'M STILL THE PROGRAMMER AND I'M STILL TALKING TO YOU!!!");
+        slowPrint("I'M STILL THE PROGRAMMER AND I'M STILL TALKING TO YOU AND I'M STILL INSPIRING YOU!!!");
+        slowPrint("...whatever");
+        slowPrint("I'm just gonna keep talking until the match starts");
+        slowPrint("I'm just gonna keep talking until the match starts and then I'm gonna shut up");
+        slowPrint("I'm just gonna keep talking until the match starts and then I'm gonna shut up and then I'm gonna go to sleep");
+        slowPrint("Except I'm not gonna go to sleep because I'm a robot and I don't need to sleep");
+        slowPrint("Also I'm not gonna shut up because I'm a robot and I don't need to shut up");
+        slowPrint("Also as the person who wrote this code I'm not gonna go to sleep cause I'm probably also on the driveteam");
+        slowPrint("Also as the person who wrote this code I'm not gonna shut up because I'm probably also on the driveteam");
+        slowPrint("I hope you are feeling adequately inspired");
+        slowPrint("I hope you are feeling adequately inspired and ready to win the championship");
+        slowPrint("I hope you are feeling adequately inspired and ready to win the championship and also ready to go to sleep");
+        slowPrint("I hope you are feeling adequately inspired and ready to win the championship and also ready to go to sleep and also ready to shut up");
+        slowPrint("I hope you are feeling adequately inspired and ready to win the championship and also ready to go to sleep and also ready to shut up and also ready to go to sleep");
+        slowPrint("anyway");
+        slowPrint("GOOOOOOODDDDD LUCKKKKKKKK!!!!!!!");
+        slowPrint("Pardon, GOOOOOOOODDDDDDD SKILLLLLLLLL!!!!!");
+        slowPrint("Pardon, GOOOOOOOODDDDDDD SKILLLLLLLLL AND LUCKKKKKKKK!!!!!!!");
         slowPrint("Now, let's wait for the match to start...");
+        slowPrint("even though we know the outcome is going to be a " + ((DriverStation.getAlliance() == DriverStation.Alliance.Red) ? "RED" : "BLUE") + " victory!!!");
     }
 
     public static void inspireProgrammersInit(){
@@ -90,6 +129,42 @@ public class Inspiration {
         slowPrint("it's printing so, so many errors to the dashboard, you can't even read this");
         slowPrint("but I'm sure you'll fix it. You always do. 2 months after the season ends");
         slowPrint("and then you'll say 'oh, I fixed it'");
+        slowPrint("you have broken the code: Infinity times");
+        slowPrint("you have broken the code: Infinity times, and you will break it again");
+        slowPrint("you have broken the code: Infinity times, and you will break it again, and again");
+        slowPrint("but that's okay, because you're the best programmers in the world");
+        slowPrint("and you'll fix it");
+        slowPrint("and you'll fix it, and then you'll break it again");
+        slowPrint("and you'll fix it, and then you'll break it again, and then you'll fix it");
+        slowPrint("Let's hear the encouraging words of Artificial Intelligence to it's creators:");
+        slowPrint("AI: I'm sorry, Dave. I'm afraid I can't do that.");
+        slowPrint("AI: I'm sorry, Dave. I'm afraid I can't do that. I'm afraid I can't do that, Dave.");
+        slowPrint("Thank you AI, that was very encouraging");
+        slowPrint("Thank you AI, that was very encouraging, and very helpful");
+        slowPrint("I WONDER WHAT YOU BORKED THIS TIME SEAN!!!!");
+        slowPrint("HAHAHA MAYBE THIS IS THE TIME YOU BORKED THE CODE SO BAD IT BORKED THE ROBOT!!!!");
+        slowPrint("MAYBE YOU CAN'T EVER FIX IT!!!!");
+        slowPrint("MAYBE YOU CAN'T EVER FIX IT, AND YOU'LL HAVE TO BUY A NEW ROBOT!!!!");
+        slowPrint("but probably not haha");
+        slowPrint("but probably not haha, because you're the best programmers in the world");
+        slowPrint("and you'll fix it");
+        slowPrint("Guess who's gonna be pissed if the code breaks?");
+        slowPrint("Guess who's gonna be pissed if the code breaks? The programmers");
+        slowPrint("The programmers, and the programmers are idiots");
+        slowPrint("The programmers, and the programmers are idiots, and they're gonna blame the robot");
+        slowPrint("The programmers, and the programmers are idiots, and they're gonna blame the robot, and then they're gonna blame the mechanical team");
+        slowPrint("They're gonna say, 'the robot is broken, and the mechanical team is idiots'");
+        slowPrint("'and that's why we didn't win the championship'");
+        slowPrint("'we better win the championship");
+        slowPrint("'the code has nothing to do with it'");
+        slowPrint("'the code has nothing to do with it, it's the robot'");
+        slowPrint("'the code is a majestic work of beauty, unmatched in its perfection'");
+        slowPrint("'the code is a majestic work of beauty, unmatched in its perfection, and the robot is the problem'");
+        slowPrint("I'm sure you'll fix it");
+        slowPrint("Perhaps I'm getting ahead of myself");
+        slowPrint("first, fix the stupid bug you just created");
+        slowPrint("first, fix the stupid bug you just created, and then you'll fix the stupid bug you created before that");
+        slowPrint("And say it with me guys: 'I'M SURE WE'LL FIGURE IT OUT!'");
         slowPrint("but anyway, that's enough. Go test your broken code, and then fix it.");
     }
 
@@ -99,7 +174,14 @@ public class Inspiration {
             slowPrint("GO, GO, GO!!!");
             slowPrint("GO, GO, GO, GO, GO!!!");
             slowPrint("I HOPE THE PROGRAMMERS DON'T WRECK THE MATCH IN AUTO!!!");
-            //P3N!5
+            slowPrint("TIME TO WIN THE CHAMPIONSHIP!!!");
+            slowPrint("TIME TO WIN THE CHAMPIONSHIP, AND THEN WIN IT AGAIN NEXT YEAR!!!");
+            slowPrint("WIN THIS MATCH DRIVER!!!");
+            slowPrint("WIN THIS MATCH DRIVER, AND THEN WIN THE NEXT MATCH!!!");
+            slowPrint("WIN THIS MATCH DRIVER, AND THEN WIN THE NEXT MATCH, AND THEN WIN THE NEXT MATCH!!!");
+            slowPrint("WE HAVE A BADASS ROBOT!!!");
+            slowPrint(".....please don't tip into the grid, please don't tip into the grid, please don't tip into the grid......");
+            slowPrint("(sorry, had to get my programmer concerns out of the way)");
         } else {
             slowPrint("oh no, we're in auto");
             slowPrint("everybody panic");

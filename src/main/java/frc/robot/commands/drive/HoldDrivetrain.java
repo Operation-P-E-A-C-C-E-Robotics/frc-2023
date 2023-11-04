@@ -6,6 +6,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.Trajectory.State;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.DriveSignal;
 import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
@@ -57,7 +58,7 @@ public class HoldDrivetrain extends CommandBase{
         var speeds = Constants.DriveTrain.DRIVE_KINEMATICS.toWheelSpeeds(chassis);
 
         //drive
-        driveTrain.velocityDrive(speeds, prevSpeeds, dt);
+        driveTrain.set(DriveSignal.velocityDrive(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond, true));
 
         prevSpeeds = speeds;
     }
@@ -65,7 +66,7 @@ public class HoldDrivetrain extends CommandBase{
 
     @Override
     public void end(boolean interrupted) {
-        driveTrain.tankDriveVolts(0, 0);
+        driveTrain.set(DriveSignal.DEFAULT);
     }
     @Override
     public boolean isFinished() {

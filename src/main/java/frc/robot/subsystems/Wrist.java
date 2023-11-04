@@ -1,43 +1,60 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
 import frc.robot.Constants.SupersystemTolerance;
+import frc.robot.Constants;
 import frc.robot.DashboardManager;
 import frc.robot.Robot;
 
 import java.util.function.DoubleSupplier;
-
 import static frc.robot.Constants.Wrist.*;
 
-public class Wrist extends DCMotorSystemBase {
-    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);  //TODO
-    private final DoubleSolenoid wristSolenoid = new DoubleSolenoid(PneumaticsModuleType.REVPH, WRIST_FLIP_FORWARD, WRIST_FLIP_REVERSE); //TODO
+public class Wrist extends SubsystemBase {
+    private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getAngleRads, this::getVelocityRads);
+
+    private final WPI_TalonFX wristMaster = new WPI_TalonFX(WRIST_MOTOR);
+    private final Solenoid wristSolenoid = new Solenoid(Constants.UPPER_PNEUMATICS_MODULE_CAN_ID, PneumaticsModuleType.CTREPCM, WRIST_FLIP_SOLENOID);
     private final DoubleSupplier pivotAngle;
     private boolean previousFlipState = false;
     private final Timer wristTimer = new Timer();
+    private double setpoint = 0;
 
     public Wrist(DoubleSupplier pivotAngle){
-        super(SYSTEM_CONSTANTS);
+        wristMaster.configFactoryDefault();
 
-        wristMaster.setInverted(false);
+        wristMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 50, 60, 10));
+
+        wristMaster.setInverted(Constants.Inversions.WRIST);
+        wristMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+
+        wristMaster.configForwardSoftLimitEnable(true);
+        wristMaster.configReverseSoftLimitEnable(true);
+        wristMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(90), SYSTEM_CONSTANTS));
+        wristMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(-90), SYSTEM_CONSTANTS));
+
+        wristMaster.setNeutralMode(NeutralMode.Coast);
+
+        wristMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(-110), SYSTEM_CONSTANTS));
 
         this.pivotAngle = pivotAngle;
 
         if(Robot.isSimulation()) SmartDashboard.putNumber("wrist setpoint", 0);
         DankPids.registerDankTalon(wristMaster);
+
+        wristTimer.start();
     }
 
     /**
@@ -45,6 +62,7 @@ public class Wrist extends DCMotorSystemBase {
      * go towards the front of the robot.
      */
     public void setPercent(double speed){
+        servoController.disableLoop();
         wristMaster.set(speed);
     }
 
@@ -52,7 +70,7 @@ public class Wrist extends DCMotorSystemBase {
      * set motor voltage
      * @param voltage positive values go towards the front of the robot.
      */
-    public void setVoltage(double voltage){
+    private void setVoltage(double voltage){
         wristMaster.setVoltage(voltage);
     }
 
@@ -61,17 +79,28 @@ public class Wrist extends DCMotorSystemBase {
      * @param angle 0 - inline with lift, positive values tilt toward front of robot.
      */
     public void setAngle(Rotation2d angle){
-        enableLoop(this::setVoltage, this::getAngleRads, this::getVelocityRads);
-        goToState(angle.getRadians());
+        servoController.enableLoop();
+        setpoint = angle.getRadians();
+        // servoController.goToState(angle.getRadians() - pivotAngle.getAsDouble());
+        servoController.goToState(angle.getRadians());
     }
 
     public void setFlipped(boolean flipped){
-       wristSolenoid.set(flipped ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+       wristSolenoid.set(flipped);
        if (flipped != previousFlipState){
            wristTimer.reset();
            wristTimer.start();
        }
         previousFlipState = flipped;
+    }
+
+    public Rotation2d getWristFlipAngle(){
+        var rotation = new Rotation2d(Math.min(wristTimer.get() / WRIST_FLIP_TIME, 1) * Math.PI);
+        return isFlipped() ? rotation : new Rotation2d(Math.PI).minus(rotation);
+    }
+
+    public boolean isFlipped(){
+        return wristSolenoid.get();
     }
 
     public boolean flipping(){
@@ -82,24 +111,32 @@ public class Wrist extends DCMotorSystemBase {
         return true;
     }
 
+    public void setNeutralMode(NeutralMode mode){
+        wristMaster.setNeutralMode(mode);
+    }
+
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
-        return Util.epsilonEquals(getAngle().getRadians(), setpoint, tolerance.wrist);
+        return Util.epsilonEquals(getAngle().getRadians(), setpoint, tolerance.wrist) && !flipping();
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance){
         return withinTolerance(tolerance, getAngle().getRadians());
     }
 
+    public void zero(){
+        wristMaster.setSelectedSensorPosition(0);
+    }
+
     /**
      * get the angle of the wrist
      */
     public Rotation2d getAngle(){
-        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
+        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
         return new Rotation2d(Units.rotationsToRadians(rotation));
     }
 
     public Rotation2d getVelocity(){
-        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //TODO Gear Ratio
+        var rotation = Util.countsToRotations(wristMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
         return new Rotation2d(Units.rotationsToRadians(rotation));
     }
 
@@ -111,22 +148,31 @@ public class Wrist extends DCMotorSystemBase {
         return getVelocity().getRadians();
     }
 
+    @Override
+    public void periodic(){
+        setFlipped(pivotAngle.getAsDouble() < 0);
+        if(servoController.isLooping()) servoController.goToState(setpoint - pivotAngle.getAsDouble());
+    }
+
     //SIMULATION:
-    private final SingleJointedArmSim wristSim = new SingleJointedArmSim(
-            SYSTEM_CONSTANTS.motor,
-            SYSTEM_CONSTANTS.gearing,
-            SYSTEM_CONSTANTS.inertia,
-            LENGTH,
-            -100,
-            100,
-            MASS,
-            false
-    );
-    private final TalonFXSimCollection wristMotorSim = wristMaster.getSimCollection();
-    double prevSetpoint = 0;
+    private SingleJointedArmSim wristSim;
+    private TalonFXSimCollection wristMotorSim;
+    Double prevSetpoint = null;
 
     @Override
     public void simulationPeriodic(){
+        if(wristSim == null) wristSim = new SingleJointedArmSim(
+                SYSTEM_CONSTANTS.motor,
+                SYSTEM_CONSTANTS.gearing,
+                SYSTEM_CONSTANTS.inertia,
+                LENGTH,
+                -100,
+                100,
+                MASS,
+                false
+        );
+        if(wristMotorSim == null) wristMotorSim = wristMaster.getSimCollection();
+        if(prevSetpoint == null) prevSetpoint = 0.0;
         //update from the dashboard setpoint:
         var setpoint = SmartDashboard.getNumber("wrist setpoint", 0);
         if (setpoint != prevSetpoint){
@@ -134,6 +180,8 @@ public class Wrist extends DCMotorSystemBase {
             prevSetpoint = setpoint;
         }
         SmartDashboard.putNumber("wrist angle", getAngle().getDegrees());
+        SmartDashboard.putBoolean("wrist flipped", wristSolenoid.get());
+        SmartDashboard.putBoolean("wrist flipping", flipping());
         DashboardManager.getInstance().drawWristSim(getAngle().getDegrees());
 
         wristSim.setInputVoltage(wristMaster.get() * RobotController.getBatteryVoltage());

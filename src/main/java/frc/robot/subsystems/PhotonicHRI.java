@@ -4,8 +4,11 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.Util;
 
+import java.awt.*;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -15,6 +18,7 @@ public class PhotonicHRI {
     AddressableLEDBuffer buffer;
     Random positionRandom = new Random();
     Random colorRandom = new Random();
+    PhotonicLingualElement running;
 
     /**
      * the Photonic Human Robot Interface
@@ -24,6 +28,15 @@ public class PhotonicHRI {
         buffer = new AddressableLEDBuffer(length);
         led.setLength(buffer.getLength());
         led.start();
+    }
+
+    public void runElement(PhotonicLingualElement element) {
+        if (running == element) return;
+        if (running != null) {
+            running.stop();
+        }
+        running = element;
+        running.start();
     }
 
     public PhotonicLingualElement setSolidColor(int r, int g, int b) {
@@ -55,7 +68,25 @@ public class PhotonicHRI {
             rainbowFirstPixelHue += 3;
             rainbowFirstPixelHue %= 180;
             led.setData(buffer);
-        }, 0.05);
+        }, 0.03);
+
+    public PhotonicLingualElement blink(int r, int g, int b, double period) {
+        final boolean[] on = {false}; //not sure why this should be an array, but my editor says it should be
+        return new PhotonicLingualElement(() -> {
+            if (on[0]) {
+                for (int i = 0; i < buffer.getLength(); i++) {
+                    buffer.setRGB(i, r, g, b);
+                }
+                led.setData(buffer);
+            } else {
+                for (int i = 0; i < buffer.getLength(); i++) {
+                    buffer.setRGB(i, 0,0,0);
+                }
+                led.setData(buffer);
+            }
+            on[0] = !on[0];
+        }, period);
+    }
 
     public PhotonicLingualElement fire(){
         //fancy moving flame pattern:
@@ -83,13 +114,12 @@ public class PhotonicHRI {
         //SEAN TO OTHER HUMANS: holy crap that link actually is a thing!
         
         //Logan: What in the fuck happened here?
-        
+        var heat = new int[buffer.getLength()];
         return new PhotonicLingualElement(() -> {
-            var heat = new int[buffer.getLength()];
             for (var i = 0; i < buffer.getLength(); i++) {
                 heat[i] = 0;
             }
-            var cooling = 55;
+            var cooling = 2;
             var sparking = 120;
             for (var i = 0; i < buffer.getLength(); i++) {
                 // Step 1.  Cool down every cell a little
@@ -106,7 +136,7 @@ public class PhotonicHRI {
                 buffer.setRGB(i, color[0], color[1], color[2]);
             }
             led.setData(buffer);
-        }, 0.05);
+        }, 0.1);
     }
 
     private int[] heatToColor(int heat) {
@@ -116,6 +146,7 @@ public class PhotonicHRI {
         if (heat < 85) {
             red = heat * 3;
             green = 255 - heat * 3;
+            green = 0;
         } else {
             red = 255;
             green = 255 - (heat - 85) * 3;
@@ -136,19 +167,53 @@ public class PhotonicHRI {
         }, 0.05);
     }
 
-    int rainbowTwinkleFirstPixelHue = 0;
+    public PhotonicLingualElement firev2(double cooling, int sparks, double sparking, int sparkHeight){
+        var heat = new int[buffer.getLength()];
+        return new PhotonicLingualElement(() -> {
+            //cool each pixel a bit:
+            for(var i = 0; i < buffer.getLength(); i++){
+                heat[i] = Math.max(0, heat[i] - (int)(Math.random() * ((cooling * 10) / buffer.getLength() + 2)));
+            }
+
+            //ignite sparks:
+            for(var i = 0; i < sparks; i++){
+                if(Math.random() * 255 < sparking){
+                    var y = buffer.getLength() - 1 - (int)(Math.random() * sparkHeight);
+                    heat[y] += (int)(Math.random() * 160) + 95;
+                }
+            }
+
+            //color:
+            for(var i = 0; i < buffer.getLength(); i++){
+                var color = heatToColorV2.interpolate(heat[i]);
+                buffer.setLED(i, color);
+            }
+
+        }, 0.02);
+    }
+
+    ColorInterpolate heatToColorV2 = new ColorInterpolate(
+            new int[]{0, 255},
+            new int[]{255, 255},
+            new int[]{255, 255},
+            new int[]{0, 255}
+    );
+
+
+
     public PhotonicLingualElement rainbowTwinkle(){
+        final int[] rainbowTwinkleFirstPixelHue = {0};
         return new PhotonicLingualElement(() -> {
             for(var i = 0; i < buffer.getLength(); i++){
-                final var hue = (rainbowTwinkleFirstPixelHue + (i * 180 / buffer.getLength())) % 180;
+                final var hue = (rainbowTwinkleFirstPixelHue[0] + (i * 180 / buffer.getLength())) % 180;
                 if (Math.random() * 255 < 8) {
                     buffer.setHSV(i, hue, 255, 128);
                 } else {
                     buffer.setRGB(i, 0, 0, 0);
                 }
             }
-            rainbowTwinkleFirstPixelHue += 3;
-            rainbowTwinkleFirstPixelHue %= 180;
+            rainbowTwinkleFirstPixelHue[0] += 3;
+            rainbowTwinkleFirstPixelHue[0] %= 180;
             led.setData(buffer);
         }, 0.05);
     }
@@ -167,6 +232,8 @@ public class PhotonicHRI {
     }
 
     public void off() {
+        if(running != null) running.stop();
+        running = null;
         for (var i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, 0, 0, 0);
         }
@@ -197,6 +264,30 @@ public class PhotonicHRI {
 
         public void update() {
             update.run();
+        }
+    }
+
+    public static class ColorInterpolate{
+        int[] positions, hues, values, saturations;
+
+        public ColorInterpolate(int[] hues, int[] values, int[] saturations, int[] positions){
+            this.positions = positions;
+            this.hues = hues;
+            this.values = values;
+            this.saturations = saturations;
+        }
+
+        public Color interpolate(int position){
+            //AI! YOU HAVE NO INTERPOLATION FUNCTION! YOU HAVE TO WRITE IT FROM SCRATCH PLEASE!:
+            for(var i = 0; i < positions.length; i++){
+                if(positions[i] > position){
+                    var hue = (int) (hues[i - 1] + (hues[i] - hues[i - 1]) * ((double) (position - positions[i - 1]) / (positions[i] - positions[i - 1])));
+                    var value = (int) (values[i - 1] + (values[i] - values[i - 1]) * ((double) (position - positions[i - 1]) / (positions[i] - positions[i - 1])));
+                    var saturation = (int) (saturations[i - 1] + (saturations[i] - saturations[i - 1]) * ((double) (position - positions[i - 1]) / (positions[i] - positions[i - 1])));
+                    return Color.fromHSV(hue, saturation, value);
+                }
+            }
+            return Color.fromHSV(hues[hues.length - 1], saturations[saturations.length - 1], values[values.length - 1]);
         }
     }
 }

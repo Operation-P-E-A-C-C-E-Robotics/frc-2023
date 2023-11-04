@@ -4,40 +4,49 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
+import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
+import frc.robot.RobotState;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static frc.robot.Constants.Arm.*;
 
-public class Arm extends DCMotorSystemBase {
-    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT); //todo port number
+public class Arm extends SubsystemBase {
+    private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltage, this::getExtension, this::getVelocity);
+    private final WPI_TalonFX armMaster = new WPI_TalonFX(MASTER_PORT);
     private double setpoint = 0;
+    private Supplier<Boolean> softLimit;
+    private static final double SOFT_LIMIT = 1.13;
+    private boolean needsToRectractToSoftLimit = false;
 
-    // private final WPI_TalonFX armSlave = new WPI_TalonFX(ARM_SLAVE); //todo do we need a slave?
     /** Creates a new ExampleSubsystem. */
-    public Arm(DoubleSupplier pivotAngleSupplier) {
-        super(SYSTEM_CONSTANTS);
-        //BIG BIG ASS TODO need gravity feedforward, but can't do that in the simulation because the sim doesn't support it.
-//        addFeedforward((double pos, double vel) -> {
-//            //use formula for mass on a ramp "Mass * Gravity * sin(theta)" to find force of tilted lift
-//            var force = (CARRAIGE_MASS * 9.8) * Math.sin(pivotAngleSupplier.getAsDouble() + Math.PI/2);
-//            //account for gearing:
-//            force /= SYSTEM_CONSTANTS.gearing;
-//            //calculate voltage needed to counteract force:
-//            return SYSTEM_CONSTANTS.motor.getVoltage(force, vel) * 12;
-//        });
+    public Arm() {
+        armMaster.configFactoryDefault();
+        armMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 50, 60, 0.1));
+
+        armMaster.setInverted(Constants.Inversions.ARM);
+        armMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+        armMaster.configLimitSwitchDisableNeutralOnLOS(true, 0);
+        servoController.setPeriodicFunction(this::zeroFromLimitSwitchPeriodic);
         DankPids.registerDankTalon(armMaster);
+    }
+
+    public void setSoftLimit(Supplier<Boolean> tripped){
+        this.softLimit = tripped;
     }
 
     /**
@@ -46,10 +55,19 @@ public class Arm extends DCMotorSystemBase {
      * @param speed the percentage, positive drives out
      */
     public void setPercent(double speed){
+        servoController.disableLoop();
+        if(softLimit.get()) {
+            armMaster.set(-0.4);
+            return;
+        }
         armMaster.set(speed);
     }
 
     public void setVoltage(double voltage){
+        if(softLimit.get()) {
+            armMaster.setVoltage(-4);
+            return;
+        }
         armMaster.setVoltage(voltage);
     }
 
@@ -59,11 +77,15 @@ public class Arm extends DCMotorSystemBase {
      * @return lift extension meters
      */
     public double getExtension(){
-        return Util.countsToRotations(armMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        // return Util.countsToRotations(armMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        var counts = armMaster.getSelectedSensorPosition();
+        var percentOfMax = counts / FULLY_EXTENDED_COUNTS;
+        var extensionFromMin = percentOfMax * (MAX_EXTENSION - MIN_EXTENSION);
+        return MIN_EXTENSION + extensionFromMin;
     }
 
     public double getVelocity(){
-        return Util.countsToRotations(armMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+        return ((armMaster.getSelectedSensorVelocity()*10) / SYSTEM_CONSTANTS.cpr) / SYSTEM_CONSTANTS.gearing;
     }
     /**
      * set the lift extension in meters between
@@ -71,8 +93,8 @@ public class Arm extends DCMotorSystemBase {
      */
     public void setExtension(double meters){
         setpoint = meters;
-        enableLoop(this::setVoltage, this::getExtension, this::getVelocity);
-        goToState(meters);
+        servoController.enableLoop();
+        servoController.goToState(meters);
     }
 
     public boolean withinTolerance(SupersystemTolerance tolerance, double setpoint){
@@ -81,6 +103,16 @@ public class Arm extends DCMotorSystemBase {
 
     public boolean withinTolerance(SupersystemTolerance tolerance){
         return withinTolerance(tolerance, setpoint);
+    }
+
+    public double getEncoderCounts(){
+        return armMaster.getSelectedSensorPosition();
+    }
+
+    public void zeroFromLimitSwitchPeriodic(){
+        if(armMaster.isFwdLimitSwitchClosed() == 1){
+            armMaster.setSelectedSensorPosition(0);
+        }
     }
 
 

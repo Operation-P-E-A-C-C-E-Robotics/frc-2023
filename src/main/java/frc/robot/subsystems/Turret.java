@@ -7,7 +7,9 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
-import edu.wpi.first.math.VecBuilder;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoderSimCollection;
+import com.ctre.phoenix.sensors.WPI_CANCoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
@@ -15,25 +17,39 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
-import frc.lib.util.DCMotorSystemBase;
+import frc.lib.util.ServoMotor;
 import frc.lib.util.Util;
+import frc.robot.Constants;
 import frc.robot.Constants.SupersystemTolerance;
 import frc.robot.DashboardManager;
-import frc.robot.Robot;
+import static frc.robot.Constants.Turret.*;
 
-import static frc.robot.Constants.Turret.MOTOR_PORT;
-import static frc.robot.Constants.Turret.SYSTEM_CONSTANTS;
+public class Turret extends SubsystemBase {
+  private final ServoMotor servoController = new ServoMotor(SYSTEM_CONSTANTS, this::setVoltageWithoutStoppingProfile, this::getAngleRadians, this::getAngularVelocityRadians);
 
-public class Turret extends DCMotorSystemBase {
   private final WPI_TalonFX turretMaster = new WPI_TalonFX(MOTOR_PORT);
+  private final WPI_CANCoder turretEncoder = new WPI_CANCoder(ENCODER_PORT);
   private double setpoint = 0;
 
   /** Creates a new Turret. */
   public Turret() {
-    super(SYSTEM_CONSTANTS);
-    turretMaster.setInverted(false);
-    if(PERIODIC_CONTROL_SIMULATION) SmartDashboard.putNumber("turret setpoint", 0);
+    turretMaster.configFactoryDefault();
+
+    turretEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    turretEncoder.configMagnetOffset(-114);
+    turretEncoder.setPositionToAbsolute();
+    turretEncoder.configSensorDirection(Constants.Inversions.TURRET_ENCODER);
+    turretMaster.setInverted(Constants.Inversions.TURRET);
+    turretMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+
+//    turretMaster.setSelectedSensorPosition(Util.rotationsToCounts(Units.degreesToRotations(turretEncoder.getAbsolutePosition()), SYSTEM_CONSTANTS));
+    turretMaster.configForwardSoftLimitEnable(false);
+    turretMaster.configReverseSoftLimitEnable(false);
+    turretMaster.configForwardSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MAX_ANGLE_RAD)));
+    turretMaster.configReverseSoftLimitThreshold(Util.rotationsToCounts(Units.degreesToRotations(MIN_ANGLE_RAD)));
+
     DankPids.registerDankTalon(turretMaster);
   }
 
@@ -41,7 +57,10 @@ public class Turret extends DCMotorSystemBase {
    * set the turret speed, Positive Values should be Counter Clock Wise
    */
   public void setPercent(double speed) {
-    disableLoop();
+    servoController.disableLoop();
+    // if(getAngleRadians() > MAX_ANGLE_RAD && speed < 0) turretMaster.set(0);
+    // else if(getAngleRadians() < MIN_ANGLE_RAD && speed > 0) turretMaster.set(0);
+    // else turretMaster.set(speed);
     turretMaster.set(speed);
   }
 
@@ -49,7 +68,7 @@ public class Turret extends DCMotorSystemBase {
    * set the turret voltage, Positive Values should be Counter Clock Wise
    */
   public void setVoltage(double volts){
-    disableLoop();
+    servoController.disableLoop();
     setVoltageWithoutStoppingProfile(volts);
   }
 
@@ -57,7 +76,7 @@ public class Turret extends DCMotorSystemBase {
    * enable the feedback loop - takes over from the setPercent and setVoltage methods
    */
   public void enableFeedback(){
-    enableLoop(this::setVoltageWithoutStoppingProfile, this::getAngleRadians, this::getAngularVelocityRadians);
+    servoController.enableLoop();
   }
 
   /**
@@ -68,7 +87,7 @@ public class Turret extends DCMotorSystemBase {
   public void setAngle(Rotation2d angle){
       setpoint = angle.getRadians();
       enableFeedback();
-      goToState(angle.getRadians());
+      servoController.goToState(angle.getRadians());
   }
 
   /**
@@ -76,7 +95,9 @@ public class Turret extends DCMotorSystemBase {
    * @param volts voltage
    */
   private void setVoltageWithoutStoppingProfile(double volts){
-    turretMaster.setVoltage(volts);
+    if(getAngleRadians() > MAX_ANGLE_RAD && volts > 0) turretMaster.set(0);
+    else if(getAngleRadians() < MIN_ANGLE_RAD && volts < 0) turretMaster.set(0);
+    else turretMaster.setVoltage(volts);
   }
 
 
@@ -85,8 +106,7 @@ public class Turret extends DCMotorSystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngle(){
-    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-    return Rotation2d.fromDegrees(rotation*360);
+     return Rotation2d.fromDegrees(turretEncoder.getPosition());
   }
 
   /**
@@ -94,8 +114,7 @@ public class Turret extends DCMotorSystemBase {
    * @return {@link Rotation2d}
    */
   public Rotation2d getAngularVelocity(){
-    var velocity = Util.countsToRotations(turretMaster.getSelectedSensorVelocity(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-    return Rotation2d.fromDegrees(velocity*360);
+     return Rotation2d.fromDegrees(turretEncoder.getVelocity());
   }
 
   /**
@@ -103,8 +122,9 @@ public class Turret extends DCMotorSystemBase {
    * @return radians, CCW is positive
    */
   public double getAngleRadians(){
-    var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing); //todo  Gear Ratiow
-    return Units.rotationsToRadians(rotation);
+//   var rotation = Util.countsToRotations(turretMaster.getSelectedSensorPosition(), SYSTEM_CONSTANTS.cpr, SYSTEM_CONSTANTS.gearing);
+//   return Units.rotationsToRadians(rotation);
+    return getAngle().getRadians();
   }
 
     /**
@@ -137,7 +157,8 @@ public class Turret extends DCMotorSystemBase {
 
   //SIMULATION:
   private final TalonFXSimCollection turretMotorSim = turretMaster.getSimCollection();
-  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(getSystem());
+  private final CANCoderSimCollection turretEncoderSim = turretEncoder.getSimCollection();
+  private final LinearSystemSim<N2, N1, N2> turretSim = new LinearSystemSim<>(servoController.getSystem());
   private  double prevsetpt = 0;
   private final boolean PERIODIC_CONTROL_SIMULATION = false;
   @Override
@@ -147,8 +168,17 @@ public class Turret extends DCMotorSystemBase {
                     Units.radiansToRotations(
                             turretSim.getOutput(0)
                     ),
-                    SYSTEM_CONSTANTS.cpr,
+                    2048,
                     SYSTEM_CONSTANTS.gearing
+            )
+    );
+    turretEncoderSim.setRawPosition(
+            (int)Util.rotationsToCounts(
+                    Units.radiansToRotations(
+                            turretSim.getOutput(0)
+                    ),
+                    SYSTEM_CONSTANTS.cpr,
+                    1
             )
     );
     turretMotorSim.setIntegratedSensorVelocity(
@@ -156,8 +186,17 @@ public class Turret extends DCMotorSystemBase {
               Units.radiansToRotations(
                       turretSim.getOutput(1)
               ),
-            SYSTEM_CONSTANTS.cpr,
+            1,
             SYSTEM_CONSTANTS.gearing
+            )
+    );
+    turretEncoderSim.setVelocity(
+            (int)Util.rotationsToCounts(
+                    Units.radiansToRotations(
+                            turretSim.getOutput(1)/10
+                    ),
+                    SYSTEM_CONSTANTS.cpr,
+                    1
             )
     );
     var setpt = SmartDashboard.getNumber("turret setpoint", 0);

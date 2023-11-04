@@ -6,9 +6,11 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.sensors.PigeonHelper;
-import frc.lib.util.AveragePose;
+import frc.lib.util.PoseFilter;
 import frc.lib.util.Util;
 import frc.lib.safety.Value;
 import frc.robot.subsystems.DriveTrain;
@@ -18,11 +20,16 @@ import frc.robot.subsystems.Supersystem;
 public class RobotState {
     private final DriveTrain driveTrain;
     private final PigeonHelper imu;
-    private final AveragePose conePoseSmoothed = new AveragePose();
+    private final PoseFilter conePoseSmoothed = new PoseFilter(),
+            cubePoseSmoothed = new PoseFilter(),
+            visionTargetPoseSmoothed = new PoseFilter();
     private final DifferentialDrivePoseEstimator fieldToDrivetrainEstimator;
     private final Supersystem supersystem;
-    private final Limelight apriltagCamera, armCamera;
-    private Pose2d prevRobotPose;
+    private final Limelight drivetrainCameraLeft, drivetrainCameraRight;
+    private final PowerDistribution pdp;
+    private Pose3d prevConePose = new Pose3d();
+    private Pose3d prevCubePose = new Pose3d();
+    private Pose2d prevRobotPose, currentRobotPose;
 
 
     /**
@@ -34,22 +41,51 @@ public class RobotState {
         this.driveTrain = driveTrain;
         this.supersystem = supersystem;
         this.imu = imu;
-        this.apriltagCamera = apriltagCamera;
-        this.armCamera = armCamera;
+        this.drivetrainCameraLeft = apriltagCamera;
+        this.drivetrainCameraRight = armCamera;
+        this.pdp = new PowerDistribution();
         fieldToDrivetrainEstimator = new DifferentialDrivePoseEstimator(
                 DRIVE_KINEMATICS,
                 imu.getRotation(),
                 driveTrain.getLeftMeters(),
                 driveTrain.getRightMeters(),
-                new Pose2d(3, 3, new Rotation2d()), //TODO starting pose
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),
-                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(1, 1, 0.5)
+                new Pose2d(0, 0, new Rotation2d()), //TODO starting pose
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.01, 0.01, 0.005),
+                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         );
         prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+        currentRobotPose = prevRobotPose;
+    }
+
+     /**
+     * update drivetrain odometry
+     */
+    public void update(){
+        supersystem.getKinematics().reset();
+        prevRobotPose = currentRobotPose;
+
+        fieldToDrivetrainEstimator.update(imu.getRotation(), driveTrain.getLeftMeters(), driveTrain.getRightMeters());
+        drivetrainCameraLeft.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+        drivetrainCameraRight.updatePoseEstimator(fieldToDrivetrainEstimator, getOdometryPose(), driveTrain.getLeftVelocity(), driveTrain.getRightVelocity());
+        currentRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
+
+        // SmartDashboard.putBoolean("ready to place", isReadyToPlace());
+
+        DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
+        var currentPoseOfEndEffector = supersystem.getKinematics().getEndEffectorPosition();
+        var relativeToField = drivetrainToField(new Pose3d(currentPoseOfEndEffector.getMidPosition(), new Rotation3d()));
+        DashboardManager.getInstance().drawEndEffector(new Pose2d(relativeToField.getX(), relativeToField.getY(), new Rotation2d()));
+
+        var conePose = getConePose().get(new Pose3d());
+        DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
+    }
+
+    public void handleDrivetrainShift(){
+        resetOdometry(prevRobotPose);
     }
 
     public static final double PLACE_DISTANCE = 2; //TODO meters
-    public static final double PLACE_MAX_VELOCITY = 1; //TODO meters per second
+    public static final double PLACE_MAX_VELOCITY = 0.35; //TODO meters per second
 
     /**
      * determine whether the drivetrain is near enough a target to start placing or intaking
@@ -58,77 +94,115 @@ public class RobotState {
      * @return whether the drivetrain is near enough a target to start placing or intaking
      */
     public boolean inRangeOfTarget(Translation2d target){
-        var pose = getOdometryPose().getTranslation();
+        var pose = currentRobotPose.getTranslation();
         var distanceToTarget = pose.minus(target).getNorm();
         var distanceOkay = distanceToTarget < PLACE_DISTANCE;
         var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < PLACE_MAX_VELOCITY;
         return distanceOkay && velocityOkay;
     }
 
+    public boolean isReadyToPlace(){
+        var velocityOkay = Math.abs(driveTrain.getAverageVelocity()) < 0.01;
+        var leftCameraOkay = drivetrainCameraLeft.isOdometryCorrected();
+        var rightCameraOkay = drivetrainCameraRight.isOdometryCorrected();
+        var leftCameraHasTarget = drivetrainCameraLeft.hasTarget();
+        var rightCameraHasTarget = drivetrainCameraRight.hasTarget();
+        return velocityOkay &&
+                (leftCameraOkay || !leftCameraHasTarget) &&
+                (rightCameraOkay || !rightCameraHasTarget) &&
+                (leftCameraHasTarget || rightCameraHasTarget);
+    }
+
     public Value<Pose3d> getConePoseFromDrivetrainLimelight(){
-        var poseRelativeToCamera = apriltagCamera.getConePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        var poseRelativeToCamera = drivetrainCameraLeft.getConePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return new Value<>(prevConePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
-        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
-
+        if(drivetrainCameraLeft.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        prevConePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePoseFromDrivetrainLimelight(){
-        var poseRelativeToCamera = apriltagCamera.getCubePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        var poseRelativeToCamera = drivetrainCameraLeft.getCubePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return new Value<>(prevCubePose);
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
         var pose = drivetrainToField(apriltagCameraToDriveTrain(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))));
 
-        if(apriltagCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
-
+        if(drivetrainCameraLeft.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
+        prevCubePose = pose;
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getCubePose(){
-        var poseRelativeToCamera = armCamera.getCubePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        var poseRelativeToCamera = drivetrainCameraRight.getCubePoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return getCubePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+        var pose = drivetrainToField(endEffectorToDriveTrain(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d())))));
 
-        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        if(drivetrainCameraRight.hasTarget()) pose = cubePoseSmoothed.calculate(pose);
 
         return new Value<>(pose);
     }
 
     public Value<Pose3d> getConePose(){
-        var poseRelativeToCamera = armCamera.getConePoseRelativeToCamera();
-        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
+        var poseRelativeToCamera = drivetrainCameraRight.getConePoseRelativeToCamera();
+        // if(!poseRelativeToCamera.isNormal()) return getConePoseFromDrivetrainLimelight();
 
         //note: before, x and y were negated to get them to be correct. does that still need to happen?
-        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d()))))));
+        var pose = drivetrainToField(endEffectorToDriveTrain(endEffectorCameraToEndEffector(Util.toPose3d(poseRelativeToCamera.get(new Translation2d())))));
 
-        if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
-
+        // if(armCamera.hasTarget()) pose = conePoseSmoothed.calculate(pose);
+        prevConePose = pose;
         return new Value<>(pose);
     }
 
-    /**
-     * update drivetrain odometry
-     */
-    public void update(){
-        prevRobotPose = fieldToDrivetrainEstimator.getEstimatedPosition();
-        apriltagCamera.updatePoseEstimator(fieldToDrivetrainEstimator, driveTrain::getLeftMeters, driveTrain::getRightMeters, imu::getRotation);
-        fieldToDrivetrainEstimator.updateWithTime(Timer.getFPGATimestamp(), imu.getRotation(), driveTrain.getLeftMeters(),driveTrain.getRightMeters());
+    public Value<Pose3d> getVisionTargetPose(double z){
+        var poseRelativeToCamera = drivetrainCameraRight.getVisionTargetPoseRelativeToCamera();
+        if(!poseRelativeToCamera.isNormal()) return Value.notAvailable();
 
-        if (Robot.isReal()) {
-            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-        } else {
-            DashboardManager.getInstance().drawDrivetrain(driveTrain.getDifferentialDrive(), getOdometryPose());
-        }
+        //note: before, x and y were negated to get them to be correct. does that still need to happen?
+        var pose = drivetrainToField(turretToDrivetrain(endEffectorToTurret(endEffectorCameraToEndEffector(
+                Util.toPose3d(poseRelativeToCamera.get(new Translation2d()), z)
+        ))));
 
-        var conePose = getConePoseFromDrivetrainLimelight().get(new Pose3d());
-        DashboardManager.getInstance().drawCone(new Pose2d(conePose.getX(), conePose.getY(), new Rotation2d()));
+        if(drivetrainCameraRight.hasTarget()) pose = visionTargetPoseSmoothed.calculate(pose);
+        prevCubePose = pose;
+        return new Value<>(pose);
+    }
+
+    public Value<Double> getConeAngleFromCamera(){
+        drivetrainCameraRight.setPipeline(Limelight.CONE_PIPELINE);
+        if(drivetrainCameraRight.getPipeline() != Limelight.CONE_PIPELINE) return Value.notAvailable();
+
+        var angle = drivetrainCameraRight.getTargetX();
+        if(!angle.isNormal()) return Value.notAvailable();
+        return angle;
+    }
+
+    public Value<Double> getCubeAngleFromCamera(){
+        drivetrainCameraRight.setPipeline(Limelight.CUBE_PIPELINE);
+        if(drivetrainCameraRight.getPipeline() != Limelight.CUBE_PIPELINE) return Value.notAvailable();
+
+        var angle = drivetrainCameraRight.getTargetX();
+        if(!angle.isNormal()) return Value.notAvailable();
+        return angle;
+    }
+
+    public boolean onRedAlliance(){
+        return DriverStation.getAlliance() == DriverStation.Alliance.Red;
+    }
+
+    public boolean robotXInRange(double low, double high){
+        return getOdometryPose().getTranslation().getX() > low && getOdometryPose().getTranslation().getX() < high;
+    }
+
+    public void zeroImuPitchRoll(){
+        imu.zeroPitchRoll();
     }
 
     /**
@@ -155,7 +229,7 @@ public class RobotState {
      * @return robot's position, relative to the field
      */
     public Value<Pose3d> getRawApriltagBotpose(){
-        return apriltagCamera.getBotpose();
+        return drivetrainCameraLeft.getBotpose();
     }
 
     /**
@@ -163,17 +237,17 @@ public class RobotState {
      * @return robot's position, relative to the field
      */
     public Pose2d getOdometryPose(){
-        return fieldToDrivetrainEstimator.getEstimatedPosition();
+        return currentRobotPose;
     }
 
     /**
-     * get the robot's pose in field coordinates as a pose3d,
+     * get the robot's pose in field coordinates as a Pose3d,
      * using fused odometry for x, y, and heading, and raw apriltag data for z
      * @return robot's position, relative to the field
      */
     public Pose3d getRobotPose(){
         Pose2d odometryPose = getOdometryPose();
-        Pose3d botpose = apriltagCamera.getBotpose().get(new Pose3d());
+        Pose3d botpose = drivetrainCameraLeft.getBotpose().get(new Pose3d());
         return new Pose3d(
                 odometryPose.getX(),
                 odometryPose.getY(),
@@ -184,6 +258,10 @@ public class RobotState {
                         odometryPose.getRotation().getRadians()
                 )
         );
+    }
+
+    public PigeonHelper getPigeon(){
+        return imu;
     }
 
     /**
@@ -200,7 +278,7 @@ public class RobotState {
      * @return the pose relative to the center of the drivetrain
      */
     public Pose3d fieldToDrivetrain(Pose3d fieldPoint){
-        Pose3d fieldToRobot = getRobotPose();
+        Pose3d fieldToRobot = Util.toPose3d(getOdometryPose()); //todo try with snap to floor? (before used apriltag z)
         return Util.globalToLocalPose(fieldToRobot, fieldPoint);
     }
 
@@ -210,7 +288,7 @@ public class RobotState {
      * @return the pose relative to the bottom left field corner
      */
     public Pose3d drivetrainToField(Pose3d drivetrainPoint){
-        Pose3d fieldToRobot = getRobotPose();
+        Pose3d fieldToRobot = Util.toPose3d(getOdometryPose());
         return Util.localToGlobalPose(fieldToRobot, drivetrainPoint);
     }
 
@@ -246,7 +324,7 @@ public class RobotState {
      */
     public Pose3d drivetrainToApriltagCamera(Pose3d drivetrainPoint){
         var apriltagOrigin =  new Pose3d(0,0,0,
-                new Rotation3d(0,0,Units.degreesToRadians(180)) //todo fix 180
+                new Rotation3d(0,0,Units.degreesToRadians(0))
         );
         return Util.globalToLocalPose(apriltagOrigin, drivetrainPoint);
     }
@@ -259,7 +337,7 @@ public class RobotState {
      */
     public Pose3d apriltagCameraToDriveTrain(Pose3d apriltagCameraPoint){
         var apriltagOrigin =  new Pose3d(0,0,0,
-                new Rotation3d(0,0,Units.degreesToRadians(180))
+                new Rotation3d(0,0,Units.degreesToRadians(0))
         );
         return Util.localToGlobalPose(apriltagOrigin, apriltagCameraPoint);
     }
@@ -294,6 +372,19 @@ public class RobotState {
         double endEffectorAngle = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
         return Util.globalToLocalPose(
                 new Pose3d(endEffectorPosition, new Rotation3d(0,endEffectorAngle,0)),
+                endEffectorPoint
+        );
+    }
+
+    public Pose3d endEffectorToDriveTrain(Pose3d endEffectorPoint){
+        Translation3d endEffectorPosition = supersystem.getKinematics()
+                .getEndEffectorPosition()
+                .getEndPosition();
+        double wristPitch = supersystem.getSupersystemState().getWristAngle() + Units.degreesToRadians(90); //TODO add 90?
+        double wristRoll = supersystem.getWristFlipAngle().getRadians();
+        double turretYaw = supersystem.getSupersystemState().getTurretAngle();
+        return Util.globalToLocalPose(
+                new Pose3d(endEffectorPosition, new Rotation3d(wristRoll,wristPitch,turretYaw)),
                 endEffectorPoint
         );
     }
@@ -336,7 +427,7 @@ public class RobotState {
      */
     public Pose3d endEffectorToEndEffectorCamera(Pose3d endEffectorPoint){
         var endEffectorCameraOrigin = new Pose3d();
-        return Util.globalToLocalPose(endEffectorCameraOrigin, endEffectorPoint); //todo globaltolocal or localtoglobal?
+        return Util.globalToLocalPose(endEffectorCameraOrigin, endEffectorPoint); //todo globalToLocal or localToGlobal?
     }
 
     /**
@@ -347,6 +438,6 @@ public class RobotState {
      */
     public Pose3d endEffectorCameraToEndEffector(Pose3d endEffectorCameraPoint){
         var endEffectorCameraOrigin = new Pose3d();
-        return Util.localToGlobalPose(endEffectorCameraOrigin, endEffectorCameraPoint); //todo globaltolocal or localtoglobal?
+        return Util.localToGlobalPose(endEffectorCameraOrigin, endEffectorCameraPoint); //todo globalToLocal or localToGlobal?
     }
 }

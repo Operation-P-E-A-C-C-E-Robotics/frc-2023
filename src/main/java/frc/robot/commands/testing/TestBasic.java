@@ -1,8 +1,11 @@
 package frc.robot.commands.testing;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.PeaccyDriveHelper;
+import frc.lib.util.Util;
 import frc.robot.subsystems.*;
 
 public class TestBasic extends CommandBase {
@@ -10,7 +13,7 @@ public class TestBasic extends CommandBase {
     private final Pivot pivot;
     private final Turret turret;
     private final Wrist wrist;
-    private final Joystick testJoystick = new Joystick(2);
+    private final Joystick testJoystick;
 
     /**
      * Test basic functionality of all subsystems
@@ -20,12 +23,13 @@ public class TestBasic extends CommandBase {
      * @param turret the turret subsystem
      * @param wrist the wrist subsystem
      */
-    public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist) {
+    public TestBasic(Supersystem supersystem, Arm arm, Pivot pivot, Turret turret, Wrist wrist, Joystick joystick) {
         addRequirements(supersystem, arm, pivot, turret, wrist);
         this.arm = arm;
         this.pivot = pivot;
         this.turret = turret;
         this.wrist = wrist;
+        testJoystick = joystick;
     }
 
     @Override
@@ -35,23 +39,22 @@ public class TestBasic extends CommandBase {
 
     @Override
     public void execute(){
-        System.out.println("Testing basic controls - executing");
+        // System.out.println("Testing basic controls - executing");
         SmartDashboard.putNumber("arm extension", arm.getExtension());
-        SmartDashboard.putNumber("pivot angle (deg)", pivot.getAngleRadians());
-        SmartDashboard.putNumber("turret angle (deg)", turret.getAngle().getDegrees());
-        SmartDashboard.putNumber("wrist angle (deg)", wrist.getAngle().getDegrees());
+        SmartDashboard.putNumber("pivot angle (rad)", Units.radiansToDegrees(pivot.getAngleRadians()));
+        SmartDashboard.putNumber("turret angle (rad)", turret.getAngle().getRadians());
+        SmartDashboard.putNumber("wrist angle (rad)", wrist.getAngle().getRadians());
+        SmartDashboard.putNumber("wrist flip angle (rad)", wrist.getWristFlipAngle().getRadians());
         SmartDashboard.putBoolean("wrist flipping", wrist.flipping());
-        var armSpeed = testJoystick.getRawAxis(1);
-        var pivotSpeed = testJoystick.getRawAxis(1);
-        var turretSpeed = testJoystick.getRawAxis(0);
-        var wristSpeed = testJoystick.getRawAxis(4);
+        SmartDashboard.putNumber("arm counts", arm.getEncoderCounts());
+        var armSpeed = -Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(3), 0.1);
+        var pivotSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(1), 0.1);
+        var turretJoy = testJoystick.getRawAxis(2);
+        var turretSpeed = Util.handleDeadbandWithSlopeIncrease(Math.copySign(Math.pow(turretJoy,2), turretJoy), 0.05) * 0.13;
+        var wristSpeed = Util.handleDeadbandWithSlopeIncrease(testJoystick.getRawAxis(0), 0.3);
         arm.setPercent(armSpeed);
         pivot.setPercent(pivotSpeed);
         turret.setPercent(turretSpeed);
         wrist.setPercent(wristSpeed);
-        SmartDashboard.putNumber("arm speed", armSpeed);
-        SmartDashboard.putNumber("pivot speed", pivotSpeed);
-        SmartDashboard.putNumber("turret speed", turretSpeed);
-        SmartDashboard.putNumber("wrist speed", wristSpeed);
     }
 }

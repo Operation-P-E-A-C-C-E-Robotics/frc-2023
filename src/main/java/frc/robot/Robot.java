@@ -8,9 +8,13 @@ package frc.robot;
 // import edu.wpi.first.cscore.UsbCamera;
 // import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.safety.Inspiration;
+import frc.robot.subsystems.PhotonicHRI;
+import frc.robot.subsystems.PhotonicHRI.PhotonicLingualElement;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,17 +25,26 @@ import frc.lib.safety.Inspiration;
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+  private SendableChooser<PhotonicLingualElement> disabledLEDChooser = new SendableChooser<>();
   private boolean isInMatch;
+  private PhotonicLingualElement prev = null;
 
   @Override
   public void robotInit() {
     robotContainer = new RobotContainer();
+    robotContainer.wristCoastMode();
     this.isInMatch = Inspiration.initializeInspiration();
-    if(isInMatch) {
-      Inspiration.inspireDriversInit();
-    } else {
-      Inspiration.inspireProgrammersInit();
-    }
+    // if(isInMatch) {
+    //   Inspiration.inspireDriversInit();
+    // } else {
+    //   Inspiration.inspireProgrammersInit();
+    // }
+    disabledLEDChooser.setDefaultOption("rainbow", RobotContainer.photonicHRI.rainbow);
+    disabledLEDChooser.addOption("off", null);
+    disabledLEDChooser.addOption("random", RobotContainer.photonicHRI.random);
+    disabledLEDChooser.addOption("fire", RobotContainer.photonicHRI.fire());
+    SmartDashboard.putData("LEDS", disabledLEDChooser);
+
   }
   @Override
   public void robotPeriodic() {
@@ -42,8 +55,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    robotContainer.wristBrakeMode();
     autonomousCommand = robotContainer.getAutonomousCommand();
-    // Inspiration.inspireAutonomous(isInMatch);
+    //  Inspiration.inspireAutonomous(isInMatch);
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -53,12 +67,32 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    // Inspiration.inspireTeleopInit(isInMatch);
-
+    robotContainer.wristBrakeMode();
+    //  Inspiration.inspireTeleopInit(isInMatch);
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
     robotContainer.setDriveTrainCommand();
+  }
+
+  @Override
+  public void disabledInit(){
+    // photonicHRI.runElement(photonicHRI.blink(149, 56, 242, 1));
+    //235, 165, 26
+    robotContainer.photonicHRI.off();
+    robotContainer.wristCoastMode();
+  }
+
+  @Override
+  public void disabledPeriodic(){
+    var selectedLED = disabledLEDChooser.getSelected();
+    if(selectedLED == prev) return;
+    prev = selectedLED;
+    if(selectedLED == null){
+      robotContainer.photonicHRI.off();
+      return;
+    }
+    robotContainer.photonicHRI.runElement(selectedLED);
   }
 
   @Override

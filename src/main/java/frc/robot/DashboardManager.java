@@ -20,10 +20,8 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class DashboardManager {
     private final Field2d field = new Field2d();
     private static final DashboardManager instance = new DashboardManager();
-    private final GenericEntry test = Shuffleboard.getTab("hi").add("test", 0).withWidget(BuiltInWidgets.kGyro).getEntry();
 
     private DashboardManager() {
-        test.setDouble(0);
     }
 
     public static DashboardManager getInstance(){
@@ -44,6 +42,10 @@ public class DashboardManager {
 
     public void drawTrajectory(Trajectory trajectory){
         field.getObject("trajectory").setTrajectory(trajectory);
+    }
+
+    public void drawEndEffector(Pose2d pose){
+        field.getObject("end effector").setPose(pose);
     }
 
     public  void drawDrivetrain(DifferentialDrive differentialDrive, Pose2d robotPose) {

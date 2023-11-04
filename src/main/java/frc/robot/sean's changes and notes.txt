@@ -8,6 +8,116 @@ Started field points
 
 DID A LOTTA STUFF
 
+TODO pre districs (if we make it):
+P.S. HOLY FUK WE MADE IT
+[TODO] test additional auto place checks
+[TODO] better ground intake
+[TODO] 2nd limelight
+[TODO] make sure auto balance works with ballast
+[TODO] place cone auto?
+[TEST] add 2nd limelight to additional auto place checks so it won't be screwey
+[TODO] triple check extension limits
+[TODO] better substation setpoint
+[TODO] better apriltag std devs.
+
+race spitgamepiece for cones too
+tune timeouts
+lower place a little bit for cones, bring pre-place back a little bit.
+
+
+ROBOT DEFAULT BEHAVIORS:
+- intake:
+    - rest open after ejecting, closed after intaking
+    - always close intake when gamepiece detected
+    - always open when intaking, ejecting
+- supersystem:
+    - slight angle in anticipated direction of travel, turret zeroed, when in center of field
+    - angle towards targets in community
+    - angle towards pickup when near substation
+
+CYCLE PATTERN:
+1. robot drives to substation
+    - pivot angles towards substation once in zone
+    - intake resting open
+    - turret zeroes till near substation
+2. robot intakes game piece (intake button pressed)
+    a. targets substation
+    b. reaches out to grab
+    c. intake closes
+    d. arm retracts
+3. robot drives to place
+    - pivot angles towards place once in zone
+    - intake resting closed
+    - turret zeroes till near place
+4. robot places game piece (place button pressed)
+    a. targets place
+    b. reaches out to place
+    c. intake opens
+    d. arm retracts
+
+FINAL CONTROL SCHEME PLAN:
+- place
+    - low
+    - mid
+    - high
+- intake
+    - floor
+    - single substation
+    - double substation
+
+HOLY FUK ITS REVERIE TODO:
+[OK] make sure wrist angle init and arm soft limits working (pre inspection)
+[todo] fix turret soft limit
+[OK??????????????????] add place to auto balance
+[todo] tune drivetrain
+[OK] better soft limits so can palce high cones
+
+
+
+TODO LIST PRE-REVERE:
+[OK] re-zero cancoders as accurately as possible
+[OK] speed up shit as much as possible
+[OK] improve turret accuracy
+[OK] color sensor
+[OK] mode selector (cube/cone)
+[OK] ensure all motors and air cylinders are going the correct direction
+    [OK] the intake gripper is backwards
+[todo] arm gravity feedfoward
+[todo] ensure accurate gear ratios and units for everything
+    [OK] fix drivetrain units
+    [todo] fix wrist units
+[OK] improve current setpoints
+[OK] fix drivetrain shifters
+[OK] tune current autos
+[OK] get odometry tracking accurately
+    [OK] tune apriltag rejection and standard devs.
+[OK] odometry-based auto cube scoring
+[OK] fix my nice drive mode
+[todo] remap drive buttons for new joysticks
+[todo] auto alignment for intaking
+[todo] vision tape tracking auto cone scoring
+[todo] tune path following
+[todo] better autos
+    [todo] 25 pt auto
+    [todo] 2 game piece auto
+[todo] auto tipped cone intaking (very complex)
+[todo] whatever else i've forgotten or discover
+
+STUFF I'LL forget to do at comp:
+ [ok] take wrist out of set position, make it make sense
+ - add more gravity feedforward
+    [ok] pivot
+    - arm?
+ [it's wrong] remember about the extra *10 for drivetrain velocity - make sure that's right
+ [ok] test joystick twist quickturn
+ - label reset buttons on driver joystick
+
+TESTING TODO LIST 3/6:
+ - presets
+ - presets with turret.
+ - preset with gamepiece targeting
+ - fancy stuff
+
 TODO as of 2/25:
  - Get drivetrain shifting like butter
  - Vision-based cone placement

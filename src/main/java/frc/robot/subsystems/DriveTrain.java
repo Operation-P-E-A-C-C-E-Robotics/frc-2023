@@ -6,15 +6,12 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.LinearQuadraticRegulator;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.KalmanFilter;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N2;
@@ -30,11 +27,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.safety.DankPids;
-import frc.lib.safety.RedundantSystem;
 import frc.lib.sensors.PigeonHelper;
 import frc.lib.util.DriveSignal;
+import frc.robot.Constants;
+import frc.robot.RobotState;
+
 import static frc.robot.Constants.DriveTrain.*;
 
 public class DriveTrain extends SubsystemBase {
@@ -44,58 +44,33 @@ public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX leftSlave = new WPI_TalonFX(LEFT_SLAVE);
   private final WPI_TalonFX rightSlave = new WPI_TalonFX(RIGHT_SLAVE);
 
-  //fancy redundancy stuff:
-  private final RedundantSystem<Double> leftPosition, rightPosition;
-
-  //velocity drive - TODO if LQR velocity drive works, get rid of pid. also we may not need differential drive
+  //velocity drive
   //with current auto setup.
   private final DifferentialDrive differentialDrive = new DifferentialDrive(leftMaster, rightMaster);
-  private final SimpleMotorFeedforward feedforward;
-  private final PIDController leftController;
-  private final PIDController rightController;
   private final PigeonHelper pigeon;
   private final Timer shiftClutchTimer = new Timer();
-  private boolean shiftClutchDepressed = false;
+  private RobotState robotState;
+  private boolean shiftClutchEngaged = false;
 
   //SHIFTING!:
-  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(6, PneumaticsModuleType.REVPH, SHIFT_HIGH_PORT, SHIFT_LOW_PORT);
-  private Gear gear = Gear.HIGH;
-
-  //LQR velocity drive:
-  //STATES: [left velocity, right velocity]
-  //INPUTS: [left voltage, right voltage]
-  //OUTPUTS: [left velocity, right velocity]
-  private final LinearSystem<N2, N2, N2> drivePlant = LinearSystemId.identifyDrivetrainSystem(
-          kV_LINEAR,
-          kA_LINEAR,
-          kV_ANGULAR,
-          kA_ANGULAR,
-          TRACK_WIDTH
-  ); //TODO angular kV and kA
-  private final LinearQuadraticRegulator<N2, N2, N2> driveLQR = new LinearQuadraticRegulator<>(
-          drivePlant,
-          VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
-          VecBuilder.fill(LQR_EFFORT, LQR_EFFORT),
-          DT
+  private final DoubleSolenoid shiftSolenoid = new DoubleSolenoid(
+          Constants.LOWER_PNEUMATICS_MODULE_CAN_ID,
+          PneumaticsModuleType.REVPH,
+          SHIFT_HIGH_PORT,
+          SHIFT_LOW_PORT
   );
-  private final KalmanFilter<N2, N2, N2> kalmanFilter = new KalmanFilter<>(
-          Nat.N2(),
-          Nat.N2(),
-          drivePlant,
-          VecBuilder.fill(KALMAN_MODEL_ACCURACY, KALMAN_MODEL_ACCURACY),
-          VecBuilder.fill(KALMAN_SENSOR_ACCURACY, KALMAN_SENSOR_ACCURACY),
-          DT
-  );
-  private final LinearSystemLoop<N2, N2, N2> loop = new LinearSystemLoop<>(
-          drivePlant,
-          driveLQR,
-          kalmanFilter,
-          12, //todo
-          DT
-  );
+  private boolean isBrakeMode = false;
 
+  private final DriveVelocityController highVelocityController = new DriveVelocityController(kV_LINEAR, kA_LINEAR, kV_ANGULAR, kA_ANGULAR);
+  private final DriveVelocityController lowVelocityController = new DriveVelocityController(kV_LINEAR_LOW, kA_LINEAR_LOW, kV_ANGULAR_LOW, kA_ANGULAR_LOW);
 
-//TODO  low gear make the robot go backwards so like, do something about it
+  private double leftPositionOffset, rightPositionOffset; //to keep position consistent across gears
+
+  private double leftVelocitySetpoint = 0, rightVelocitySetpoint = 0;
+  private boolean isClosedLoop = false;
+
+  private static final Value HIGH_GEAR = Value.kForward;
+  private static final Value LOW_GEAR = Value.kReverse;
 
   /** Creates a new DriveTrain. */
   public DriveTrain(PigeonHelper pigeon) {
@@ -105,140 +80,68 @@ public class DriveTrain extends SubsystemBase {
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
 
+    leftMaster.configFactoryDefault();
+    rightMaster.configFactoryDefault();
+    leftSlave.configFactoryDefault();
+    rightSlave.configFactoryDefault();
+
     leftSlave.setInverted(InvertType.FollowMaster);
     rightSlave.setInverted(InvertType.FollowMaster);
-    leftMaster.setInverted(false);
-    rightMaster.setInverted(true);
+    leftMaster.setInverted(Constants.Inversions.DRIVE_LEFT);
+    rightMaster.setInverted(Constants.Inversions.DRIVE_RIGHT);
+    // set(new DriveSignal(0, 0, false, false));
+    set(DriveSignal.DEFAULT);
 
-    setNeutralMode(NeutralMode.Brake);
+    //configure PID
 
-    leftPosition = new RedundantSystem<>(
-            new RedundantSystem.MultiCheck(
-                    new RedundantSystem.SlewRateCheck(10000),
-                    (Double value, boolean failed) -> failed || leftMaster.isAlive()
-            ),
-            leftMaster::getSelectedSensorPosition,
-            leftSlave::getSelectedSensorPosition
-    );
-    rightPosition = new RedundantSystem<>(
-            new RedundantSystem.MultiCheck(
-                    new RedundantSystem.SlewRateCheck(10000),
-                    (Double value, boolean failed) -> failed || rightMaster.isAlive()
-            ),
-            rightMaster::getSelectedSensorPosition,
-            rightSlave::getSelectedSensorPosition
-    );
-
-    //configure PID: TODO get rid of PID
-    feedforward = new SimpleMotorFeedforward(kS, kV_LINEAR, kA_LINEAR);
-    leftController = new PIDController(kP, kI, kD);
-    rightController = new PIDController(kP, kI, kD);
-
-    driveLQR.latencyCompensate(drivePlant, 0.02, 0); //TODO
     DankPids.registerDankTalon(leftMaster);
     DankPids.registerDankTalon(rightMaster);
     DankPids.registerDankTalon(leftSlave);
     DankPids.registerDankTalon(rightSlave);
   }
 
-  /**
-   * input 2 doubles to drive the drivetrain motors separately
-   * @param leftSpeed the speed to set the left motors to (Double)
-   * @param rightSpeed the speed to set the right motors to (Double)
-   */
-  public void tankDrive(double leftSpeed, double rightSpeed) {
-    if(shiftClutchDepressed) return;
-    leftMaster.set(leftSpeed);
-    rightMaster.set(rightSpeed);
+  //terrible i know
+  public void setRobotState(RobotState state){
+    this.robotState = state;
   }
 
 
-  public void tankDrive(DriveSignal cheesyDrive) {
-    tankDrive(cheesyDrive.getLeft(), cheesyDrive.getRight());
+  public void set(DriveSignal signal) {
+    setHighGear(signal.isHighGear());
+    setBrakeMode(signal.isBrakeMode());
+
+    // if(shiftClutchTimer.get() < 0.2) return;
+
+    switch(signal.getControlMode()){
+      case OPEN_LOOP -> {
+        setPercent(signal.getLeft(), signal.getRight());
+        isClosedLoop = false;
+      }
+      case VOLTAGE -> {
+        setVoltage(signal.getLeft(), signal.getRight());
+        isClosedLoop = false;
+      }
+      case VELOCITY -> {
+        leftVelocitySetpoint = signal.getLeft();
+        rightVelocitySetpoint = signal.getRight();
+        isClosedLoop = true;
+      }
+    }
+    differentialDrive.feed();
   }
 
-  /**
-   * drive the motors at a specific voltage
-   * see {@link com.ctre.phoenix.motorcontrol.can.WPI_TalonFX#setVoltage(double)} for more details
-   * this is NOT a set and forget function!
-   * @param leftVolts voltage to send to the left side of the drive train
-   * @param rightVolts voltage to send to the right side of the drive train
-   */
-  public void tankDriveVolts(double leftVolts, double rightVolts){
-    if(shiftClutchDepressed) return;
-    leftMaster.setVoltage(leftVolts);
-    rightMaster.setVoltage(rightVolts);
+  private void setVoltage(double leftVoltage, double rightVoltage){
+    leftMaster.setVoltage(leftVoltage);
+    rightMaster.setVoltage(rightVoltage);
   }
 
-  /**
-   * drive the robot in Arcade mode using the built-in WPILib differential drive class
-   * @param forward joystick forward backward axis
-   * @param wheel joystick left right axis
-   *
-   */
-  public void arcadeDrive(double forward, double wheel) {
-    tankDrive(new DriveSignal(forward + wheel, forward - wheel));
+  private void setPercent(double leftPercent, double rightPercent){
+    leftMaster.set(leftPercent);
+    rightMaster.set(rightPercent);
   }
 
   public void resetVelocityDrive(){
-    leftController.reset();
-    rightController.reset();
-  }
-
-  //EXPERIMENTAL
-  public void velocityDriveLQR(DifferentialDriveWheelSpeeds speeds){
-    //use the LQR to calculate the voltages needed to get to the desired speeds
-    loop.setNextR(VecBuilder.fill(speeds.leftMetersPerSecond, speeds.rightMetersPerSecond));
-    loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
-    loop.predict(0.02);
-    //set the voltages
-    tankDriveVolts(loop.getU(0), loop.getU(1));
-  }
-
-  public void velocityDrive(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt){
-    double leftFeedforward, rightFeedforward, left, right;
-
-    leftFeedforward = feedforward.calculate(
-      speeds.leftMetersPerSecond,
-      (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
-    );
-
-    rightFeedforward = feedforward.calculate(
-      speeds.rightMetersPerSecond,
-      (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
-    );
-
-    left = leftFeedforward + leftController.calculate(
-            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
-    );
-    right = rightFeedforward + rightController.calculate(
-            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
-    );
-
-    tankDriveVolts(left, right);
-  }
-
-  public void velocityDriveHold(DifferentialDriveWheelSpeeds speeds, DifferentialDriveWheelSpeeds previousSpeeds, double dt, double tilt){ //TODO Write Javadoc
-    double leftFeedforward, rightFeedforward, left, right;
-
-    leftFeedforward = feedforward.calculate(
-            speeds.leftMetersPerSecond,
-            (speeds.leftMetersPerSecond - previousSpeeds.leftMetersPerSecond) / dt
-    ) + (kA_LINEAR * Math.sin(tilt));
-
-    rightFeedforward = feedforward.calculate(
-            speeds.rightMetersPerSecond,
-            (speeds.rightMetersPerSecond - previousSpeeds.rightMetersPerSecond) / dt
-    ) + (kA_LINEAR * Math.sin(tilt));
-
-    left = leftFeedforward + leftController.calculate(
-            getWheelSpeeds().leftMetersPerSecond, speeds.leftMetersPerSecond
-    );
-    right = rightFeedforward + rightController.calculate(
-            getWheelSpeeds().rightMetersPerSecond, speeds.rightMetersPerSecond
-    );
-
-    tankDriveVolts(left, right);
+    highVelocityController.loop.reset(VecBuilder.fill(getLeftVelocity(), getRightVelocity()));
   }
 
   //WPILib built in odometry methods from docs
@@ -248,7 +151,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the left side of the drivetrain in meters per second
    */
   public double getLeftVelocity(){
-    return countsToMeters(leftMaster.getSelectedSensorVelocity());
+    return countsToMeters(leftMaster.getSelectedSensorVelocity() * 10); //times 10 to convert units/100ms to units/sec
   }
 
   /**
@@ -256,7 +159,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the velocity of the right side of the drivetrain in meters per second
    */
   public double getRightVelocity(){
-    return countsToMeters(rightMaster.getSelectedSensorVelocity());
+    return countsToMeters(rightMaster.getSelectedSensorVelocity() * 10); //times 10 to convert units/100ms to units/sec
   }
 
   public double getAverageVelocity(){
@@ -279,16 +182,6 @@ public class DriveTrain extends SubsystemBase {
   }
 
   /**
-   * set the drivetrain motors into a specific mode IE "Break Mode" only works for CTRE motors
-   * @param mode com.ctre.phoenix.motorcontrol.NeuteralMode the mode to set the motors to
-   *
-   */
-  public void setNeutralMode(NeutralMode mode) {
-    leftMaster.setNeutralMode(mode);
-    rightMaster.setNeutralMode(mode);
-  }
-
-  /**
    * Gets the average distance of the two master encoders.
    *
    * @return the average of the two encoder readings
@@ -303,7 +196,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the left drive encoder
    */
   public double getLeftMeters() {
-    return countsToMeters(leftPosition.get());
+    return countsToMeters(leftMaster.getSelectedSensorPosition());
   }
 
   /**
@@ -312,16 +205,7 @@ public class DriveTrain extends SubsystemBase {
    * @return the right drive encoder
    */
   public double getRightMeters() {
-    return countsToMeters(rightPosition.get());
-  }
-
-  /**
-   * Sets the max output of the drive. Useful for scaling the drive to drive more slowly.
-   *
-   * @param maxOutput the maximum output to which the drive will be constrained
-   */
-  public void setMaxOutput(double maxOutput) {
-    differentialDrive.setMaxOutput(maxOutput);
+    return countsToMeters(rightMaster.getSelectedSensorPosition());
   }
 
   public DifferentialDrive getDifferentialDrive(){
@@ -329,62 +213,86 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double countsToMeters(double encoderCounts){
-    return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * METERS_PER_ROTATION;
+    return encoderCounts / COUNTS_PER_METER;
+    // return ((encoderCounts / DRIVE_ENCODER_CPR) / getCurrentGearRatio()) * WHEEL_CIRCUMFERENCE;
+  }
+
+  public double countsToMeters(double encoderCounts, boolean isHighGear){
+    return encoderCounts / COUNTS_PER_METER;
+    // return ((encoderCounts / DRIVE_ENCODER_CPR) / (isHighGear ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW)) * WHEEL_CIRCUMFERENCE;
   }
 
   public double metersToCounts(double meters){
-    return ((meters / METERS_PER_ROTATION) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
+    return meters * COUNTS_PER_METER;
+    // return ((meters / WHEEL_CIRCUMFERENCE) * getCurrentGearRatio()) * DRIVE_ENCODER_CPR;
   }
 
-  public void setGear(Gear gear){
-    if(gear == this.gear) return;
-    this.gear = gear;
-    shiftClutchDepressed = true;
-    shiftClutchTimer.reset();
-    shiftClutchTimer.start();
-    setNeutralMode(NeutralMode.Coast);
-    if(gear == Gear.LOW){
-      shiftSolenoid.set(Value.kReverse);
-      leftMaster.setInverted(true);
-      rightMaster.setInverted(false);
-    } else {
-      leftMaster.setInverted(false);
-      rightMaster.setInverted(true);
-      shiftSolenoid.set(Value.kForward);
+  private void setHighGear(boolean isHighGear){
+     if(isHighGear == isHighGear()){
+//      leftPositionOffset = getLeftMeters() - countsToMeters(leftMaster.getSelectedSensorPosition(), isHighGear);
+//      rightPositionOffset = getRightMeters() - countsToMeters(rightMaster.getSelectedSensorPosition(), isHighGear);
+
+      shiftSolenoid.set(isHighGear ? HIGH_GEAR : LOW_GEAR);
+
+      shiftClutchTimer.reset();
+      shiftClutchTimer.start();
+
+      shiftClutchEngaged = false;
+
+      leftMaster.setInverted(isHighGear);
+      rightMaster.setInverted(!isHighGear);
+
+      resetEncoders(0,0);
+      if(robotState != null) robotState.handleDrivetrainShift();
+     }
+  }
+
+  private void setBrakeMode(boolean isBrakeMode){
+    if(isBrakeMode != this.isBrakeMode){
+      leftMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+      rightMaster.setNeutralMode(isBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
     }
   }
 
-  public Gear getGear(){
-    return gear;
+  public boolean isHighGear(){
+    return shiftSolenoid.get() != HIGH_GEAR;
   }
 
   public double getCurrentGearRatio(){
-    if(gear == Gear.LOW){
-      return GEARBOX_RATIO_LOW;
-    } else {
-      return GEARBOX_RATIO_HIGH;
-    }
+    return isHighGear() ? GEARBOX_RATIO_HIGH : GEARBOX_RATIO_LOW;
   }
 
   @Override
   public void periodic(){
-    differentialDrive.feed();
-    if(shiftClutchTimer.get() < 0.7){
-      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
-      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 5, 5, 5));
-    } else {
-      leftMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
-      rightMaster.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(false, 5, 5, 5));
+    SmartDashboard.putBoolean("HIGH GEAR", isHighGear());
+    SmartDashboard.putNumber("left counts", leftMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("right counts", rightMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("EXP DISTANCE", rightMaster.getSelectedSensorPosition() / COUNTS_PER_METER);
+    SmartDashboard.putNumber("OLD DISTANCE", getAverageEncoderDistance());
+    if(isClosedLoop){
+      // var loop = isHighGear() ? highVelocityController.loop : lowVelocityController.loop;
+      var loop = highVelocityController.loop;
+
+      loop.setNextR(VecBuilder.fill(leftVelocitySetpoint, rightVelocitySetpoint));
+      loop.correct(VecBuilder.fill(getWheelSpeeds().leftMetersPerSecond, getWheelSpeeds().rightMetersPerSecond));
+      loop.predict(0.02);
+
+      var left = loop.getU(0);
+      var right = loop.getU(1);
+      setVoltage(left, right);
     }
-    if(shiftClutchDepressed){
-      if(shiftClutchTimer.get() > 0.5){
-        shiftClutchDepressed = false;
-        setNeutralMode(NeutralMode.Brake);
-        return;
-      }
-      leftMaster.stopMotor();
-      rightMaster.stopMotor();
-    }
+    //current limit while shifting to prevent damage, but only configure 1 time per shift.
+    // if(shiftClutchTimer.get() < 0.1 && !shiftClutchEngaged){
+    //   leftMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+    //   rightMaster.configStatorCurrentLimit(SHIFTING_CURRENT_LIMIT);
+    //   shiftClutchEngaged = true;
+    // }
+    // if(shiftClutchTimer.get() > 0.1 && shiftClutchEngaged){
+    //   leftMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    //   rightMaster.configStatorCurrentLimit(CURRENT_LIMIT);
+    //   shiftClutchEngaged = false;
+    // }
+    SmartDashboard.putData("drivetrain", differentialDrive);
   }
 
   //simulation
@@ -392,9 +300,9 @@ public class DriveTrain extends SubsystemBase {
   private final TalonFXSimCollection rightMasterSim = new TalonFXSimCollection(rightMaster);
 
   public DifferentialDrivetrainSim driveSim = new DifferentialDrivetrainSim(
-    drivePlant,
+          highVelocityController.drivePlant,
     DCMotor.getFalcon500(4),
-    1/GEARBOX_RATIO_HIGH,
+    1/(GEARBOX_RATIO_HIGH),
     TRACK_WIDTH,
     Units.inchesToMeters(3),
     // The standard deviations for measurement noise:
@@ -411,8 +319,41 @@ public class DriveTrain extends SubsystemBase {
     pigeon.setSimHeading(driveSim.getHeading().getDegrees());
   }
 
-  public enum Gear{
-    HIGH,
-    LOW
+  public static class DriveVelocityController{
+    public final LinearSystem<N2, N2, N2> drivePlant;
+    public final LinearQuadraticRegulator<N2, N2, N2> driveLQR;
+    public final KalmanFilter<N2, N2, N2> kalmanFilter;
+    public final LinearSystemLoop<N2, N2, N2> loop;
+
+    public DriveVelocityController(double kVLinear, double kALinear, double kVAngular, double kAAngular){
+        drivePlant = LinearSystemId.identifyDrivetrainSystem(
+                kVLinear,
+                kALinear,
+                kVAngular,
+                kAAngular,
+                TRACK_WIDTH
+        );
+        driveLQR = new LinearQuadraticRegulator<>(
+                drivePlant,
+                VecBuilder.fill(LQR_ERROR_TOLERANCE, LQR_ERROR_TOLERANCE),
+                VecBuilder.fill(LQR_EFFORT, LQR_EFFORT),
+                DT
+        );
+        kalmanFilter = new KalmanFilter<>(
+                Nat.N2(),
+                Nat.N2(),
+                drivePlant,
+                VecBuilder.fill(KALMAN_MODEL_ACCURACY, KALMAN_MODEL_ACCURACY),
+                VecBuilder.fill(KALMAN_SENSOR_ACCURACY, KALMAN_SENSOR_ACCURACY),
+                DT
+        );
+        loop = new LinearSystemLoop<>(
+                drivePlant,
+                driveLQR,
+                kalmanFilter,
+                12,
+                DT
+        );
+    }
   }
 }

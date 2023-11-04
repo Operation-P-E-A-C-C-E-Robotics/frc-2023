@@ -14,16 +14,18 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.trajectory.Trajectory;
-import frc.lib.util.DCMotorSystemBase.SystemConstants;
+import frc.lib.motion.Trajectory;
+import frc.lib.util.ServoMotor.SystemConstants;
+import frc.robot.Constants;
 
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
-public class ArmSystemBase extends SubsystemBase {
+public class ServoArm extends SubsystemBase {
     private final LinearSystem<N2, N1, N1> plant;
     private final LinearSystemLoop<N2, N1, N1> loop;
     private final SystemConstants constants;
+    private final DoubleSupplier armLength;
     private Trajectory trajectory;
     private State trajectoryStart, trajectoryEnd;
     private boolean recalculateTrajectory = false; //whether we need to recalculate the trajectory
@@ -34,15 +36,18 @@ public class ArmSystemBase extends SubsystemBase {
     private DoubleConsumer voltDriveFunction;
     private DoubleSupplier getPosition, getVelocity;
     private Runnable superPeriodic;
-    private final double armLength, armMass;
+    private double armMass; //TODO make final once we're done tuning.
     /**
      * A messy ass helper class to run trajectories on an arm
      * @param constants The constants for the system
      * @param armLength The length of the arm (m)
      * @param armMass The mass of the arm (kg)
      */
-    public ArmSystemBase(SystemConstants constants, double armLength, double armMass) {
+    public ServoArm(SystemConstants constants, DoubleSupplier armLength, DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity, double armMass) {
         this.constants = constants;
+        this.voltDriveFunction = voltDriveFunction;
+        this.getPosition = getPosition;
+        this.getVelocity = getVelocity;
         plant = LinearSystemId.createSingleJointedArmSystem(constants.motor, constants.inertia, constants.gearing);
         KalmanFilter<N2, N1, N1> observer = new KalmanFilter<N2, N1, N1>(
                 Nat.N2(),
@@ -67,7 +72,10 @@ public class ArmSystemBase extends SubsystemBase {
         );
         this.armLength = armLength;
         this.armMass = armMass;
-        SmartDashboard.putNumber("Arm Gravity Feedforward Multiplier", 1);
+        if(Constants.TUNING_MODE){
+            SmartDashboard.putNumber("Arm Mass", armMass);
+            SmartDashboard.putNumber("Arm Length", armLength.getAsDouble());
+        }
     }
 
     /**
@@ -80,18 +88,14 @@ public class ArmSystemBase extends SubsystemBase {
 
     /**
      * enable the feedback loop with a consumer to set the voltage, and a supplier to get the position and velocity
-     * @param voltDriveFunction The function to set the voltage
-     * @param getPosition The function to get the position
-     * @param getVelocity The function to get the velocity
      */
-    protected void enableLoop(DoubleConsumer voltDriveFunction, DoubleSupplier getPosition, DoubleSupplier getVelocity) {
-        this.voltDriveFunction = voltDriveFunction;
-        this.getPosition = getPosition;
-        this.getVelocity = getVelocity;
+    public void enableLoop() {
         if(trajectory == null){
             trajectoryStart = trajectoryEnd = new State(getPosition.getAsDouble(), getVelocity.getAsDouble());
             trajectory = Trajectory.trapezoidTrajectory(trajectoryStart, trajectoryEnd, constants.maxVelocity, constants.maxAcceleration);
         }
+        if(looping) return;
+        loop.reset(VecBuilder.fill(getPosition.getAsDouble(), getVelocity.getAsDouble()));
         looping = true;
     }
 
@@ -114,19 +118,17 @@ public class ArmSystemBase extends SubsystemBase {
      * calculate additional feedforward to account for gravity
      */
     public double calculateGravityFeedforward(double position, double velocity){
+        var armLength = this.armLength.getAsDouble();
         var force = armMass     * armLength
                                 * 9.8
                                 * 3.0
                                 * constants.inertia
                                 / (armMass * armLength * armLength)
                                 * Math.cos(position - Math.PI*1.5);
-        SmartDashboard.putNumber("Arm Gravity Force before gearbox", force);
         //account for gearing:
         force /= constants.gearing;
-
-        SmartDashboard.putNumber("Arm Gravity Force after gearbox", force);
         //calculate voltage needed to counteract force:
-        return constants.motor.getVoltage(force, velocity);
+        return 0;// constants.motor.getVoltage(force, velocity);
     }
 
     /**
@@ -195,6 +197,11 @@ public class ArmSystemBase extends SubsystemBase {
 
     @Override
     public final void periodic() {
+        //update the weight and length of the arm from the dashboard if we're in tuning mode:
+        if(Constants.TUNING_MODE){
+            armMass = SmartDashboard.getNumber("Arm Mass", armMass);
+//            armLength = SmartDashboard.getNumber("Arm Length", this.armLength.getAsDouble());
+        }
          // run the subsystem's periodic code
          if(superPeriodic != null) superPeriodic.run();
          if(!looping) return; // don't run the feedback loop if it's not enabled
@@ -202,8 +209,6 @@ public class ArmSystemBase extends SubsystemBase {
          var time = profileTimer.get(); // get the time since the profile started
          double position = getPosition.getAsDouble(), velocity = getVelocity.getAsDouble();
 
-         SmartDashboard.putNumber("DCMotor Velocity", velocity);
-         SmartDashboard.putNumber("DCMotor Position", position);
          var feedforward = 0.0;
 
          if(recalculateTrajectory){
@@ -216,8 +221,6 @@ public class ArmSystemBase extends SubsystemBase {
  //            var output = profile.calculate(time);
              var output = trajectory.calculate(time + 0.1);
              setNextR(output.position, output.velocity);
-             SmartDashboard.putNumber("DCMotor Profile Position", output.position);
-             SmartDashboard.putNumber("DCMotor Profile Velocity", output.velocity);
             //  for (var i : feedforwards) {
             //      feedforward += i.calculate(output.position, output.velocity);
             //  }
@@ -245,7 +248,7 @@ public class ArmSystemBase extends SubsystemBase {
         for(var i = 0; i < 360; i++){
             var angle = Math.toRadians(i) + Math.PI*1.5;
             var force = (armMass * 9.80665) * armLength * Math.cos(angle + Math.PI);
-            force *= 1/gearing;
+            force *= 1.0/gearing;
             var voltage = motor.getVoltage(force, 0);
             System.out.println(i + "," + voltage);
         }

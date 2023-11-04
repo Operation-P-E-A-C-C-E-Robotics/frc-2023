@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.lib.util.CheesyDriveHelper;
+import frc.lib.util.DriveSignal;
 import frc.robot.Constraints;
 import frc.robot.RobotState;
 import frc.robot.subsystems.DriveTrain;
@@ -64,7 +65,7 @@ public class TestVelocity extends CommandBase {
       driveTrain.resetVelocityDrive();
     }
 
-    driveTrain.velocityDriveLQR(wheelSpeeds);
+    driveTrain.set(DriveSignal.velocityDrive(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond, true));
 
     prevTime = time;
     prevSpeeds = wheelSpeeds;

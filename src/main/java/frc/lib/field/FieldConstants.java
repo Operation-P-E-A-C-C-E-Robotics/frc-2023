@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import frc.lib.util.AllianceFlipUtil;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -25,8 +26,8 @@ import java.util.Map;
  * methods to flip these values based on the current alliance color.
  */
 public final class FieldConstants {
-    public static final double fieldLength = Units.inchesToMeters(651.25);
-    public static final double fieldWidth = Units.inchesToMeters(315.5);
+    public static final double fieldLength = Units.inchesToMeters(651.25); //16.54 m
+    public static final double fieldWidth = Units.inchesToMeters(315.5); //8.01 m
     public static final double tapeWidth = Units.inchesToMeters(2.0);
     public static final double aprilTagWidth = Units.inchesToMeters(6.0);
 
@@ -137,6 +138,7 @@ public final class FieldConstants {
 
         public static Translation3d getNearestNode(Translation3d robotTranslation, ArrayList<Translation3d> nodes){
             Translation3d nearestNode = nodes.get(0);
+            robotTranslation = AllianceFlipUtil.apply(robotTranslation); //make the robot be on the blue alliance side, so that distances will be correct.
             double nearestDistance = robotTranslation.getDistance(nearestNode);
             for(Translation3d node : nodes){
                 double distance = robotTranslation.getDistance(node);
@@ -145,7 +147,7 @@ public final class FieldConstants {
                     nearestNode = node;
                 }
             }
-            return nearestNode;
+            return AllianceFlipUtil.apply(nearestNode);
         }
 
         // Complex low layout (shifted to account for cube vs cone rows and wide edge nodes)

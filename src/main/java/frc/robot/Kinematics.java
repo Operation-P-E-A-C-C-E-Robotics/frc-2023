@@ -30,6 +30,7 @@ public class Kinematics {
      * resets caching of values to prevent unnecesarry computation
      */
     public void reset(){
+        state = null;
         liftPosition = null;
         endEffectorPosition = null;
     } //TODO make sure calling every loop
@@ -155,6 +156,20 @@ public class Kinematics {
         return inverseKinematics(poseWithoutWrist, wristAngle);
     }
 
+    public static SupersystemState inverseKinematicsFromPlacePoint2(SupersystemState inverseKinematics, double wristAngle){
+        var pivot = inverseKinematics.getPivotAngle();
+        var extension = inverseKinematics.getArmExtension();
+        var wristInside = Math.PI - wristAngle;
+        
+        var sin = Math.sin(wristInside) / extension;
+        var deltaPivot = Math.asin(sin*WRIST_MID_LENGTH);
+        
+        var thirdAngle = Math.PI - wristInside - deltaPivot;
+        var newExtension = (1/sin)*Math.sin(thirdAngle);
+
+        return new SupersystemState(inverseKinematics.getTurretAngle(), pivot + deltaPivot, newExtension, wristAngle);
+    }
+
     /**
      * Convert from manipulator joint positions to the location of
      * the end of the lift x/y/z
@@ -186,7 +201,7 @@ public class Kinematics {
     }
 
     public static final double WRIST_LENGTH = 0.2,
-                              WRIST_MID_LENGTH = 0.1; //todo move to constants
+                              WRIST_MID_LENGTH = -0.4; //todo move to constants
     /**
      * Convert from supersystem joint positions to location of the wrist
      * @param liftState the state of the lift
@@ -225,9 +240,14 @@ public class Kinematics {
         double midX, midY, midZ;
         double x, y, z;
 
-        x = Math.sin(wristAngle) * Math.cos(turretAngle);
-        y = Math.sin(wristAngle) * Math.sin(turretAngle);
-        z = Math.cos(wristAngle);
+        // x = Math.sin(wristAngle) * Math.cos(turretAngle);
+        // y = Math.sin(wristAngle) * Math.sin(turretAngle);
+        // z = Math.cos(wristAngle);
+
+        //assume max length:
+        x = Math.cos(turretAngle);
+        y = Math.sin(turretAngle);
+        z = 0;
 
         endX = WRIST_LENGTH * x;
         endY = WRIST_LENGTH * y;
@@ -264,7 +284,7 @@ public class Kinematics {
             pivot = -pivot;
         }
         // if we move too far, return the original state:
-        if(!Util.inRange(turret, Units.degreesToRadians(270))) return target;
+        if(!Util.inRange(turret, Units.degreesToRadians(Constants.Turret.MAX_ANGLE_RAD))) return target;
 
         //return whichever state is closer to the current state:
         var flippedState = new SupersystemState(turret, pivot, target.getArmExtension(), target.getWristAngle());
@@ -280,13 +300,17 @@ public class Kinematics {
     }
 
     public static void main(String args[]){
-        //test optimization:
-        SupersystemState target = new SupersystemState(Units.degreesToRadians(90), -1, 1, 0);
-        SupersystemState current = new SupersystemState(Units.degreesToRadians(270), -1, 1, 0);
-        System.out.println("target: " + target);
-        System.out.println("current: " + current);
-        System.out.println("optimized: " + optimize(target, current));
-        System.out.println("optimized: " + kinematics(optimize(target, current)));
+        //test new inverse kinematics from place point:
+        var targetXYZ = new Translation3d(0, 0, 1);
+        var targetState = inverseKinematics(targetXYZ, 0);
+        System.out.println("target state: " + targetState);
+        var check = kinematics(targetState);
+        System.out.println("check: " + check);
+        var placePoint = inverseKinematicsFromPlacePoint2(targetState, Math.PI/2);
+        System.out.println("place point: " + placePoint);
+        var check2 = kinematics(placePoint);
+        System.out.println("check: " + check2);
+
     }
 
     public static class EndEffectorPosition {

@@ -5,6 +5,7 @@
 package frc.robot.commands.drive;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.lib.util.DriveSignal;
 import frc.lib.util.Util;
 import frc.robot.subsystems.DriveTrain;
 
@@ -30,15 +31,14 @@ public class ArcadeDrive extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    driveTrain.tankDrive(0,0); //stop the drivetrain before drivers take control
+    driveTrain.set(DriveSignal.DEFAULT); //stop the drivetrain before drivers take control
   }
 
   @Override
   public void execute() {
-    var gear = gearSupplier.getAsBoolean() ? DriveTrain.Gear.LOW : DriveTrain.Gear.HIGH;
+    var gear = gearSupplier.getAsBoolean();
     var forward = Util.handleDeadband(-forwardSupplier.getAsDouble(), 0.04);
     var rotation = Util.handleDeadband(-rotationSupplier.getAsDouble(), 0.04);
-    driveTrain.arcadeDrive(-forward, rotation);
-    driveTrain.setGear(gear);
+    driveTrain.set(DriveSignal.arcadeDrive(forward, rotation, !gear));
   }
 }

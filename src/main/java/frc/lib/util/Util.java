@@ -2,7 +2,6 @@ package frc.lib.util;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -184,6 +183,11 @@ public class Util {
         return joystickPosition;
     }
 
+    public static double handleDeadbandWithSlopeIncrease(double joystickPosition, double deadband){
+        if(inRange(joystickPosition, deadband)) return 0;
+        return joystickPosition - deadband * Math.signum(joystickPosition);
+    }
+
     /**
      * convert a Translation2d to a Pose3d
      * by setting the z, roll, pitch, and yaw to zero
@@ -192,6 +196,9 @@ public class Util {
      */
     public static Pose3d toPose3d(Translation2d translation) {
         return toPose3d(new Pose2d(translation, new Rotation2d()));
+    }
+    public static Pose3d toPose3d(Translation2d translation, double z) {
+        return toPose3d(new Pose2d(translation, new Rotation2d()), z, 0, 0);
     }
 
     /**
@@ -345,7 +352,7 @@ public class Util {
         return countsToRotations(counts, cpr, gearRatio) * wheelDiameter * Math.PI;
     }
 
-    public static double countsToRotations(double counts, DCMotorSystemBase.SystemConstants constants){
+    public static double countsToRotations(double counts, ServoMotor.SystemConstants constants){
         return countsToRotations(counts, constants.cpr, constants.gearing);
     }
     /**
@@ -392,25 +399,21 @@ public class Util {
         return rotationsToCounts(rotations, cpr, gearRatio) / (wheelDiameter * Math.PI);
     }
 
-    public static double rotationsToCounts(double rotations, DCMotorSystemBase.SystemConstants constants){
+    public static double rotationsToCounts(double rotations, ServoMotor.SystemConstants constants){
         return rotationsToCounts(rotations, constants.cpr, constants.gearing);
     }
+
+    private static double prevTurretVelocity = 0;
+    private static final double turretBalancekP = 0;
+
+    public static DriveSignal balanceTurret(DriveSignal signal, double turretVelocity){
+        var acceleration = turretVelocity - prevTurretVelocity;
+        return DriveSignal.plus(signal, DriveSignal.arcadeDrive(0, acceleration * turretBalancekP, true));
+    }
+
     public static void main(String args[]){
-        var localOrigin = new Pose3d(
-                1,0,0,
-                new Rotation3d(0.4,0, Units.degreesToRadians(130))
-        );
-        var pt = new Pose3d(
-                1,0,0,
-                new Rotation3d(0,0,0)
-        );
-        System.out.println(globalToLocalPose(localOrigin,localToGlobalPose(
-                localOrigin,
-                pt
-        )));
-        System.out.println(localToGlobalPose(
-                localOrigin,
-                pt
-        ));
+        for(double i = -1; i < 1; i += 0.02){
+            System.out.println(i + " " + Util.handleDeadbandWithSlopeIncrease(i, 0.4));
+        }
     }
 }
